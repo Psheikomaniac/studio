@@ -1,109 +1,153 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for user profiles, penalties, and transactions.
- *   Audit logs are restricted to admin access only. Data structure follows a hierarchical organization.
+ * @fileoverview Firestore Security Rules for the handball club app.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles, penalties, and transactions,
+ * ensuring that only the authenticated user (or an admin, if implemented) can access their data.
+ * Audit logs are restricted to admin access only.  Rules are designed so that rules are not filters.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profile information.
- * - /users/{userId}/penalties/{penaltyId}: Stores penalties associated with a user.
- * - /users/{userId}/transactions/{transactionId}: Stores transactions associated with a user.
- * - /audit_logs/{auditLogId}: Stores audit logs.
+ * - /users/{userId}: Stores user profile information, where {userId} corresponds to the Firebase Auth UID.
+ * - /users/{userId}/penalties/{penaltyId}: Stores penalties associated with a specific user.
+ * - /users/{userId}/transactions/{transactionId}: Stores transactions associated with a specific user.
+ * - /audit_logs/{auditLogId}: Stores audit logs, accessible only by admins.
  *
  * Key Security Decisions:
- * - Users can only access their own profile data, penalties, and transactions.
- * - Audit logs are restricted to admin access only.
- * - Listing all users is not permitted.
- * - Data validation is minimal, focusing on authorization and relational integrity.
- *
- * Denormalization for Authorization:
- * - Penalties and transactions are nested under the user's document to avoid needing to fetch the user document for authorization.
+ * - User listing is implicitly disallowed by the ownership model and lack of a global "users" collection.
+ * - Authorization is determined by matching `request.auth.uid` against the `userId` path parameter.
+ * - The rules explicitly deny unauthorized access attempts.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants access to user profile data based on ownership.
+     * @description Controls access to user profile documents.
      * @path /users/{userId}
-     * @allow (get, create, update, delete) if the user is the owner (userId matches request.auth.uid).
-     * @deny (get, create, update, delete) if the user is not the owner.
+     * @allow (create) Authenticated user can create their own profile.
+     * @allow (get, update, delete) Authenticated user can access their own profile.
+     * @deny (create) Unauthenticated user cannot create a profile.
+     * @deny (get, update, delete) Unauthenticated user cannot access any profile.
+     * @deny (get, update, delete) Authenticated user cannot access another user's profile.
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
+      function isSignedIn() {
+        return request.auth != null;
       }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
       function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if false; // Listing all users is not permitted
+      // Allow the user to create their own document.
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
 
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
+      // Allow reads if the user is signed in and is the owner.
+      allow get: if isSignedIn() && isOwner(userId);
+
+      // Allow updates if the user is signed in, is the owner, and the document exists. Prevents changing the id (ownership).
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+
+      // Allow deletes if the user is signed in, is the owner, and the document exists.
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Grants access to penalties associated with a specific user.
+     * @description Controls access to penalty documents within a user's subcollection.
      * @path /users/{userId}/penalties/{penaltyId}
-     * @allow (get, create, update, delete) if the user is the owner (userId matches request.auth.uid).
-     * @deny (get, create, update, delete) if the user is not the owner.
+     * @allow (create) Authenticated user can create a penalty for themselves.
+     * @allow (get, list, update, delete) Authenticated user can access their own penalties.
+     * @deny (create) Unauthenticated user cannot create a penalty.
+     * @deny (get, list, update, delete) Unauthenticated user cannot access any penalties.
+     * @deny (get, list, update, delete) Authenticated user cannot access another user's penalties.
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/penalties/{penaltyId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
+      function isSignedIn() {
+        return request.auth != null;
       }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
       function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
+      // Allow creation if the user is signed in and is the owner of the parent user document.
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
 
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
+      // Allow reads if the user is signed in and is the owner of the parent user document.
+      allow get: if isSignedIn() && isOwner(userId);
+
+      //The error reported by NextJS was on this line. Adding it here now.
+      allow list: if isSignedIn() && isOwner(userId);
+
+      // Allow updates if the user is signed in, is the owner of the parent user document, and the document exists.
+      allow update: if isSignedIn() && isExistingOwner(userId);
+
+      // Allow deletes if the user is signed in, is the owner of the parent user document, and the document exists.
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Grants access to transactions associated with a specific user.
+     * @description Controls access to transaction documents within a user's subcollection.
      * @path /users/{userId}/transactions/{transactionId}
-     * @allow (get, create, update, delete) if the user is the owner (userId matches request.auth.uid).
-     * @deny (get, create, update, delete) if the user is not the owner.
+     * @allow (create) Authenticated user can create a transaction for themselves.
+     * @allow (get, list, update, delete) Authenticated user can access their own transactions.
+     * @deny (create) Unauthenticated user cannot create a transaction.
+     * @deny (get, list, update, delete) Authenticated user cannot access another user's transactions.
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/transactions/{transactionId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
+      function isSignedIn() {
+        return request.auth != null;
       }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
       function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
+      // Allow creation if the user is signed in and is the owner.
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
 
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
+      // Allow reads if the user is signed in and is the owner.
+      allow get: if isSignedIn() && isOwner(userId);
+
+      // Allow list if the user is signed in and is the owner.
+      allow list: if isSignedIn() && isOwner(userId);
+
+      // Allow updates if the user is signed in, is the owner, and the document exists.
+      allow update: if isSignedIn() && isExistingOwner(userId);
+
+      // Allow deletes if the user is signed in, is the owner, and the document exists.
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Restricts access to audit logs to admins only.
+     * @description Controls access to audit log documents.
      * @path /audit_logs/{auditLogId}
-     * @allow (get, create, update, delete) if the user is an admin (currently always false, replace with admin check).
-     * @deny (get, create, update, delete) if the user is not an admin.
-     * @principle Restricts access to sensitive data to authorized personnel.
+     * @allow None (Admin access only - placeholder).
+     * @deny All access for non-admins.
+     * @principle Restricts all access to admin users (not implemented in this example).
      */
     match /audit_logs/{auditLogId} {
-      allow get: if false; // TODO: Implement admin role check
-      allow list: if false; // TODO: Implement admin role check
-      allow create: if false; // TODO: Implement admin role check
-      allow update: if false; // TODO: Implement admin role check
-      allow delete: if false; // TODO: Implement admin role check
+      //TODO: Implement Admin role check
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
   }
 }
