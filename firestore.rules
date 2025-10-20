@@ -1,140 +1,135 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for user data, penalties, and transactions.
- * Audit logs are restricted to admin access only. Data validation is relaxed for prototyping.
+ * @file Firebase Security Rules for Handball Club App
  *
- * @data-structure
- * - /users/{userId}: Stores user profiles.
- * - /users/{userId}/penalties/{penaltyId}: Stores penalties associated with a user.
- * - /users/{userId}/transactions/{transactionId}: Stores transactions associated with a user.
- * - /audit_logs/{auditLogId}: Stores audit logs.
+ * @Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles, penalties, and transactions,
+ * and restricts access to audit logs to administrators only.  The primary security mechanism is
+ * path-based authorization, ensuring that users can only access data associated with their own user ID.
  *
- * @key-security-decisions
- * - Users can only access their own user document and associated penalties/transactions.
- * - Listing of all users is disallowed.
- * - Audit logs are only accessible to admins. (Not yet implemented)
- * - Data validation is minimal during the prototyping phase. Only validate fields that are critical for authorization and relational integrity.
+ * @Data Structure:
+ * - /users/{userId}: Stores user profile data, accessible only to the user themselves.
+ * - /users/{userId}/penalties/{penaltyId}: Stores penalty data, accessible only to the user who owns the penalty.
+ * - /users/{userId}/transactions/{transactionId}: Stores transaction data, accessible only to the user who owns the transaction.
+ * - /audit_logs/{auditLogId}: Stores audit log data, accessible only to administrators (currently unimplemented).
+ *
+ * @Key Security Decisions:
+ * - User listing is disallowed at the root `/users` collection to protect user privacy.
+ * - Audit logs are restricted to admin access only.
+ *
+ * @Denormalization for Authorization:
+ * The data model is structured such that ownership can be verified directly from the document path (e.g., /users/{userId}/penalties/{penaltyId}),
+ * eliminating the need for additional `get()` calls to determine authorization.  The `userId` is present in the path and can be matched
+ * against `request.auth.uid`.
+ *
+ * @Structural Segregation:
+ * Private user data (penalties, transactions) is stored in user-specific subcollections, ensuring that listing operations are secure and efficient
+ * because the security rules can guarantee that only the authorized user can access the data.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile documents.
+     * @description Checks if the request is made by a signed-in user.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user ID matches the provided user ID.
+     * @param {string} userId The user ID to compare against the authenticated user's UID.
+     * @return {boolean} True if the user is signed in and the UID matches the provided user ID, false otherwise.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the authenticated user is the owner of an existing document.
+     * @param {string} userId The user ID to compare against the authenticated user's UID.
+     * @return {boolean} True if the user is signed in, the UID matches the provided user ID, and the document exists.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Security rules for the /users/{userId} collection.
      * @path /users/{userId}
-     * @allow (create) - Authenticated user can create their own user document if the userId matches their auth UID.
-     * @allow (get, update, delete) - Authenticated user can get, update, or delete their own user document if the userId matches their auth UID.
-     * @deny (create) - Unauthenticated user cannot create a user document.
-     * @deny (get, update, delete) - Authenticated user cannot access another user's document.
+     * @allow (create) User with UID "user123" creates a document with id "user123".
+     * @allow (get) User with UID "user123" reads their own profile.
+     * @allow (update) User with UID "user123" updates their own profile.
+     * @allow (delete) User with UID "user123" deletes their own profile.
+     * @deny (create) User with UID "user123" creates a document with id "user456".
+     * @deny (get) User with UID "user123" tries to read the profile of user "user456".
      * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
       allow get: if isOwner(userId);
+      // Listing users is not permitted to protect privacy.
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to penalty documents within a user's subcollection.
+     * @description Security rules for the /users/{userId}/penalties/{penaltyId} collection.
      * @path /users/{userId}/penalties/{penaltyId}
-     * @allow (create) - Authenticated user can create a penalty document within their own user document. The userId path parameter corresponds to the Firebase Auth UID.
-     * @allow (get, update, delete) - Authenticated user can get, update, or delete a penalty document within their own user document. The userId path parameter corresponds to the Firebase Auth UID.
-     * @deny (create) - Unauthenticated user cannot create a penalty document.
-     * @deny (get, update, delete) - Authenticated user cannot access another user's penalty document.
-     * @principle Enforces document ownership for writes.
+     * @allow (create) User with UID "user123" creates a penalty in their own penalties collection.
+     * @allow (get) User with UID "user123" reads a penalty from their own penalties collection.
+     * @allow (update) User with UID "user123" updates a penalty in their own penalties collection.
+     * @allow (delete) User with UID "user123" deletes a penalty from their own penalties collection.
+     * @deny (create) User with UID "user123" tries to create a penalty in "user456"'s penalties collection.
+     * @deny (get) User with UID "user123" tries to read a penalty from "user456"'s penalties collection.
+     * @principle Restricts access to a user's own data tree.
      */
     match /users/{userId}/penalties/{penaltyId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == userId;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to transaction documents within a user's subcollection.
+     * @description Security rules for the /users/{userId}/transactions/{transactionId} collection.
      * @path /users/{userId}/transactions/{transactionId}
-     * @allow (create) - Authenticated user can create a transaction document within their own user document. The userId path parameter corresponds to the Firebase Auth UID.
-     * @allow (get, update, delete) - Authenticated user can get, update, or delete a transaction document within their own user document. The userId path parameter corresponds to the Firebase Auth UID.
-     * @deny (create) - Unauthenticated user cannot create a transaction document.
-     * @deny (get, update, delete) - Authenticated user cannot access another user's transaction document.
-     * @principle Enforces document ownership for writes.
+     * @allow (create) User with UID "user123" creates a transaction in their own transactions collection.
+     * @allow (get) User with UID "user123" reads a transaction from their own transactions collection.
+     * @allow (update) User with UID "user123" updates a transaction in their own transactions collection.
+     * @allow (delete) User with UID "user123" deletes a transaction from their own transactions collection.
+     * @deny (create) User with UID "user123" tries to create a transaction in "user456"'s transactions collection.
+     * @deny (get) User with UID "user123" tries to read a transaction from "user456"'s transactions collection.
+     * @principle Restricts access to a user's own data tree.
      */
     match /users/{userId}/transactions/{transactionId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == userId;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to audit log documents.  Only admins should have access.
+     * @description Security rules for the /audit_logs/{auditLogId} collection.
      * @path /audit_logs/{auditLogId}
-     * @allow (get, list) - Only admins can read audit logs.  (Not yet implemented.)
-     * @allow (create, update, delete) - Only admins can create, update, or delete audit logs. (Not yet implemented.)
-     * @deny All access is denied to non-admin users.
-     * @principle Restricts access to admin users.
+     * @allow (get) Admins can read audit logs. (Currently no admin role, so denied).
+     * @allow (create) Admins can create audit logs. (Currently no admin role, so denied).
+     * @allow (update) Admins can update audit logs. (Currently no admin role, so denied).
+     * @allow (delete) Admins can delete audit logs. (Currently no admin role, so denied).
+     * @deny (get) Non-admins cannot read audit logs.
+     * @principle Restricts access to audit logs to administrators only.
      */
     match /audit_logs/{auditLogId} {
-      // TODO: Implement admin role check
-      allow get: if false; 
+      // TODO: Implement admin role check here
+      allow get: if false;
       allow list: if false;
       allow create: if false;
       allow update: if false;
       allow delete: if false;
-    }
-
-      /**
-     * @description Deny all access to the predefinedFines collection.
-     * @path /predefinedFines
-     * @deny (get, list, create, update, delete) - No one can access this collection.
-     * @principle Prevents access to a collection.
-     */
-    match /predefinedFines {
-        allow get: if false;
-        allow list: if false;
-        allow create: if false;
-        allow update: if false;
-        allow delete: if false;
     }
   }
 }
