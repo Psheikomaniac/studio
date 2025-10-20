@@ -11,6 +11,7 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarInset,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Icons } from "@/components/icons";
 import { Skeleton } from '@/components/ui/skeleton';
