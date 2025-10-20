@@ -3,9 +3,11 @@ export interface Player {
   name: string;
   nickname: string;
   photoUrl: string;
-  balance: number;
+  balance: number; // This will be calculated from penalties
   email?: string;
   phone?: string;
+  totalUnpaidPenalties: number;
+  totalPaidPenalties: number;
 }
 
 export interface Fine {
