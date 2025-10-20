@@ -1,206 +1,288 @@
 {
   "entities": {
-    "PlayerProfile": {
-      "title": "Player Profile",
-      "description": "Represents a player in the team.",
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
       "type": "object",
+      "description": "Represents a player in the handball club.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the player."
+          "description": "Unique identifier for the user entity."
         },
         "name": {
           "type": "string",
-          "description": "The player's full name."
+          "description": "User's full name."
         },
         "nickname": {
           "type": "string",
-          "description": "The player's nickname."
+          "description": "User's preferred nickname."
         },
         "email": {
           "type": "string",
-          "format": "email",
-          "description": "The player's email address."
+          "description": "User's email address.",
+          "format": "email"
         },
         "phone": {
           "type": "string",
-          "description": "The player's phone number."
+          "description": "User's phone number."
         },
         "photoUrl": {
           "type": "string",
-          "format": "uri",
-          "description": "URL of the player's profile picture."
-        },
-        "balance": {
-          "type": "number",
-          "description": "The current financial balance of the player. Positive is credit, negative is debt."
-        }
-      },
-      "required": ["id", "name", "balance", "photoUrl"]
-    },
-    "Fine": {
-      "title": "Fine",
-      "description": "Represents a single fine assigned to one or more players.",
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the fine."
-        },
-        "playerIds": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "List of player IDs who received this fine."
-        },
-        "description": {
-          "type": "string",
-          "description": "The reason for the fine."
-        },
-        "amount": {
-          "type": "number",
-          "description": "The amount of the fine."
+          "description": "URL of the user's profile photo.",
+          "format": "uri"
         },
         "createdAt": {
           "type": "string",
-          "format": "date-time",
-          "description": "Timestamp when the fine was issued."
+          "description": "Timestamp indicating when the user was created.",
+          "format": "date-time"
         },
-        "status": {
+        "updatedAt": {
           "type": "string",
-          "enum": ["open", "paid"],
-          "description": "The current status of the fine."
+          "description": "Timestamp indicating when the user was last updated.",
+          "format": "date-time"
         },
-        "paidAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp when the fine was paid."
-        }
-      },
-      "required": ["id", "playerIds", "description", "amount", "createdAt", "status"]
-    },
-    "PredefinedFine": {
-      "title": "Predefined Fine",
-      "description": "A template for a common fine.",
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the predefined fine."
-        },
-        "reason": {
-          "type": "string",
-          "description": "The standard reason for the fine."
-        },
-        "amount": {
+        "totalUnpaidPenalties": {
           "type": "number",
-          "description": "The standard amount for the fine."
-        }
-      },
-      "required": ["id", "reason", "amount"]
-    },
-    "Transaction": {
-      "title": "Transaction",
-      "description": "Records a single financial event for a player (a debit or credit).",
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the transaction."
+          "description": "Sum of all unpaid penalties."
         },
-        "change": {
+        "totalPaidPenalties": {
           "type": "number",
-          "description": "The amount of the financial change. Negative for a fine, positive for a payment."
-        },
-        "reason": {
-          "type": "string",
-          "description": "A description of the transaction."
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp of the transaction."
-        },
-        "relatedFineId": {
-          "type": "string",
-          "description": "Optional ID of a fine from the 'fines' collection this transaction is related to."
+          "description": "Sum of all paid penalties."
         }
       },
-      "required": ["id", "change", "reason", "timestamp"]
+      "required": [
+        "id",
+        "name",
+        "createdAt",
+        "updatedAt",
+        "totalUnpaidPenalties",
+        "totalPaidPenalties"
+      ]
     },
-    "AuditLog": {
-      "title": "Audit Log",
-      "description": "An entry in the audit trail, recording a significant action.",
+    "Penalty": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Penalty",
       "type": "object",
+      "description": "Represents a fine assigned to a player.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the log entry."
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp of when the action occurred."
-        },
-        "action": {
-          "type": "string",
-          "description": "The action performed (e.g., 'CREATE_FINE', 'UPDATE_PLAYER', 'MARK_FINE_PAID')."
-        },
-        "entityType": {
-          "type": "string",
-          "enum": ["player", "fine", "transaction"],
-          "description": "The type of entity the action was performed on."
-        },
-        "entityId": {
-          "type": "string",          
-          "description": "The ID of the affected entity."
+          "description": "Unique identifier for the penalty entity."
         },
         "userId": {
           "type": "string",
-          "description": "The ID of the admin/user who performed the action."
+          "description": "Reference to User. (Relationship: User 1:N Penalty)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Penalty amount."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for the penalty."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date when the penalty was issued.",
+          "format": "date-time"
+        },
+        "paid": {
+          "type": "boolean",
+          "description": "Whether the penalty has been paid."
+        },
+        "paidAt": {
+          "type": "string",
+          "description": "Date when the penalty was paid.",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the penalty was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the penalty was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "amount",
+        "date",
+        "paid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Transaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Transaction",
+      "type": "object",
+      "description": "Represents a transaction (credit or debit) for a player.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the transaction entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Transaction)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Transaction amount (positive for credit, negative for debit)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the transaction."
+        },
+        "transactionDate": {
+          "type": "string",
+          "description": "Date of the transaction.",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the transaction was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "amount",
+        "transactionDate",
+        "createdAt"
+      ]
+    },
+    "AuditLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AuditLog",
+      "type": "object",
+      "description": "Represents an audit log entry for tracking actions performed in the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the audit log entry."
+        },
+        "action": {
+          "type": "string",
+          "description": "The action that was performed (e.g., 'create', 'update', 'delete')."
+        },
+        "entityType": {
+          "type": "string",
+          "description": "The type of entity the action was performed on (e.g., 'User', 'Penalty')."
+        },
+        "entityId": {
+          "type": "string",
+          "description": "ID of the affected entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "ID of the user who performed the action."
         },
         "details": {
           "type": "string",
-          "description": "A human-readable string with more details about the action."
+          "description": "Additional details about the action."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp indicating when the action was performed.",
+          "format": "date-time"
         }
       },
-      "required": ["id", "timestamp", "action", "entityType", "entityId", "userId"]
+      "required": [
+        "id",
+        "action",
+        "entityType",
+        "timestamp"
+      ]
     }
   },
   "auth": {
-    "providers": ["email-password", "google"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/players/{playerId}": {
-      "schema": {
-        "$ref": "#/entities/PlayerProfile"
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. The userId path parameter corresponds to the Firebase Auth UID. All documents in the 'users' collection share the same security requirements: Only the authenticated user with a matching UID or an admin can read/write the document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user."
+            }
+          ]
+        }
       },
-      "description": "Stores individual player profiles."
-    },
-    "/players/{playerId}/transactions/{transactionId}": {
-      "schema": {
-        "$ref": "#/entities/Transaction"
+      {
+        "path": "/users/{userId}/penalties/{penaltyId}",
+        "definition": {
+          "entityName": "Penalty",
+          "schema": {
+            "$ref": "#/backend/entities/Penalty"
+          },
+          "description": "Stores penalties associated with a specific user. The userId path parameter corresponds to the Firebase Auth UID.  All documents in the 'penalties' subcollection share the same security requirements: Only the authenticated user with a matching UID or an admin can read/write the document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user who owns the penalty."
+            },
+            {
+              "name": "penaltyId",
+              "description": "The unique ID of the penalty."
+            }
+          ]
+        }
       },
-      "description": "Stores the complete financial transaction history for each player. This is the source of truth for a player's balance and serves as the audit log for financial changes."
-    },
-    "/fines/{fineId}": {
-      "schema": {
-        "$ref": "#/entities/Fine"
+      {
+        "path": "/users/{userId}/transactions/{transactionId}",
+        "definition": {
+          "entityName": "Transaction",
+          "schema": {
+            "$ref": "#/backend/entities/Transaction"
+          },
+          "description": "Stores transactions associated with a specific user. The userId path parameter corresponds to the Firebase Auth UID. All documents in the 'transactions' subcollection share the same security requirements: Only the authenticated user with a matching UID or an admin can read/write the document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user who owns the transaction."
+            },
+            {
+              "name": "transactionId",
+              "description": "The unique ID of the transaction."
+            }
+          ]
+        }
       },
-      "description": "A global collection of all fines that have been issued."
-    },
-    "/predefinedFines/{predefinedFineId}": {
-      "schema": {
-        "$ref": "#/entities/PredefinedFine"
-      },
-      "description": "A collection for the catalog of standard fines."
-    },
-    "/auditLogs/{auditLogId}": {
-      "schema": {
-        "$ref": "#/entities/AuditLog"
-      },
-      "description": "A comprehensive log of all significant write actions (creates, updates, deletes) taken in the app for audit purposes."
-    }
+      {
+        "path": "/audit_logs/{auditLogId}",
+        "definition": {
+          "entityName": "AuditLog",
+          "schema": {
+            "$ref": "#/backend/entities/AuditLog"
+          },
+          "description": "Stores audit log entries.  All documents in the 'audit_logs' collection share the same security requirements: Only admins can read/write the document.",
+          "params": [
+            {
+              "name": "auditLogId",
+              "description": "The unique ID of the audit log entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to balance data normalization with the need for secure and efficient data access, especially concerning authorization. The design prioritizes authorization independence to avoid complex and potentially insecure rules that rely on `get()` calls. It also adheres to the principle that rules are not filters.\n\n**Users:** User data is stored in the `/users/{userId}` collection. This provides a straightforward path-based ownership model, ensuring that only the authenticated user (or an admin) can access their profile data. This inherently supports the QAP that rules are not filters, as listing users will be restricted based on authentication/authorization.\n\n**Penalties:** Penalties are stored in a subcollection `/users/{userId}/penalties/{penaltyId}`. This approach provides a clear ownership model. Security rules can easily verify that the user accessing a penalty is the owner (i.e., the `userId` in the path matches `request.auth.uid`). This also makes listing penalties for a given user efficient and secure.\n\n**Transactions:** Transactions are managed under `/users/{userId}/transactions/{transactionId}`. Similar to penalties, this hierarchical structure provides a clear owner and guarantees that a user can only access its own transactions. The data will be secured based on the `request.auth.uid` matching the `userId`.\n\n**Audit Logs:** Stored in the `/audit_logs/{auditLogId}` collection. Admin access control can be implemented at the collection level (e.g., a role-based check). No user data is directly within the documents, and all reads/writes are restricted to admin users.\n\n**Authorization Independence:**  Authorization Independence is achieved for Penalties and Transactions by nesting them under the user's document. This ensures that accessing penalties and transactions doesn't require fetching the user document to validate ownership. The `userId` in the path is sufficient.  Audit Logs do not have any dependence.\n\n**QAPs (Rules are not Filters):** The segregation of data into user-owned subcollections, combined with path-based security rules, allows for secure list operations. We can confidently allow listing of `/users/{userId}/penalties` because the security rules ensure that only the authorized user can perform this operation.\n\n**DBAC:** Authorization is determined by `request.auth.uid` and path-based ownership. Additional collections for admins can easily be supported."
   }
 }
