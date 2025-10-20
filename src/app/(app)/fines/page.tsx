@@ -4,29 +4,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, query } from 'firebase/firestore';
 import { Fine, Player } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function FinesPage() {
   const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
 
   const finesQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'penalties')) : null),
-    [firestore]
+    () => (firestore && user ? query(collection(firestore, 'penalties')) : null),
+    [firestore, user]
   );
   const { data: fines, isLoading: isLoadingFines } = useCollection<Fine>(finesQuery);
 
   const playersQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'users')) : null),
-    [firestore]
+    () => (firestore && user ? query(collection(firestore, 'users')) : null),
+    [firestore, user]
   );
   const { data: players, isLoading: isLoadingPlayers } = useCollection<Player>(playersQuery);
 
   const getPlayerName = (id: string) => players?.find(p => p.id === id)?.name || 'Unknown';
   
-  const isLoading = isLoadingFines || isLoadingPlayers;
+  const isLoading = isUserLoading || isLoadingFines || isLoadingPlayers;
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
