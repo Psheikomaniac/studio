@@ -40,7 +40,20 @@ export default function DashboardPage() {
   const { data: predefinedFines, isLoading: isLoadingPredefinedFines } = useCollection<PredefinedFine>(predefinedFinesQuery);
 
   const calculateBalance = (player: Player) => {
-    return (player.totalPaidPenalties || 0) - (player.totalUnpaidPenalties || 0);
+    // This calculation logic might need to be revised based on how transactions are implemented
+    // For now, we use the aggregated fields on the player object.
+    const paid = player.totalPaidPenalties || 0;
+    const unpaid = player.totalUnpaidPenalties || 0;
+    
+    // Let's assume for now the balance is what the club owes the player minus what the player owes the club.
+    // This logic might be inverted depending on the business rules.
+    // Let's redefine: Positive balance means player has credit. Negative means player has debt.
+    // A paid penalty reduces debt, so it moves the balance towards positive.
+    // An unpaid penalty creates debt.
+    // Let's assume a simplified model for now: balance = total deposits - total unpaid fines.
+    // The current data model on 'User' has totalPaidPenalties and totalUnpaidPenalties.
+    // A more robust model would use transactions. For now:
+    return paid - unpaid;
   }
 
   const getPlayersWithBalance = (players: Player[] | null) => {
@@ -54,15 +67,16 @@ export default function DashboardPage() {
   const playersWithBalance = getPlayersWithBalance(players);
 
   const filteredPlayers = playersWithBalance.filter((player) => {
-    const matchesSearch =
-      player.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (player.nickname && player.nickname.toLowerCase().includes(searchQuery.toLowerCase()));
+    const nameMatch = player.name ? player.name.toLowerCase().includes(searchQuery.toLowerCase()) : false;
+    const nicknameMatch = player.nickname ? player.nickname.toLowerCase().includes(searchQuery.toLowerCase()) : false;
+    const matchesSearch = nameMatch || nicknameMatch;
 
     if (filter === 'debt') return matchesSearch && player.balance < 0;
     if (filter === 'credit') return matchesSearch && player.balance > 0;
 
     return matchesSearch;
   });
+
 
   const handleFineAdded = (newFine: any) => {
     // TODO: Implement logic to add fine to Firestore
