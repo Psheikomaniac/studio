@@ -1,0 +1,206 @@
+{
+  "entities": {
+    "PlayerProfile": {
+      "title": "Player Profile",
+      "description": "Represents a player in the team.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the player."
+        },
+        "name": {
+          "type": "string",
+          "description": "The player's full name."
+        },
+        "nickname": {
+          "type": "string",
+          "description": "The player's nickname."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The player's email address."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The player's phone number."
+        },
+        "photoUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the player's profile picture."
+        },
+        "balance": {
+          "type": "number",
+          "description": "The current financial balance of the player. Positive is credit, negative is debt."
+        }
+      },
+      "required": ["id", "name", "balance", "photoUrl"]
+    },
+    "Fine": {
+      "title": "Fine",
+      "description": "Represents a single fine assigned to one or more players.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the fine."
+        },
+        "playerIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of player IDs who received this fine."
+        },
+        "description": {
+          "type": "string",
+          "description": "The reason for the fine."
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of the fine."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the fine was issued."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["open", "paid"],
+          "description": "The current status of the fine."
+        },
+        "paidAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the fine was paid."
+        }
+      },
+      "required": ["id", "playerIds", "description", "amount", "createdAt", "status"]
+    },
+    "PredefinedFine": {
+      "title": "Predefined Fine",
+      "description": "A template for a common fine.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the predefined fine."
+        },
+        "reason": {
+          "type": "string",
+          "description": "The standard reason for the fine."
+        },
+        "amount": {
+          "type": "number",
+          "description": "The standard amount for the fine."
+        }
+      },
+      "required": ["id", "reason", "amount"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Records a single financial event for a player (a debit or credit).",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the transaction."
+        },
+        "change": {
+          "type": "number",
+          "description": "The amount of the financial change. Negative for a fine, positive for a payment."
+        },
+        "reason": {
+          "type": "string",
+          "description": "A description of the transaction."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the transaction."
+        },
+        "relatedFineId": {
+          "type": "string",
+          "description": "Optional ID of a fine from the 'fines' collection this transaction is related to."
+        }
+      },
+      "required": ["id", "change", "reason", "timestamp"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "An entry in the audit trail, recording a significant action.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the log entry."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the action occurred."
+        },
+        "action": {
+          "type": "string",
+          "description": "The action performed (e.g., 'CREATE_FINE', 'UPDATE_PLAYER', 'MARK_FINE_PAID')."
+        },
+        "entityType": {
+          "type": "string",
+          "enum": ["player", "fine", "transaction"],
+          "description": "The type of entity the action was performed on."
+        },
+        "entityId": {
+          "type": "string",          
+          "description": "The ID of the affected entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the admin/user who performed the action."
+        },
+        "details": {
+          "type": "string",
+          "description": "A human-readable string with more details about the action."
+        }
+      },
+      "required": ["id", "timestamp", "action", "entityType", "entityId", "userId"]
+    }
+  },
+  "auth": {
+    "providers": ["email-password", "google"]
+  },
+  "firestore": {
+    "/players/{playerId}": {
+      "schema": {
+        "$ref": "#/entities/PlayerProfile"
+      },
+      "description": "Stores individual player profiles."
+    },
+    "/players/{playerId}/transactions/{transactionId}": {
+      "schema": {
+        "$ref": "#/entities/Transaction"
+      },
+      "description": "Stores the complete financial transaction history for each player. This is the source of truth for a player's balance and serves as the audit log for financial changes."
+    },
+    "/fines/{fineId}": {
+      "schema": {
+        "$ref": "#/entities/Fine"
+      },
+      "description": "A global collection of all fines that have been issued."
+    },
+    "/predefinedFines/{predefinedFineId}": {
+      "schema": {
+        "$ref": "#/entities/PredefinedFine"
+      },
+      "description": "A collection for the catalog of standard fines."
+    },
+    "/auditLogs/{auditLogId}": {
+      "schema": {
+        "$ref": "#/entities/AuditLog"
+      },
+      "description": "A comprehensive log of all significant write actions (creates, updates, deletes) taken in the app for audit purposes."
+    }
+  }
+}

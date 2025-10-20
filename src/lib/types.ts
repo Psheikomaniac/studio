@@ -4,6 +4,8 @@ export interface Player {
   nickname: string;
   photoUrl: string;
   balance: number;
+  email?: string;
+  phone?: string;
 }
 
 export interface Fine {
@@ -13,9 +15,11 @@ export interface Fine {
   amount: number;
   createdAt: string; // ISO string
   status: 'open' | 'paid';
+  paidAt?: string; // ISO string for when it was paid
 }
 
 export interface PredefinedFine {
+  id: string;
   reason: string;
   amount: number;
 }
@@ -23,7 +27,18 @@ export interface PredefinedFine {
 export interface Transaction {
   id: string;
   playerId: string;
-  change: number;
+  change: number; // Positive for credit, negative for debit
   reason: string;
   timestamp: string; // ISO string
+  relatedFineId?: string;
+}
+
+export interface AuditLog {
+  id: string;
+  timestamp: string; // ISO string
+  action: string;
+  entityType: 'player' | 'fine' | 'transaction';
+  entityId: string;
+  userId: string; // ID of the admin/treasurer who performed the action
+  details: string; // e.g., "Changed fine amount from 5.00 to 7.50"
 }
