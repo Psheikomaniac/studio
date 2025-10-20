@@ -13,6 +13,10 @@ import {
 import { Icons } from "@/components/icons";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  // Die Authentifizierungsprüfung wurde vollständig entfernt, um die Entwicklung zu ermöglichen.
+  // const router = useRouter();
+  // const { user, isUserLoading } = useUser();
+
   // useEffect(() => {
   //   if (!isUserLoading && !user) {
   //     router.push('/login');
@@ -22,21 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // if (isUserLoading || !user) {
   //   return (
   //       <div className="flex min-h-screen w-full">
-  //           <div className="hidden md:block border-r p-4">
-  //               <div className="flex flex-col gap-4">
-  //                   <Skeleton className="h-8 w-40" />
-  //                   <Skeleton className="h-8 w-full" />
-  //                   <Skeleton className="h-8 w-full" />
-  //                   <Skeleton className="h-8 w-full" />
-  //                   <Skeleton className="h-8 w-full" />
-  //               </div>
-  //           </div>
-  //           <main className="flex-1 p-8">
-  //               <Skeleton className="h-32 w-full" />
-  //               <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-  //                   {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-60" />)}
-  //               </div>
-  //           </main>
+  //           {/* ... Skeleton-Code ... */}
   //       </div>
   //   );
   // }
