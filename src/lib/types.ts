@@ -12,12 +12,14 @@ export interface Player {
 
 export interface Fine {
   id: string;
-  playerIds: string[];
-  description: string;
+  userId: string;
+  reason: string;
   amount: number;
-  createdAt: string; // ISO string
-  status: 'open' | 'paid';
+  date: string; // ISO string
+  paid: boolean;
   paidAt?: string; // ISO string for when it was paid
+  createdAt: string; // ISO string
+  updatedAt: string; // ISO string
 }
 
 export interface PredefinedFine {

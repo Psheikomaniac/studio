@@ -1,10 +1,23 @@
+'use client';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { predefinedFines } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query } from "firebase/firestore";
+import { PredefinedFine } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SettingsPage() {
+  const firestore = useFirestore();
+
+  const predefinedFinesQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, 'predefinedFines')) : null),
+    [firestore]
+  );
+  const { data: predefinedFines, isLoading } = useCollection<PredefinedFine>(predefinedFinesQuery);
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="grid gap-4">
@@ -30,14 +43,27 @@ export default function SettingsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {predefinedFines.map((fine, index) => (
-                  <TableRow key={index}>
+                {isLoading && (
+                  [...Array(3)].map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                    </TableRow>
+                  ))
+                )}
+                {!isLoading && predefinedFines?.map((fine) => (
+                  <TableRow key={fine.id}>
                     <TableCell className="font-medium">{fine.reason}</TableCell>
                     <TableCell className="text-right">€{fine.amount.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+             {!isLoading && predefinedFines?.length === 0 && (
+                <div className="text-center p-8 text-muted-foreground">
+                    No predefined fines found.
+                </div>
+            )}
           </CardContent>
         </Card>
 

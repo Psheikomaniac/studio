@@ -10,7 +10,7 @@ interface DashboardChartsProps {
 
 export function DashboardCharts({ fines }: DashboardChartsProps) {
   const finesPerMonth = fines.reduce((acc, fine) => {
-    const month = new Date(fine.createdAt).toLocaleString('default', { month: 'short', year: '2-digit' });
+    const month = new Date(fine.date).toLocaleString('default', { month: 'short', year: '2-digit' });
     const existing = acc.find(item => item.name === month);
     if (existing) {
       existing.total += fine.amount;

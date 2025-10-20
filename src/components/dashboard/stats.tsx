@@ -18,7 +18,7 @@ export function Stats({ players, fines }: StatsProps) {
     .filter((p) => p.balance > 0)
     .reduce((sum, p) => sum + p.balance, 0);
   
-  const openFines = fines.filter(f => f.status === 'open').length;
+  const openFines = fines.filter(f => !f.paid).length;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
