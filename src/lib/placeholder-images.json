@@ -1,3 +1,58 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "player1",
+      "description": "Photo of a male athlete",
+      "imageUrl": "https://images.unsplash.com/photo-1710739513833-48b074290a8e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtYWxlJTIwYXRobGV0ZXxlbnwwfHx8fDE3NjA5OTM0NzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "male athlete"
+    },
+    {
+      "id": "player2",
+      "description": "Photo of a male athlete",
+      "imageUrl": "https://images.unsplash.com/photo-1545346315-f4c47e3e1b55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtYWxlJTIwYXRobGV0ZXxlbnwwfHx8fDE3NjA5OTM0NzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "male athlete"
+    },
+    {
+      "id": "player3",
+      "description": "Photo of a female athlete",
+      "imageUrl": "https://images.unsplash.com/photo-1604818624842-a4443ab26c85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxmZW1hbGUlMjBhdGhsZXRlfGVufDB8fHx8MTc2MDk5MzQ3NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "female athlete"
+    },
+    {
+      "id": "player4",
+      "description": "Photo of a male athlete",
+      "imageUrl": "https://images.unsplash.com/photo-1599265280910-5cce6643fd19?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bWFsZSUyMGF0aGxldGV8ZW58MHx8fHwxNzYwOTkzNDc0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "male athlete"
+    },
+    {
+      "id": "player5",
+      "description": "Photo of a male athlete",
+      "imageUrl": "https://images.unsplash.com/photo-1599265280910-5cce6643fd19?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bWFsZSUyMGF0aGxldGV8ZW58MHx8fHwxNzYwOTkzNDc0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "male athlete"
+    },
+    {
+      "id": "player6",
+      "description": "Photo of a female athlete",
+      "imageUrl": "https://images.unsplash.com/photo-1607286908165-b8b6a2874fc4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxmZW1hbGUlMjBhdGhsZXRlfGVufDB8fHx8MTc2MDk5MzQ3NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "female athlete"
+    },
+    {
+      "id": "player7",
+      "description": "Photo of a male athlete",
+      "imageUrl": "https://images.unsplash.com/photo-1599265280910-5cce6643fd19?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bWFsZSUyMGF0aGxldGV8ZW58MHx8fHwxNzYwOTkzNDc0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "male athlete"
+    },
+    {
+      "id": "player8",
+      "description": "Photo of a male athlete",
+      "imageUrl": "https://images.unsplash.com/photo-1520352231184-e944327a0738?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtYWxlJTIwYXRobGV0ZXxlbnwwfHx8fDE3NjA5OTM0NzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "male athlete"
+    },
+    {
+      "id": "user-avatar",
+      "description": "Avatar for the logged in user",
+      "imageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjA5MjcyMzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    }
+  ]
 }
