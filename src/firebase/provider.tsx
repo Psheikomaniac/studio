@@ -96,6 +96,20 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     return () => unsubscribe(); // Cleanup
   }, [auth]); // Depends on the auth instance
 
+  // Auto-initiate anonymous sign-in on mount to satisfy rules that require authentication for reads.
+  useEffect(() => {
+    // If there's no current user, start anonymous sign-in non-blocking.
+    if (auth && !auth.currentUser) {
+      try {
+        // Lazy import to avoid circular deps in some bundlers
+        const { initiateAnonymousSignIn } = require('@/firebase/non-blocking-login');
+        initiateAnonymousSignIn(auth);
+      } catch (e) {
+        console.warn('Failed to initiate anonymous sign-in:', e);
+      }
+    }
+  }, [auth]);
+
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {
     const servicesAvailable = !!(firebaseApp && firestore && auth);

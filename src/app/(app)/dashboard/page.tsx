@@ -10,7 +10,7 @@ import type { Player, Fine, PredefinedFine } from '@/lib/types';
 import { Stats } from '@/components/dashboard/stats';
 import { DashboardCharts } from '@/components/dashboard/charts';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -20,22 +20,23 @@ export default function DashboardPage() {
   const [isAddFineOpen, setAddFineOpen] = useState(false);
 
   const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
 
   const playersQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'users')) : null),
-    [firestore]
+    () => (firestore && user ? query(collection(firestore, 'users')) : null),
+    [firestore, user]
   );
   const { data: players, isLoading: isLoadingPlayers } = useCollection<Player>(playersQuery);
 
   const finesQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'penalties')) : null),
-    [firestore]
+    () => (firestore && user ? query(collection(firestore, 'penalties')) : null),
+    [firestore, user]
   );
   const { data: fines, isLoading: isLoadingFines } = useCollection<Fine>(finesQuery);
 
   const predefinedFinesQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'predefinedFines')) : null),
-    [firestore]
+    () => (firestore && user ? query(collection(firestore, 'predefinedFines')) : null),
+    [firestore, user]
   );
   const { data: predefinedFines, isLoading: isLoadingPredefinedFines } = useCollection<PredefinedFine>(predefinedFinesQuery);
 
@@ -83,7 +84,7 @@ export default function DashboardPage() {
     console.log('New fine added:', newFine);
   };
 
-  const isLoading = isLoadingPlayers || isLoadingFines || isLoadingPredefinedFines;
+  const isLoading = isUserLoading || isLoadingPlayers || isLoadingFines || isLoadingPredefinedFines;
 
   return (
     <>

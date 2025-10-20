@@ -19,20 +19,22 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import { Player } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PlayersPage() {
   const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
 
   const playersQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'users')) : null),
-    [firestore]
+    () => (firestore && user ? query(collection(firestore, 'users')) : null),
+    [firestore, user]
   );
   
   const { data: players, isLoading } = useCollection<Player>(playersQuery);
+  const isLoadingAll = isUserLoading || isLoading;
 
   // Helper to calculate balance for display
   const calculateBalance = (player: Player) => {
@@ -65,7 +67,7 @@ export default function PlayersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading && (
+                {isLoadingAll && (
                   <>
                     {[...Array(5)].map((_, i) => (
                       <TableRow key={i}>
