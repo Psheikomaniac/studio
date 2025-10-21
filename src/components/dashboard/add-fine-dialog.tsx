@@ -30,13 +30,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronsUpDown, Loader2, Sparkles, UserPlus } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { cn } from "@/lib/utils";
+import { Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getFineSuggestion } from "@/lib/actions";
 import type { Player, PredefinedFine } from "@/lib/types";
+import { PlayerMultiSelect } from "./player-multi-select";
 
 const fineSchema = z.object({
   playerIds: z.array(z.string()).min(1, "Please select at least one player."),
@@ -154,57 +152,13 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Players</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className={cn(
-                            "w-full justify-between",
-                            !field.value?.length && "text-muted-foreground"
-                          )}
-                        >
-                          <div className="flex gap-1 items-center">
-                            <UserPlus className="h-4 w-4" />
-                            {field.value?.length > 0
-                              ? `${field.value.length} player(s) selected`
-                              : "Select players"}
-                          </div>
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command>
-                        <CommandInput placeholder="Search players..." />
-                        <CommandList>
-                          <CommandEmpty>No players found.</CommandEmpty>
-                          <CommandGroup>
-                            {players.map((player) => (
-                              <CommandItem
-                                key={player.id}
-                                onSelect={() => {
-                                  const selected = field.value.includes(player.id)
-                                    ? field.value.filter((id) => id !== player.id)
-                                    : [...field.value, player.id];
-                                  form.setValue("playerIds", selected, { shouldValidate: true });
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    field.value.includes(player.id) ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                {player.name} ({player.nickname})
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <FormControl>
+                    <PlayerMultiSelect
+                      players={players}
+                      value={field.value}
+                      onChange={(ids) => form.setValue("playerIds", ids, { shouldValidate: true })}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
