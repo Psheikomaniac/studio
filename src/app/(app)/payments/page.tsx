@@ -5,15 +5,73 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, MoreHorizontal, PlusCircle, CreditCard } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { Payment, Player } from "@/lib/types";
 import { payments as staticPayments, players as staticPlayers } from '@/lib/static-data';
+import { useToast } from "@/hooks/use-toast";
+import { AddEditPaymentDialog } from '@/components/payments/add-edit-payment-dialog';
+import { DeletePaymentDialog } from '@/components/payments/delete-payment-dialog';
 
 export default function PaymentsPage() {
-  const [payments] = useState<Payment[]>(staticPayments);
+  const [payments, setPayments] = useState<Payment[]>(staticPayments);
   const [players] = useState<Player[]>(staticPlayers);
+  const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const { toast } = useToast();
 
   const getPlayerName = (id: string) => players?.find(p => p.id === id)?.name || 'Unknown';
+
+  const handleAddClick = () => {
+    setSelectedPayment(null);
+    setAddEditDialogOpen(true);
+  };
+
+  const handleEditClick = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setAddEditDialogOpen(true);
+  };
+  
+  const handleDeleteClick = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleSavePayment = (paymentData: Omit<Payment, 'id' | 'paid' | 'paidAt' | 'date'> & { id?: string }) => {
+    if (selectedPayment) {
+      // Edit mode
+      setPayments(payments.map(p => p.id === selectedPayment.id ? { ...p, ...paymentData } : p));
+      toast({ title: "Payment Updated", description: `${paymentData.reason} has been updated.` });
+    } else {
+      // Add mode
+      const newPayment: Payment = {
+        id: `payment-${Date.now()}`,
+        ...paymentData,
+        date: new Date().toISOString(),
+        paid: false,
+      };
+      setPayments([...payments, newPayment]);
+      toast({ title: "Payment Added", description: `${newPayment.reason} has been added.` });
+    }
+    setAddEditDialogOpen(false);
+  };
+
+  const handleMarkAsPaid = (paymentId: string) => {
+    setPayments(payments.map(p => p.id === paymentId ? { ...p, paid: true, paidAt: new Date().toISOString() } : p));
+    toast({ title: "Payment Paid", description: "The payment has been marked as paid." });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedPayment) {
+      setPayments(payments.filter(p => p.id !== selectedPayment.id));
+      toast({ variant: "destructive", title: "Payment Deleted", description: "The payment has been removed." });
+      setDeleteDialogOpen(false);
+      setSelectedPayment(null);
+    }
+  };
+
 
   return (
     <>
@@ -21,6 +79,10 @@ export default function PaymentsPage() {
         <div className="grid gap-4">
            <div className="flex items-center justify-between">
             <h1 className="font-headline text-3xl font-bold">One-Time Payments</h1>
+            <Button onClick={handleAddClick}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Payment
+            </Button>
           </div>
           <Card>
             <CardHeader>
@@ -35,6 +97,7 @@ export default function PaymentsPage() {
                     <TableHead className="text-right">Amount</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead><span className="sr-only">Actions</span></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -57,6 +120,27 @@ export default function PaymentsPage() {
                           </Badge>
                         )}
                       </TableCell>
+                       <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button aria-haspopup="true" size="icon" variant="ghost">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Toggle menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                               {!payment.paid && (
+                                <DropdownMenuItem onClick={() => handleMarkAsPaid(payment.id)}>
+                                  <CreditCard className="mr-2 h-4 w-4" />
+                                  Mark as paid
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem onClick={() => handleEditClick(payment)}>Edit</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDeleteClick(payment)} className="text-destructive">Delete</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -70,6 +154,20 @@ export default function PaymentsPage() {
           </Card>
         </div>
       </main>
+      
+      <AddEditPaymentDialog
+        isOpen={isAddEditDialogOpen}
+        setOpen={setAddEditDialogOpen}
+        onSave={handleSavePayment}
+        payment={selectedPayment}
+        players={players}
+      />
+      <DeletePaymentDialog
+        isOpen={isDeleteDialogOpen}
+        setOpen={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        paymentReason={selectedPayment?.reason}
+      />
     </>
   );
 }
