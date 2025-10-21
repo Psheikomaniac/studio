@@ -181,18 +181,20 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               )}
             />
             
-            <FormField
+             <FormField
               control={form.control}
               name="reason"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Reason</FormLabel>
-                  <Select onValueChange={(value) => handlePredefinedFineChange(value)} defaultValue="">
+                  <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      handlePredefinedFineChange(value);
+                  }} value={field.value}>
                     <FormControl>
-                      <Input
-                        placeholder="Select or type a custom reason..."
-                        {...field}
-                      />
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a predefined fine..." />
+                        </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {predefinedFines.map((fine, i) => (
@@ -229,3 +231,5 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     </Dialog>
   );
 }
+
+    
