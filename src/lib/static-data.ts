@@ -1,5 +1,6 @@
 
-import type { Player, Fine, PredefinedFine, Payment, Beverage } from './types';
+
+import type { Player, Fine, PredefinedFine, Payment, Beverage, Transaction } from './types';
 
 export const players: Player[] = [
   {
@@ -149,4 +150,22 @@ export const beverages: Beverage[] = [
     { id: "bev3", name: "Beer (Wheat)", price: 1.80 },
     { id: "bev4", name: "Soft Drink (Cola)", price: 1.20 },
     { id: "bev5", name: "Soft Drink (Orange)", price: 1.20 },
+];
+
+export const transactions: Transaction[] = [
+    // Fines
+    { id: "trx1", userId: "1", amount: -5.00, description: "Late for training", date: "2024-05-10T20:30:00Z", relatedFineId: "fine1" },
+    { id: "trx2", userId: "2", amount: -10.00, description: "Forgot equipment", date: "2024-05-10T20:31:00Z", relatedFineId: "fine2" },
+    { id: "trx3", userId: "1", amount: -7.50, description: "Yellow card (dissent)", date: "2024-05-12T17:00:00Z", relatedFineId: "fine3" },
+    { id: "trx4", userId: "4", amount: -15.00, description: "Late for game", date: "2024-04-28T16:00:00Z", relatedFineId: "fine4" },
+    { id: "trx5", userId: "5", amount: -25.00, description: "Forgot to pay team fees", date: "2024-05-02T10:00:00Z", relatedFineId: "fine5" },
+    
+    // Payments (credit to the user's fine account)
+    { id: "trx6", userId: "2", amount: 10.00, description: "Paid: Forgot equipment", date: "2024-05-15T12:00:00Z" },
+    { id: "trx7", userId: "4", amount: 15.00, description: "Paid: Late for game", date: "2024-05-01T18:00:00Z" },
+
+    // Beverages (debit)
+    { id: "trx8", userId: "1", amount: -1.50, description: "Beer (Pilsner)", date: "2024-05-11T21:00:00Z", relatedBeverageId: "bev2" },
+    { id: "trx9", userId: "3", amount: -1.80, description: "Beer (Wheat)", date: "2024-05-11T21:05:00Z", relatedBeverageId: "bev3" },
+    { id: "trx10", userId: "1", amount: -1.50, description: "Beer (Pilsner)", date: "2024-05-11T21:30:00Z", relatedBeverageId: "bev2" },
 ];

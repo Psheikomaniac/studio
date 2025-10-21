@@ -1,4 +1,5 @@
 
+
 export interface Player {
   id: string;
   name: string;
@@ -47,11 +48,13 @@ export interface Beverage {
 
 export interface Transaction {
   id: string;
-  playerId: string;
-  change: number; // Positive for credit, negative for debit
-  reason: string;
-  timestamp: string; // ISO string
+  userId: string;
+  amount: number; // Positive for credit, negative for debit
+  description: string;
+  date: string; // ISO string
   relatedFineId?: string;
+  relatedPaymentId?: string;
+  relatedBeverageId?: string;
 }
 
 export interface AuditLog {

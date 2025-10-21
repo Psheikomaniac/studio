@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -16,6 +17,7 @@ const navItems = [
   { href: "/fines", label: "Fines", icon: Icons.Fines },
   { href: "/payments", label: "Payments", icon: Icons.Payments },
   { href: "/beverages", label: "Beverages", icon: Icons.Beverages },
+  { href: "/transactions", label: "Transactions", icon: Icons.Transactions },
   { href: "/settings", label: "Settings", icon: Icons.Settings },
 ];
 
@@ -28,7 +30,7 @@ export function MainNav() {
         <SidebarMenuItem key={item.href}>
           <SidebarMenuButton
             asChild
-            isActive={pathname === item.href}
+            isActive={pathname.startsWith(item.href)}
             className="justify-start"
             tooltip={item.label}
           >
