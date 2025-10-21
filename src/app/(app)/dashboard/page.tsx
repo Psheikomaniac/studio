@@ -4,23 +4,20 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search } from 'lucide-react';
-import { AddFineDialog } from '@/components/dashboard/add-fine-dialog';
+import { Search } from 'lucide-react';
 import PlayerGrid from '@/components/dashboard/player-grid';
-import type { Player, Fine, PredefinedFine } from '@/lib/types';
+import type { Player, Fine } from '@/lib/types';
 import { Stats } from '@/components/dashboard/stats';
 import { DashboardCharts } from '@/components/dashboard/charts';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { players as staticPlayers, fines as staticFines, predefinedFines as staticPredefinedFines } from '@/lib/static-data';
+import { players as staticPlayers, fines as staticFines } from '@/lib/static-data';
 
 export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'debt' | 'credit'>('all');
-  const [isAddFineOpen, setAddFineOpen] = useState(false);
 
   const players = staticPlayers;
   const fines = staticFines;
-  const predefinedFines = staticPredefinedFines;
 
   const filteredPlayers = players.filter((player) => {
     const nameMatch = player.name ? player.name.toLowerCase().includes(searchQuery.toLowerCase()) : false;
@@ -32,11 +29,6 @@ export default function DashboardPage() {
 
     return matchesSearch;
   });
-
-
-  const handleFineAdded = (newFine: any) => {
-    console.log('New fine added:', newFine);
-  };
 
   return (
     <>
@@ -56,13 +48,6 @@ export default function DashboardPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button
-            onClick={() => setAddFineOpen(true)}
-            className="bg-accent hover:bg-accent/90 text-accent-foreground"
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Fine
-          </Button>
         </header>
 
         <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -79,13 +64,6 @@ export default function DashboardPage() {
             <DashboardCharts fines={fines} />
         </div>
       </main>
-      <AddFineDialog
-        isOpen={isAddFineOpen}
-        setOpen={setAddFineOpen}
-        players={players}
-        predefinedFines={predefinedFines}
-        onFineAdded={handleFineAdded}
-      />
     </>
   );
 }

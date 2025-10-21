@@ -4,7 +4,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
 import { PredefinedFine } from "@/lib/types";
 import { predefinedFines as staticPredefinedFines } from "@/lib/static-data";
 
@@ -22,10 +21,6 @@ export default function SettingsPage() {
               <CardTitle>Predefined Fines</CardTitle>
               <CardDescription>Manage the standard fines for your team.</CardDescription>
             </div>
-            <Button size="sm">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Fine
-            </Button>
           </CardHeader>
           <CardContent>
             <Table>
