@@ -36,8 +36,6 @@ import { useToast } from "@/hooks/use-toast";
 import type { Player, PredefinedFine } from "@/lib/types";
 import { PlayerMultiSelect } from "./player-multi-select";
 
-import { getFineSuggestion } from "@/lib/actions";
-
 
 const fineSchema = z.object({
   playerIds: z.array(z.string()).min(1, "Please select at least one player."),
@@ -122,11 +120,13 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     }
   };
 
-  const handlePredefinedFineChange = (reason: string) => {
-    const fine = predefinedFines.find(f => f.reason === reason);
+  const handlePredefinedFineChange = (value: string) => {
+    const fine = predefinedFines.find(f => f.reason === value);
     if (fine) {
       form.setValue("reason", fine.reason, { shouldValidate: true });
       form.setValue("amount", fine.amount, { shouldValidate: true });
+    } else {
+        form.setValue("reason", value, { shouldValidate: true });
     }
   };
 
@@ -136,7 +136,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
         <DialogHeader>
           <DialogTitle className="font-headline">Assign a New Fine</DialogTitle>
           <DialogDescription>
-            Select a player and a reason to assign a fine. Use the AI helper for quick suggestions.
+            Select player(s) and a reason to assign a fine. Use the AI helper for quick suggestions.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -148,7 +148,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
                 <FormItem>
                   <FormLabel>Transgression Description (for AI)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="e.g., 'Alex was late for training again...'" {...field} />
+                    <Textarea placeholder="e.g., 'Alex and Ben were late for training again...'" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -182,31 +182,28 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
             />
             
             <FormField
-              control={form.control}
-              name="reason"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Reason</FormLabel>
-                   <Select onValueChange={(value) => {
-                      field.onChange(value);
-                      handlePredefinedFineChange(value);
-                  }} value={field.value}>
-                    <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a predefined fine..." />
-                        </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {predefinedFines.map((fine, i) => (
-                        <SelectItem key={i} value={fine.reason}>
-                          {fine.reason} (€{fine.amount.toFixed(2)})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+                control={form.control}
+                name="reason"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Reason</FormLabel>
+                        <Select onValueChange={handlePredefinedFineChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select or type a reason..." />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {predefinedFines.map((fine, i) => (
+                                    <SelectItem key={i} value={fine.reason}>
+                                        {fine.reason} (€{fine.amount.toFixed(2)})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                )}
             />
 
             <FormField
@@ -231,5 +228,3 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     </Dialog>
   );
 }
-
-    
