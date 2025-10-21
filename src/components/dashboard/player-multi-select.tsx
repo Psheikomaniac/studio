@@ -44,7 +44,11 @@ export function PlayerMultiSelect({ players, value, onChange, placeholder = "Sel
             <CommandEmpty>No players found.</CommandEmpty>
             <CommandGroup>
               {players.map((player) => (
-                <CommandItem key={player.id} onSelect={() => toggle(player.id)}>
+                <CommandItem
+                  key={player.id}
+                  value={`${player.name} ${player.nickname}`}
+                  onSelect={() => toggle(player.id)}
+                >
                   <Check className={cn("mr-2 h-4 w-4", value.includes(player.id) ? "opacity-100" : "opacity-0")} />
                   {player.name} ({player.nickname})
                 </CommandItem>
