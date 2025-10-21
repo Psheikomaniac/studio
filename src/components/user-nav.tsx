@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,20 +12,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuth, useUser } from '@/firebase';
-import { signOut } from 'firebase/auth';
 import { CreditCard, LogOut, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export function UserNav() {
-  const { user } = useUser();
-  const auth = useAuth();
   const router = useRouter();
 
-  const handleSignOut = async () => {
-    await signOut(auth);
-    router.push('/login');
+  // Mock user data since Firebase is removed
+  const user = {
+    displayName: 'Kassenwart',
+    email: 'treasurer@team.com',
+    photoURL: 'https://picsum.photos/seed/avatar1/100/100',
+  };
+
+  const handleSignOut = () => {
+    // In a real app with auth, this would sign the user out.
+    // For now, we can just log to console and simulate a redirect.
+    console.log("User signed out.");
+    // No login page to redirect to, so we can just stay here.
   };
 
   return (
@@ -33,7 +39,7 @@ export function UserNav() {
         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
           <Avatar className="h-9 w-9">
             <AvatarImage
-              src={user?.photoURL || 'https://picsum.photos/seed/avatar1/100/100'}
+              src={user?.photoURL || ''}
               alt={user?.displayName || 'User'}
               data-ai-hint="person portrait"
             />
@@ -45,10 +51,10 @@ export function UserNav() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {user?.displayName || 'Kassenwart'}
+              {user?.displayName || ''}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user?.email || 'treasurer@team.com'}
+              {user?.email || ''}
             </p>
           </div>
         </DropdownMenuLabel>

@@ -1,22 +1,12 @@
 
 "use server";
 
-import { suggestFinesFromDescription } from "@/ai/flows/suggest-fines-from-description";
-import { collection, getDocs, getFirestore } from "firebase/firestore";
-import { initializeFirebase, getSdks } from "@/firebase/index";
-import { Player } from "./types";
-
+import { players as staticPlayers } from './static-data';
+import { suggestFinesFromDescription as suggestFinesFromDescriptionAI } from "@/ai/flows/suggest-fines-from-description";
 
 async function getPlayers() {
-  // This is a server-side action, so we need to initialize firebase admin here
-  // in a real app this would be initialized once.
-  const { firestore } = getSdks(initializeFirebase().firebaseApp);
-  const playersSnapshot = await getDocs(collection(firestore, "users"));
-  const players: Player[] = [];
-  playersSnapshot.forEach((doc) => {
-    players.push({ id: doc.id, ...doc.data() } as Player);
-  });
-  return players;
+  // We are using static data now
+  return staticPlayers;
 }
 
 export async function getFineSuggestion(description: string) {
@@ -26,9 +16,10 @@ export async function getFineSuggestion(description: string) {
 
   try {
     const players = await getPlayers();
-    const result = await suggestFinesFromDescription({ description });
+    // The AI flow can still be used, it doesn't depend on Firebase directly
+    const result = await suggestFinesFromDescriptionAI({ description });
 
-    // Match suggested player names with actual player objects
+    // Match suggested player names with actual player objects from static data
     const suggestedPlayersData = result.suggestedPlayers
       .map(name => players.find(p => p.name === name || p.nickname === name))
       .filter(p => p !== undefined) as { id: string; name: string }[];

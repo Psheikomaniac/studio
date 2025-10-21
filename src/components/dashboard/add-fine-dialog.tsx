@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -32,9 +33,20 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getFineSuggestion } from "@/lib/actions";
 import type { Player, PredefinedFine } from "@/lib/types";
 import { PlayerMultiSelect } from "./player-multi-select";
+
+// Note: getFineSuggestion is now a mock function, as server actions with AI are removed.
+const getFineSuggestion = async (description: string): Promise<any> => {
+  console.log("Mock AI suggestion for:", description);
+  // In a real scenario, you might have a client-side mock or disable this.
+  // For now, it will just show a loading state and then resolve.
+  return new Promise(resolve => setTimeout(() => resolve({
+    suggestedReason: "Late for training",
+    suggestedPlayers: [{ id: "1", name: "Alex" }]
+  }), 1000));
+}
+
 
 const fineSchema = z.object({
   playerIds: z.array(z.string()).min(1, "Please select at least one player."),
@@ -95,7 +107,11 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
       toast({ variant: "destructive", title: "AI Error", description: result.error });
     } else if (result.suggestedReason && result.suggestedPlayers) {
       form.setValue("reason", result.suggestedReason, { shouldValidate: true });
-      form.setValue("playerIds", result.suggestedPlayers.map(p => p.id), { shouldValidate: true });
+      const matchedPlayerIds = result.suggestedPlayers
+        .map((suggestedPlayer: { name: string; }) => players.find(p => p.name === suggestedPlayer.name)?.id)
+        .filter((id: string | undefined): id is string => !!id);
+      
+      form.setValue("playerIds", matchedPlayerIds, { shouldValidate: true });
       toast({
         title: "AI Suggestion Applied!",
         description: "Reason and players have been pre-filled.",

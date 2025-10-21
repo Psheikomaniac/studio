@@ -1,9 +1,10 @@
+
 export interface Player {
   id: string;
   name: string;
   nickname: string;
   photoUrl: string;
-  balance: number; // This will be calculated from penalties
+  balance: number;
   email?: string;
   phone?: string;
   totalUnpaidPenalties: number;

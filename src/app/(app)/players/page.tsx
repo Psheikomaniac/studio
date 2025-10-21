@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -19,27 +20,11 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query } from 'firebase/firestore';
 import { Player } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
+import { players as staticPlayers } from '@/lib/static-data';
 
 export default function PlayersPage() {
-  const firestore = useFirestore();
-  const { user, isUserLoading } = useUser();
-
-  const playersQuery = useMemoFirebase(
-    () => (firestore && user ? query(collection(firestore, 'users')) : null),
-    [firestore, user]
-  );
-  
-  const { data: players, isLoading } = useCollection<Player>(playersQuery);
-  const isLoadingAll = isUserLoading || isLoading;
-
-  // Helper to calculate balance for display
-  const calculateBalance = (player: Player) => {
-    return (player.totalPaidPenalties || 0) - (player.totalUnpaidPenalties || 0);
-  }
+  const players = staticPlayers;
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -67,33 +52,8 @@ export default function PlayersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoadingAll && (
-                  <>
-                    {[...Array(5)].map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="hidden sm:table-cell">
-                          <Skeleton className="h-10 w-10 rounded-full" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-32" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-24" />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Skeleton className="h-4 w-16 ml-auto" />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex justify-end">
-                            <Skeleton className="h-8 w-8" />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </>
-                )}
-                {!isLoading && players?.map((player) => {
-                  const balance = calculateBalance(player);
+                {players?.map((player) => {
+                  const balance = player.balance;
                   return (
                     <TableRow key={player.id}>
                       <TableCell className="hidden sm:table-cell">
@@ -140,7 +100,7 @@ export default function PlayersPage() {
                 })}
               </TableBody>
             </Table>
-             {!isLoading && players?.length === 0 && (
+             {players?.length === 0 && (
                 <div className="text-center p-8 text-muted-foreground">
                     No players found. You might need to add some.
                 </div>
