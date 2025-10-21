@@ -46,6 +46,7 @@ const getFineSuggestion = async (description: string): Promise<any> => {
     suggestedPlayers: [{ id: "1", name: "Alex" }]
   }), 1000));
 }
+import { getFineSuggestion } from "@/lib/actions";
 
 
 const fineSchema = z.object({
@@ -108,7 +109,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     } else if (result.suggestedReason && result.suggestedPlayers) {
       form.setValue("reason", result.suggestedReason, { shouldValidate: true });
       const matchedPlayerIds = result.suggestedPlayers
-        .map((suggestedPlayer: { name: string; }) => players.find(p => p.name === suggestedPlayer.name)?.id)
+        .map((suggestedPlayer: { id: string; name: string; }) => players.find(p => p.id === suggestedPlayer.id)?.id)
         .filter((id: string | undefined): id is string => !!id);
       
       form.setValue("playerIds", matchedPlayerIds, { shouldValidate: true });
@@ -186,19 +187,21 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Reason</FormLabel>
-                  <Select onValueChange={handlePredefinedFineChange} defaultValue="">
+                  <Select onValueChange={(value) => handlePredefinedFineChange(value)} defaultValue="">
                     <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a predefined fine or type a custom one" />
-                        </SelectTrigger>
+                      <Input
+                        placeholder="Select or type a custom reason..."
+                        {...field}
+                      />
                     </FormControl>
                     <SelectContent>
                       {predefinedFines.map((fine, i) => (
-                        <SelectItem key={i} value={fine.reason}>{fine.reason}</SelectItem>
+                        <SelectItem key={i} value={fine.reason}>
+                          {fine.reason}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Input placeholder="Or type a custom reason..." {...field} className="mt-2" />
                   <FormMessage />
                 </FormItem>
               )}
