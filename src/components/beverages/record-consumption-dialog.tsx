@@ -28,14 +28,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronsUpDown, UserPlus } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { cn } from "@/lib/utils";
 import type { Player, Beverage } from "@/lib/types";
+import { useEffect } from "react";
 
 const consumptionSchema = z.object({
-  playerIds: z.array(z.string()).min(1, "Please select at least one player."),
+  playerId: z.string().min(1, "Please select a player."),
   beverageId: z.string().min(1, "Please select a beverage."),
 });
 
@@ -44,21 +41,29 @@ type RecordConsumptionDialogProps = {
   setOpen: (open: boolean) => void;
   players: Player[];
   beverages: Beverage[];
-  onRecord: (data: z.infer<typeof consumptionSchema>) => void;
+  onRecord: (data: { playerIds: string[], beverageId: string }) => void;
 };
 
 export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, onRecord }: RecordConsumptionDialogProps) {
   const form = useForm<z.infer<typeof consumptionSchema>>({
     resolver: zodResolver(consumptionSchema),
     defaultValues: {
-      playerIds: [],
+      playerId: "",
       beverageId: "",
     },
   });
 
+  useEffect(() => {
+    if (isOpen) {
+        form.reset({
+            playerId: "",
+            beverageId: "",
+        })
+    }
+  }, [isOpen, form]);
+
   const onSubmit = (values: z.infer<typeof consumptionSchema>) => {
-    onRecord(values);
-    form.reset();
+    onRecord({ playerIds: [values.playerId], beverageId: values.beverageId });
     setOpen(false);
   };
 
@@ -75,61 +80,24 @@ export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, o
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
             <FormField
               control={form.control}
-              name="playerIds"
+              name="playerId"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Player(s)</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className={cn(
-                            "w-full justify-between",
-                            !field.value?.length && "text-muted-foreground"
-                          )}
-                        >
-                          <div className="flex gap-1 items-center">
-                            <UserPlus className="h-4 w-4" />
-                            {field.value?.length > 0
-                              ? `${field.value.length} player(s) selected`
-                              : "Select players"}
-                          </div>
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command>
-                        <CommandInput placeholder="Search players..." />
-                        <CommandList>
-                          <CommandEmpty>No players found.</CommandEmpty>
-                          <CommandGroup>
-                            {players.map((player) => (
-                              <CommandItem
-                                key={player.id}
-                                onSelect={() => {
-                                  const selected = field.value.includes(player.id)
-                                    ? field.value.filter((id) => id !== player.id)
-                                    : [...field.value, player.id];
-                                  form.setValue("playerIds", selected, { shouldValidate: true });
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    field.value.includes(player.id) ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                {player.name}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                <FormItem>
+                  <FormLabel>Player</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a player" />
+                        </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {players.map((player) => (
+                        <SelectItem key={player.id} value={player.id}>
+                          {player.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

@@ -57,23 +57,27 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
   });
 
   useEffect(() => {
-    if (payment) {
-      form.reset({
-        userId: payment.userId,
-        reason: payment.reason,
-        amount: payment.amount,
-      });
-    } else {
+    if (isOpen) {
+      if (payment) {
         form.reset({
-            userId: '',
-            reason: '',
-            amount: 0,
+          userId: payment.userId,
+          reason: payment.reason,
+          amount: payment.amount,
         });
+      } else {
+          form.reset({
+              userId: '',
+              reason: '',
+              amount: 0,
+          });
+      }
     }
   }, [payment, form, isOpen]);
 
   const onSubmit = (values: z.infer<typeof paymentSchema>) => {
     onSave(values);
+    setOpen(false);
+    form.reset();
   };
   
   const dialogTitle = payment ? 'Edit Payment' : 'Add New Payment';
@@ -96,7 +100,7 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Player</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValuechange={field.onChange} defaultValue={field.value} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a player" />

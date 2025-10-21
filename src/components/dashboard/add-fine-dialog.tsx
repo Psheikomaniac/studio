@@ -50,7 +50,7 @@ import { getFineSuggestion } from "@/lib/actions";
 
 
 const fineSchema = z.object({
-  playerIds: z.array(z.string()).min(1, "Please select at least one player."),
+  playerId: z.string().min(1, "Please select at least one player."),
   reason: z.string().min(3, "Reason must be at least 3 characters long."),
   amount: z.coerce.number().positive("Amount must be a positive number."),
   aiDescription: z.string().optional(),
@@ -61,7 +61,7 @@ type AddFineDialogProps = {
   setOpen: (open: boolean) => void;
   players: Player[];
   predefinedFines: PredefinedFine[];
-  onFineAdded: (fine: z.infer<typeof fineSchema>) => void;
+  onFineAdded: (fine: any) => void;
 };
 
 export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFineAdded }: AddFineDialogProps) {
@@ -71,7 +71,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
   const form = useForm<z.infer<typeof fineSchema>>({
     resolver: zodResolver(fineSchema),
     defaultValues: {
-      playerIds: [],
+      playerId: "",
       reason: "",
       amount: 0,
       aiDescription: "",
@@ -79,7 +79,11 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
   });
 
   const onSubmit = (values: z.infer<typeof fineSchema>) => {
-    onFineAdded(values);
+    onFineAdded({
+      playerIds: [values.playerId], // Consistent with multi-add logic in parent
+      reason: values.reason,
+      amount: values.amount,
+    });
     form.reset();
     setOpen(false);
   };
@@ -103,14 +107,15 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
       toast({ variant: "destructive", title: "AI Error", description: result.error });
     } else if (result.suggestedReason && result.suggestedPlayers) {
       form.setValue("reason", result.suggestedReason, { shouldValidate: true });
-      const matchedPlayerIds = result.suggestedPlayers
-        .map((suggestedPlayer: { id: string; name: string; }) => players.find(p => p.id === suggestedPlayer.id)?.id)
-        .filter((id: string | undefined): id is string => !!id);
       
-      form.setValue("playerIds", matchedPlayerIds, { shouldValidate: true });
+      if(result.suggestedPlayers.length > 0) {
+        const firstPlayerId = result.suggestedPlayers[0].id;
+        form.setValue("playerId", firstPlayerId, { shouldValidate: true });
+      }
+
       toast({
         title: "AI Suggestion Applied!",
-        description: "Reason and players have been pre-filled.",
+        description: "Reason and player have been pre-filled.",
       });
     }
   };
@@ -129,7 +134,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
         <DialogHeader>
           <DialogTitle className="font-headline">Assign a New Fine</DialogTitle>
           <DialogDescription>
-            Select players and a reason to assign a fine. Use the AI helper for quick suggestions.
+            Select a player and a reason to assign a fine. Use the AI helper for quick suggestions.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -141,7 +146,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
                 <FormItem>
                   <FormLabel>Transgression Description (for AI)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="e.g., 'Alex and Ben were late for training again...'" {...field} />
+                    <Textarea placeholder="e.g., 'Alex was late for training again...'" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -160,61 +165,24 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
 
             <FormField
               control={form.control}
-              name="playerIds"
+              name="playerId"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Player(s)</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className={cn(
-                            "w-full justify-between",
-                            !field.value?.length && "text-muted-foreground"
-                          )}
-                        >
-                          <div className="flex gap-1 items-center">
-                            <UserPlus className="h-4 w-4" />
-                            {field.value?.length > 0
-                              ? `${field.value.length} player(s) selected`
-                              : "Select players"}
-                          </div>
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command>
-                        <CommandInput placeholder="Search players..." />
-                        <CommandList>
-                          <CommandEmpty>No players found.</CommandEmpty>
-                          <CommandGroup>
-                            {players.map((player) => (
-                              <CommandItem
-                                key={player.id}
-                                onSelect={() => {
-                                  const selected = field.value.includes(player.id)
-                                    ? field.value.filter((id) => id !== player.id)
-                                    : [...field.value, player.id];
-                                  form.setValue("playerIds", selected, { shouldValidate: true });
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    field.value.includes(player.id) ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                {player.name} ({player.nickname})
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                <FormItem>
+                  <FormLabel>Player</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a player" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {players?.map((player) => (
+                        <SelectItem key={player.id} value={player.id}>
+                          {player.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -226,13 +194,25 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Reason</FormLabel>
+                   <FormControl>
+                    <Input
+                      placeholder="Or type a custom reason..."
+                      {...field}
+                      onBlur={(e) => {
+                        field.onBlur();
+                        const fine = predefinedFines.find(f => f.reason.toLowerCase() === e.target.value.toLowerCase());
+                        if (fine) {
+                          form.setValue("amount", fine.amount, { shouldValidate: true });
+                        }
+                      }}
+                    />
+                  </FormControl>
                   <Select onValueChange={(value) => {
-                      field.onChange(value);
                       handlePredefinedFineChange(value);
-                  }} value={field.value}>
+                  }}>
                     <FormControl>
                         <SelectTrigger>
-                            <SelectValue placeholder="Select a predefined fine or type your own..." />
+                            <SelectValue placeholder="Select a predefined fine..." />
                         </SelectTrigger>
                     </FormControl>
                     <SelectContent>
