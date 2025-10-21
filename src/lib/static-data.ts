@@ -1,5 +1,5 @@
 
-import type { Player, Fine, PredefinedFine } from './types';
+import type { Player, Fine, PredefinedFine, Payment, Beverage } from './types';
 
 export const players: Player[] = [
   {
@@ -112,4 +112,41 @@ export const predefinedFines: PredefinedFine[] = [
     { id: "pf5", reason: "Red card", amount: 20.00 },
     { id: "pf6", reason: "Forgot equipment", amount: 2.50 },
     { id: "pf7", reason: "Phone in locker room", amount: 1.00 },
+];
+
+export const payments: Payment[] = [
+    {
+        id: "payment1",
+        userId: "1",
+        reason: "Team Fee 2024/25",
+        amount: 120.00,
+        date: "2024-08-01T10:00:00Z",
+        paid: true,
+        paidAt: "2024-08-05T14:30:00Z",
+    },
+    {
+        id: "payment2",
+        userId: "2",
+        reason: "Team Fee 2024/25",
+        amount: 120.00,
+        date: "2024-08-01T10:00:00Z",
+        paid: false,
+    },
+    {
+        id: "payment3",
+        userId: "3",
+        reason: "Contribution to Team Event",
+        amount: 25.00,
+        date: "2024-09-15T18:00:00Z",
+        paid: true,
+        paidAt: "2024-09-20T11:00:00Z",
+    }
+];
+
+export const beverages: Beverage[] = [
+    { id: "bev1", name: "Water", price: 1.00 },
+    { id: "bev2", name: "Beer (Pilsner)", price: 1.50 },
+    { id: "bev3", name: "Beer (Wheat)", price: 1.80 },
+    { id: "bev4", name: "Soft Drink (Cola)", price: 1.20 },
+    { id: "bev5", name: "Soft Drink (Orange)", price: 1.20 },
 ];

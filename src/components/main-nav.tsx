@@ -14,6 +14,8 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Icons.Dashboard },
   { href: "/players", label: "Players", icon: Icons.Players },
   { href: "/fines", label: "Fines", icon: Icons.Fines },
+  { href: "/payments", label: "Payments", icon: Icons.Payments },
+  { href: "/beverages", label: "Beverages", icon: Icons.Beverages },
   { href: "/settings", label: "Settings", icon: Icons.Settings },
 ];
 

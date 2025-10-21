@@ -29,6 +29,22 @@ export interface PredefinedFine {
   amount: number;
 }
 
+export interface Payment {
+  id: string;
+  userId: string;
+  reason: string;
+  amount: number;
+  date: string; // ISO string
+  paid: boolean;
+  paidAt?: string; // ISO string
+}
+
+export interface Beverage {
+    id: string;
+    name: string;
+    price: number;
+}
+
 export interface Transaction {
   id: string;
   playerId: string;

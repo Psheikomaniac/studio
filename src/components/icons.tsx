@@ -1,4 +1,4 @@
-import { Landmark, Users, ReceiptText, Settings, type LucideProps } from "lucide-react";
+import { Landmark, Users, ReceiptText, Settings, Beer, HandCoins, type LucideProps } from "lucide-react";
 
 export const Icons = {
   Logo: (props: LucideProps) => (
@@ -22,6 +22,8 @@ export const Icons = {
   Dashboard: Landmark,
   Players: Users,
   Fines: ReceiptText,
+  Payments: HandCoins,
+  Beverages: Beer,
   Settings: Settings,
   Google: () => (
     <svg className="size-5" viewBox="0 0 48 48">
