@@ -31,9 +31,10 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Payment, Player } from '@/lib/types';
+import { PlayerMultiSelect } from "@/components/dashboard/player-multi-select";
 
 const paymentSchema = z.object({
-  userId: z.string().min(1, "Please select a player."),
+  playerIds: z.array(z.string()).min(1, "Please select at least one player."),
   reason: z.string().min(3, 'Reason must be at least 3 characters long.'),
   amount: z.coerce.number().positive("Amount must be a positive number."),
 });
@@ -50,7 +51,7 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
   const form = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
-      userId: '',
+      playerIds: [],
       reason: '',
       amount: 0,
     },
@@ -60,13 +61,13 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
     if (isOpen) {
       if (payment) {
         form.reset({
-          userId: payment.userId,
+          playerIds: [payment.userId],
           reason: payment.reason,
           amount: payment.amount,
         });
       } else {
           form.reset({
-              userId: '',
+              playerIds: [],
               reason: '',
               amount: 0,
           });
@@ -75,7 +76,16 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
   }, [payment, form, isOpen]);
 
   const onSubmit = (values: z.infer<typeof paymentSchema>) => {
-    onSave(values);
+    if (payment) {
+      // Edit single payment: use the first selected player
+      const userId = values.playerIds[0] ?? '';
+      onSave({ userId, reason: values.reason, amount: values.amount });
+    } else {
+      // Create one payment per selected player
+      values.playerIds.forEach((userId) => {
+        onSave({ userId, reason: values.reason, amount: values.amount });
+      });
+    }
     setOpen(false);
     form.reset();
   };
@@ -96,24 +106,15 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
              <FormField
               control={form.control}
-              name="userId"
+              name="playerIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Player</FormLabel>
-                  <Select onValuechange={field.onChange} defaultValue={field.value} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a player" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {players.map((player) => (
-                        <SelectItem key={player.id} value={player.id}>
-                          {player.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Players</FormLabel>
+                  <PlayerMultiSelect
+                    players={players}
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
