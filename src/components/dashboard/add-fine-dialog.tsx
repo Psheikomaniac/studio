@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -50,7 +50,7 @@ import { getFineSuggestion } from "@/lib/actions";
 
 
 const fineSchema = z.object({
-  playerId: z.string().min(1, "Please select at least one player."),
+  playerId: z.string().min(1, "Please select a player."),
   reason: z.string().min(3, "Reason must be at least 3 characters long."),
   amount: z.coerce.number().positive("Amount must be a positive number."),
   aiDescription: z.string().optional(),
@@ -78,13 +78,23 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     },
   });
 
+   useEffect(() => {
+    if (isOpen) {
+      form.reset({
+        playerId: "",
+        reason: "",
+        amount: 0,
+        aiDescription: "",
+      });
+    }
+  }, [isOpen, form]);
+
   const onSubmit = (values: z.infer<typeof fineSchema>) => {
     onFineAdded({
-      playerIds: [values.playerId], // Consistent with multi-add logic in parent
+      playerIds: [values.playerId],
       reason: values.reason,
       amount: values.amount,
     });
-    form.reset();
     setOpen(false);
   };
 
@@ -109,8 +119,10 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
       form.setValue("reason", result.suggestedReason, { shouldValidate: true });
       
       if(result.suggestedPlayers.length > 0) {
-        const firstPlayerId = result.suggestedPlayers[0].id;
-        form.setValue("playerId", firstPlayerId, { shouldValidate: true });
+        const matchingPlayer = players.find(p => p.id === result.suggestedPlayers[0].id);
+        if (matchingPlayer) {
+            form.setValue("playerId", matchingPlayer.id, { shouldValidate: true });
+        }
       }
 
       toast({
@@ -169,7 +181,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Player</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a player" />
@@ -188,28 +200,16 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               )}
             />
             
-             <FormField
+            <FormField
               control={form.control}
               name="reason"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Reason</FormLabel>
-                   <FormControl>
-                    <Input
-                      placeholder="Or type a custom reason..."
-                      {...field}
-                      onBlur={(e) => {
-                        field.onBlur();
-                        const fine = predefinedFines.find(f => f.reason.toLowerCase() === e.target.value.toLowerCase());
-                        if (fine) {
-                          form.setValue("amount", fine.amount, { shouldValidate: true });
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <Select onValueChange={(value) => {
+                   <Select onValueChange={(value) => {
+                      field.onChange(value);
                       handlePredefinedFineChange(value);
-                  }}>
+                  }} value={field.value}>
                     <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a predefined fine..." />
@@ -250,3 +250,5 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     </Dialog>
   );
 }
+
+    
