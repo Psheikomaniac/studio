@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddEditBeverageDialog } from '@/components/beverages/add-edit-beverage-dialog';
 import { DeleteBeverageDialog } from '@/components/beverages/delete-beverage-dialog';
 import { RecordConsumptionDialog } from '@/components/beverages/record-consumption-dialog';
+import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 
 
 export default function BeveragesPage() {
@@ -197,7 +198,9 @@ export default function BeveragesPage() {
                                         <TableRow key={trx.id}>
                                             <TableCell>{players.find(p => p.id === trx.userId)?.name || 'Unknown'}</TableCell>
                                             <TableCell>{trx.description}</TableCell>
-                                            <TableCell>{new Date(trx.date).toLocaleString()}</TableCell>
+                                            <TableCell>
+                                                <SafeLocaleDate dateString={trx.date} options={{ hour: '2-digit', minute: '2-digit' }} />
+                                            </TableCell>
                                             <TableCell className="text-right text-destructive">-€{Math.abs(trx.amount).toFixed(2)}</TableCell>
                                         </TableRow>
                                 ))}

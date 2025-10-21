@@ -13,6 +13,7 @@ import { payments as staticPayments, players as staticPlayers } from '@/lib/stat
 import { useToast } from "@/hooks/use-toast";
 import { AddEditPaymentDialog } from '@/components/payments/add-edit-payment-dialog';
 import { DeletePaymentDialog } from '@/components/payments/delete-payment-dialog';
+import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>(staticPayments);
@@ -106,7 +107,9 @@ export default function PaymentsPage() {
                       <TableCell className="font-medium">{payment.reason}</TableCell>
                       <TableCell>{payment.userId ? getPlayerName(payment.userId) : 'N/A'}</TableCell>
                       <TableCell className="text-right">€{payment.amount.toFixed(2)}</TableCell>
-                      <TableCell>{new Date(payment.date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <SafeLocaleDate dateString={payment.date} />
+                      </TableCell>
                       <TableCell>
                         {payment.paid ? (
                           <Badge variant="outline" className="text-positive border-positive/50">

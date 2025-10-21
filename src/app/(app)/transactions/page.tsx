@@ -8,6 +8,7 @@ import { transactions as staticTransactions, players as staticPlayers } from '@/
 import type { Transaction, Player } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 
 export default function TransactionsPage() {
     const [transactions] = useState<Transaction[]>(staticTransactions);
@@ -43,7 +44,9 @@ export default function TransactionsPage() {
                                     <TableRow key={trx.id}>
                                         <TableCell>{getPlayerName(trx.userId)}</TableCell>
                                         <TableCell className="font-medium">{trx.description}</TableCell>
-                                        <TableCell>{new Date(trx.date).toLocaleString()}</TableCell>
+                                        <TableCell>
+                                            <SafeLocaleDate dateString={trx.date} options={{ hour: '2-digit', minute: '2-digit' }} />
+                                        </TableCell>
                                         <TableCell className={cn("text-right font-semibold flex items-center justify-end gap-1", trx.amount < 0 ? "text-destructive" : "text-positive")}>
                                             {trx.amount < 0 ? <ArrowDownCircle className="h-4 w-4"/> : <ArrowUpCircle className="h-4 w-4"/>}
                                             €{Math.abs(trx.amount).toFixed(2)}

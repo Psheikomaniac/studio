@@ -14,6 +14,7 @@ import { fines as staticFines, players as staticPlayers, predefinedFines as stat
 import { AddFineDialog } from '@/components/dashboard/add-fine-dialog';
 import { EditFineDialog } from '@/components/fines/edit-fine-dialog';
 import { DeleteFineDialog } from '@/components/fines/delete-fine-dialog';
+import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 
 export default function FinesPage() {
   const [fines, setFines] = useState<Fine[]>(staticFines);
@@ -111,7 +112,9 @@ export default function FinesPage() {
                       <TableCell className="font-medium">{fine.reason}</TableCell>
                       <TableCell>{fine.userId ? getPlayerName(fine.userId) : 'N/A'}</TableCell>
                       <TableCell className="text-right">€{fine.amount.toFixed(2)}</TableCell>
-                      <TableCell>{new Date(fine.date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <SafeLocaleDate dateString={fine.date} />
+                      </TableCell>
                       <TableCell>
                         {fine.paid ? (
                           <Badge variant="outline" className="text-positive border-positive/50">
