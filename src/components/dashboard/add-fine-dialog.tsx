@@ -36,21 +36,11 @@ import { useToast } from "@/hooks/use-toast";
 import type { Player, PredefinedFine } from "@/lib/types";
 import { PlayerMultiSelect } from "./player-multi-select";
 
-// Note: getFineSuggestion is now a mock function, as server actions with AI are removed.
-const getFineSuggestion = async (description: string): Promise<any> => {
-  console.log("Mock AI suggestion for:", description);
-  // In a real scenario, you might have a client-side mock or disable this.
-  // For now, it will just show a loading state and then resolve.
-  return new Promise(resolve => setTimeout(() => resolve({
-    suggestedReason: "Late for training",
-    suggestedPlayers: [{ id: "1", name: "Alex" }]
-  }), 1000));
-}
 import { getFineSuggestion } from "@/lib/actions";
 
 
 const fineSchema = z.object({
-  playerId: z.string().min(1, "Please select a player."),
+  playerIds: z.array(z.string()).min(1, "Please select at least one player."),
   reason: z.string().min(3, "Reason must be at least 3 characters long."),
   amount: z.coerce.number().positive("Amount must be a positive number."),
   aiDescription: z.string().optional(),
@@ -71,7 +61,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
   const form = useForm<z.infer<typeof fineSchema>>({
     resolver: zodResolver(fineSchema),
     defaultValues: {
-      playerId: "",
+      playerIds: [],
       reason: "",
       amount: 0,
       aiDescription: "",
@@ -81,7 +71,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
    useEffect(() => {
     if (isOpen) {
       form.reset({
-        playerId: "",
+        playerIds: [],
         reason: "",
         amount: 0,
         aiDescription: "",
@@ -91,7 +81,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
 
   const onSubmit = (values: z.infer<typeof fineSchema>) => {
     onFineAdded({
-      playerIds: [values.playerId],
+      playerIds: values.playerIds,
       reason: values.reason,
       amount: values.amount,
     });
@@ -118,16 +108,16 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     } else if (result.suggestedReason && result.suggestedPlayers) {
       form.setValue("reason", result.suggestedReason, { shouldValidate: true });
       
-      if(result.suggestedPlayers.length > 0) {
-        const matchingPlayer = players.find(p => p.id === result.suggestedPlayers[0].id);
-        if (matchingPlayer) {
-            form.setValue("playerId", matchingPlayer.id, { shouldValidate: true });
-        }
+      const matchedIds = result.suggestedPlayers
+        .map((sp: { id: string }) => players.find(p => p.id === sp.id)?.id)
+        .filter((id: string | undefined): id is string => !!id);
+      if (matchedIds.length > 0) {
+        form.setValue("playerIds", matchedIds, { shouldValidate: true });
       }
 
       toast({
         title: "AI Suggestion Applied!",
-        description: "Reason and player have been pre-filled.",
+        description: "Reason and players have been pre-filled.",
       });
     }
   };
@@ -177,24 +167,15 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
 
             <FormField
               control={form.control}
-              name="playerId"
+              name="playerIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Player</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a player" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {players?.map((player) => (
-                        <SelectItem key={player.id} value={player.id}>
-                          {player.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Players</FormLabel>
+                  <PlayerMultiSelect
+                    players={players}
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

@@ -30,9 +30,10 @@ import {
 } from "@/components/ui/select";
 import type { Player, Beverage } from "@/lib/types";
 import { useEffect } from "react";
+import { PlayerMultiSelect } from "@/components/dashboard/player-multi-select";
 
 const consumptionSchema = z.object({
-  playerId: z.string().min(1, "Please select a player."),
+  playerIds: z.array(z.string()).min(1, "Please select at least one player."),
   beverageId: z.string().min(1, "Please select a beverage."),
 });
 
@@ -48,7 +49,7 @@ export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, o
   const form = useForm<z.infer<typeof consumptionSchema>>({
     resolver: zodResolver(consumptionSchema),
     defaultValues: {
-      playerId: "",
+      playerIds: [],
       beverageId: "",
     },
   });
@@ -56,14 +57,14 @@ export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, o
   useEffect(() => {
     if (isOpen) {
         form.reset({
-            playerId: "",
+            playerIds: [],
             beverageId: "",
         })
     }
   }, [isOpen, form]);
 
   const onSubmit = (values: z.infer<typeof consumptionSchema>) => {
-    onRecord({ playerIds: [values.playerId], beverageId: values.beverageId });
+    onRecord({ playerIds: values.playerIds, beverageId: values.beverageId });
     setOpen(false);
   };
 
@@ -80,24 +81,15 @@ export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, o
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
             <FormField
               control={form.control}
-              name="playerId"
+              name="playerIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Player</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a player" />
-                        </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {players.map((player) => (
-                        <SelectItem key={player.id} value={player.id}>
-                          {player.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Players</FormLabel>
+                  <PlayerMultiSelect
+                    players={players}
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
