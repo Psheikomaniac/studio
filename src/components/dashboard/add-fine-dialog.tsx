@@ -79,12 +79,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
   });
 
   const onSubmit = (values: z.infer<typeof fineSchema>) => {
-    console.log(values);
     onFineAdded(values);
-    toast({
-      title: "Fine Assigned!",
-      description: `${values.reason} for €${values.amount.toFixed(2)} was assigned.`,
-    });
     form.reset();
     setOpen(false);
   };
@@ -168,14 +163,58 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               name="playerIds"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Players</FormLabel>
-                  <FormControl>
-                    <PlayerMultiSelect
-                      players={players}
-                      value={field.value}
-                      onChange={(ids) => form.setValue("playerIds", ids, { shouldValidate: true })}
-                    />
-                  </FormControl>
+                  <FormLabel>Player(s)</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value?.length && "text-muted-foreground"
+                          )}
+                        >
+                          <div className="flex gap-1 items-center">
+                            <UserPlus className="h-4 w-4" />
+                            {field.value?.length > 0
+                              ? `${field.value.length} player(s) selected`
+                              : "Select players"}
+                          </div>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search players..." />
+                        <CommandList>
+                          <CommandEmpty>No players found.</CommandEmpty>
+                          <CommandGroup>
+                            {players.map((player) => (
+                              <CommandItem
+                                key={player.id}
+                                onSelect={() => {
+                                  const selected = field.value.includes(player.id)
+                                    ? field.value.filter((id) => id !== player.id)
+                                    : [...field.value, player.id];
+                                  form.setValue("playerIds", selected, { shouldValidate: true });
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    field.value.includes(player.id) ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {player.name} ({player.nickname})
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
@@ -193,13 +232,13 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
                   }} value={field.value}>
                     <FormControl>
                         <SelectTrigger>
-                            <SelectValue placeholder="Select a predefined fine..." />
+                            <SelectValue placeholder="Select a predefined fine or type your own..." />
                         </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {predefinedFines.map((fine, i) => (
                         <SelectItem key={i} value={fine.reason}>
-                          {fine.reason}
+                          {fine.reason} (€{fine.amount.toFixed(2)})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -216,7 +255,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
                 <FormItem>
                   <FormLabel>Amount (€)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="5.00" {...field} />
+                    <Input type="number" step="0.01" placeholder="5.00" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -231,5 +270,3 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     </Dialog>
   );
 }
-
-    
