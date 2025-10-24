@@ -3,6 +3,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function SettingsPage() {
 
@@ -18,6 +20,22 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
              <p className="text-sm text-muted-foreground">Team settings will be available here.</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Data Import</CardTitle>
+            <CardDescription>
+              Upload existing data from a file. Please use a CSV file with the correct format.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="import-file">CSV File</Label>
+              <Input id="import-file" type="file" accept=".csv" />
+            </div>
+            <Button className="w-fit">Import Data</Button>
           </CardContent>
         </Card>
 
