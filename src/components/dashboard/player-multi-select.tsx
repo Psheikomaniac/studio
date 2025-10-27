@@ -38,7 +38,7 @@ export function PlayerMultiSelect({ players, value, onChange, placeholder = "Sel
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput placeholder="Search players..." />
           <CommandList>
             <CommandEmpty>No players found.</CommandEmpty>
@@ -46,7 +46,8 @@ export function PlayerMultiSelect({ players, value, onChange, placeholder = "Sel
               {players.map((player) => (
                 <CommandItem
                   key={player.id}
-                  value={`${player.name} ${player.nickname}`}
+                  value={player.id}
+                  keywords={[player.name, player.nickname]}
                   onSelect={() => toggle(player.id)}
                 >
                   <Check className={cn("mr-2 h-4 w-4", value.includes(player.id) ? "opacity-100" : "opacity-0")} />
