@@ -1,9 +1,116 @@
 'use client';
 
-import { firebaseConfig } from '@/firebase/config';
+import { firebaseConfig, enablePersistence as shouldEnablePersistence } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+import {
+  getFirestore,
+  enableIndexedDbPersistence,
+  enableMultiTabIndexedDbPersistence,
+  CACHE_SIZE_UNLIMITED
+} from 'firebase/firestore';
+import { getPerformance } from 'firebase/performance';
+import { getAnalytics, isSupported } from 'firebase/analytics';
+
+/**
+ * Checks if the current browser supports Firebase features
+ * @returns true if browser is compatible with Firebase
+ */
+function isBrowserCompatible(): boolean {
+  return typeof window !== 'undefined' &&
+         typeof navigator !== 'undefined' &&
+         'indexedDB' in window;
+}
+
+/**
+ * Enables Firestore offline persistence with IndexedDB
+ * Attempts multi-tab persistence first, falls back to single-tab if needed
+ * @param firestore - Firestore instance to enable persistence on
+ */
+async function enableFirestorePersistence(firestore: ReturnType<typeof getFirestore>) {
+  if (!shouldEnablePersistence || !isBrowserCompatible()) {
+    return;
+  }
+
+  try {
+    // Try to enable multi-tab persistence first
+    await enableMultiTabIndexedDbPersistence(firestore);
+    console.info('Firestore: Multi-tab persistence enabled');
+  } catch (err: any) {
+    if (err.code === 'failed-precondition') {
+      // Multiple tabs open, persistence can only be enabled in one tab at a time.
+      console.warn(
+        'Firestore: Failed to enable persistence - multiple tabs open. ' +
+        'Persistence is only enabled in the first tab.'
+      );
+
+      // Try single-tab persistence as fallback
+      try {
+        await enableIndexedDbPersistence(firestore, {
+          forceOwnership: false
+        });
+        console.info('Firestore: Single-tab persistence enabled');
+      } catch (singleTabErr: any) {
+        console.warn('Firestore: Failed to enable single-tab persistence', singleTabErr);
+      }
+    } else if (err.code === 'unimplemented') {
+      // The current browser doesn't support persistence
+      console.warn(
+        'Firestore: Persistence is not supported in this browser. ' +
+        'Data will not be cached offline.'
+      );
+    } else {
+      // Unexpected error
+      console.error('Firestore: Failed to enable persistence', err);
+    }
+  }
+}
+
+/**
+ * Initializes Firebase Performance Monitoring
+ * @param firebaseApp - Firebase app instance
+ * @returns Performance instance or null if not supported
+ */
+function initializePerformanceMonitoring(firebaseApp: FirebaseApp) {
+  try {
+    if (!isBrowserCompatible()) {
+      return null;
+    }
+
+    const perf = getPerformance(firebaseApp);
+    console.info('Firebase Performance Monitoring initialized');
+    return perf;
+  } catch (err) {
+    console.warn('Firebase Performance Monitoring could not be initialized', err);
+    return null;
+  }
+}
+
+/**
+ * Initializes Firebase Analytics
+ * @param firebaseApp - Firebase app instance
+ * @returns Analytics instance or null if not supported
+ */
+async function initializeAnalytics(firebaseApp: FirebaseApp) {
+  try {
+    if (!isBrowserCompatible()) {
+      return null;
+    }
+
+    const supported = await isSupported();
+    if (supported) {
+      const analytics = getAnalytics(firebaseApp);
+      console.info('Firebase Analytics initialized');
+      return analytics;
+    } else {
+      console.warn('Firebase Analytics is not supported in this environment');
+      return null;
+    }
+  } catch (err) {
+    console.warn('Firebase Analytics could not be initialized', err);
+    return null;
+  }
+}
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -33,10 +140,24 @@ export function initializeFirebase() {
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
+  const auth = getAuth(firebaseApp);
+  const firestore = getFirestore(firebaseApp);
+
+  // Enable persistence asynchronously (non-blocking)
+  enableFirestorePersistence(firestore).catch(err => {
+    console.error('Failed to initialize Firestore persistence', err);
+  });
+
+  // Initialize monitoring services asynchronously (non-blocking)
+  initializePerformanceMonitoring(firebaseApp);
+  initializeAnalytics(firebaseApp).catch(err => {
+    console.error('Failed to initialize Analytics', err);
+  });
+
   return {
     firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp)
+    auth,
+    firestore
   };
 }
 

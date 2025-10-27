@@ -1,135 +1,188 @@
 /**
- * @file Firebase Security Rules for the handball club app.
+ * @file Firebase Security Rules for balanceUp handball club app
+ * @updated 2025-10-27 - PRD-01 Firebase Infrastructure Setup
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for user profiles, penalties, and transactions.
- * Access to audit logs is restricted to administrators.
+ * - Team-wide read access for transparency (handball club team roster)
+ * - Write access restricted to admins (team managers/treasurers)
+ * - Top-level collections for better query performance
  *
  * Data Structure:
- * - /users/{userId}: Stores user profile information.
- * - /users/{userId}/penalties/{penaltyId}: Stores penalties associated with a specific user.
- * - /users/{userId}/transactions/{transactionId}: Stores transactions associated with a specific user.
- * - /audit_logs/{auditLogId}: Stores audit log entries.
- *
- * Key Security Decisions:
- * - Users can only access their own profile data, penalties, and transactions.
- * - Listing of users is not allowed.
- * - Audit logs are only accessible to administrators (admin role not yet implemented, so all access denied).
- *
- * Denormalization for Authorization:
- * - Penalties and transactions are nested under the user's document to ensure that accessing them doesn't
- *   require fetching the user document to validate ownership. The userId in the path is sufficient.
+ * - /users/{userId}: User profiles (players)
+ * - /fines/{fineId}: Top-level fines collection
+ * - /payments/{paymentId}: Top-level payments collection
+ * - /beverages/{beverageId}: Beverage catalog
+ * - /beverageConsumptions/{consumptionId}: Beverage consumption records
+ * - /dues/{dueId}: Team dues (season fees, events, etc.)
+ * - /duePayments/{paymentId}: Due payment records
+ * - /transactions/{transactionId}: Transaction history
+ * - /predefinedFines/{fineId}: Fine templates
+ * - /auditLogs/{logId}: Audit trail
+ * - /admins/{userId}: Admin role management
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * @description Allows users to read and write their own user profile data.
-     * @path /users/{userId}
-     * @allow (create, update, delete, get) if the user's UID matches the userId in the path.
-     * @deny (create, update, delete, get) if the user's UID does not match the userId in the path.
-     * @principle Enforces document ownership for all operations.
-     */
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      // Check if user exists in admins collection
+      // To create an admin: manually add document to /admins/{uid} in Firebase Console
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // ============================================
+    // USERS (Players)
+    // ============================================
+
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
+      // Team-wide read access (transparency for team roster)
+      allow get, list: if isSignedIn();
 
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
+      // Only owner or admin can create/update profile
+      allow create: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId) || isAdmin();
 
-      // Allow authenticated users to read and list users for app roster views.
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      // Mutations remain restricted to the owner of the document.
-      allow create: if isOwner(userId) && request.resource.data.id == request.auth.uid;
-      allow update: if isOwner(userId) && resource.data.id == request.resource.data.id;
-      allow delete: if isOwner(userId) && resource != null;
+      // Only admin can delete players
+      allow delete: if isAdmin();
     }
 
-    /**
-     * @description Allows users to read and write their own penalties.
-     * @path /users/{userId}/penalties/{penaltyId}
-     * @allow (create, update, delete, get, list) if the user's UID matches the userId in the path.
-     * @deny (create, update, delete, get, list) if the user's UID does not match the userId in the path.
-     * @principle Enforces document ownership for all operations.
-     */
-    match /users/{userId}/penalties/{penaltyId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
+    // ============================================
+    // FINES (Top-level collection)
+    // ============================================
 
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
+    match /fines/{fineId} {
+      // Team-wide read access (everyone can see fines)
+      allow get, list: if isSignedIn();
 
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isOwner(userId) && resource.data.userId == request.resource.data.userId && resource != null;
-      allow delete: if isOwner(userId) && resource != null;
+      // Only admins can create, update, or delete fines
+      allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Allows users to read and write their own transactions.
-     * @path /users/{userId}/transactions/{transactionId}
-     * @allow (create, update, delete, get, list) if the user's UID matches the userId in the path.
-     * @deny (create, update, delete, get, list) if the user's UID does not match the userId in the path.
-     * @principle Enforces document ownership for all operations.
-     */
-    match /users/{userId}/transactions/{transactionId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
+    // ============================================
+    // PAYMENTS (Top-level collection)
+    // ============================================
 
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
+    match /payments/{paymentId} {
+      // Team-wide read access
+      allow get, list: if isSignedIn();
 
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isOwner(userId) && resource.data.userId == request.resource.data.userId && resource != null;
-      allow delete: if isOwner(userId) && resource != null;
+      // Only admins can manage payments
+      allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Restricts access to audit logs to administrators. (Admin role not yet implemented).
-     * @path /audit_logs/{auditLogId}
-     * @allow No operations are allowed at the moment.
-     * @deny All operations are denied.
-     * @principle Restricts access to sensitive data to authorized personnel only.
-     */
-    match /audit_logs/{auditLogId} {
-      allow get: if false;
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+    // ============================================
+    // BEVERAGES (Catalog)
+    // ============================================
+
+    match /beverages/{beverageId} {
+      // Everyone can read the beverage catalog
+      allow get, list: if isSignedIn();
+
+      // Only admins can manage catalog
+      allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Top-level penalties collection used by the UI (read-only for authenticated users).
-     * NOTE: Writes are disallowed until admin role is implemented.
-     */
-    match /penalties/{penaltyId} {
-      function isSignedIn() { return request.auth != null; }
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create, update, delete: if false;
+    // ============================================
+    // BEVERAGE CONSUMPTIONS
+    // ============================================
+
+    match /beverageConsumptions/{consumptionId} {
+      // Team-wide read access
+      allow get, list: if isSignedIn();
+
+      // Only admins can manage consumption records
+      allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Predefined fines catalog (read-only for authenticated users).
-     * Used to populate UI selections.
-     */
+    // ============================================
+    // DUES (Team fees, events, etc.)
+    // ============================================
+
+    match /dues/{dueId} {
+      // Everyone can read dues
+      allow get, list: if isSignedIn();
+
+      // Only admins can create/update/delete dues
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // DUE PAYMENTS
+    // ============================================
+
+    match /duePayments/{paymentId} {
+      // Team-wide read access
+      allow get, list: if isSignedIn();
+
+      // Only admins can manage due payments
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // TRANSACTIONS (History/Ledger)
+    // ============================================
+
+    match /transactions/{transactionId} {
+      // Team-wide read access
+      allow get, list: if isSignedIn();
+
+      // Only admins can create transactions
+      allow create: if isAdmin();
+
+      // Transactions are immutable once created
+      allow update, delete: if false;
+    }
+
+    // ============================================
+    // PREDEFINED FINES (Templates)
+    // ============================================
+
     match /predefinedFines/{fineId} {
-      function isSignedIn() { return request.auth != null; }
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      // Everyone can read fine templates
+      allow get, list: if isSignedIn();
+
+      // Only admins can manage templates
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // AUDIT LOGS
+    // ============================================
+
+    match /auditLogs/{logId} {
+      // Only admins can read audit logs
+      allow get, list: if isAdmin();
+
+      // Only admins can create audit logs
+      allow create: if isAdmin();
+
+      // Audit logs are immutable
+      allow update, delete: if false;
+    }
+
+    // ============================================
+    // ADMIN MANAGEMENT
+    // ============================================
+
+    match /admins/{adminId} {
+      // Anyone can read who the admins are (transparency)
+      allow get, list: if isSignedIn();
+
+      // Admin role can only be managed via Firebase Console or Admin SDK
+      // No write access from client
       allow create, update, delete: if false;
     }
   }
