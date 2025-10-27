@@ -262,6 +262,74 @@ export default function MoneyPage() {
     });
   };
 
+  const handleToggleStatus = (transaction: UnifiedTransaction) => {
+    // Payment status can't be toggled (always paid)
+    if (transaction.type === 'payment') {
+      toast({
+        title: "Cannot Toggle",
+        description: "Payment status cannot be changed.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Exempt status can't be toggled
+    if (transaction.status === 'exempt') {
+      toast({
+        title: "Cannot Toggle",
+        description: "Exempt status cannot be changed to paid/unpaid.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newStatus = transaction.status === 'paid' ? 'unpaid' : 'paid';
+
+    // Update based on transaction type
+    switch (transaction.type) {
+      case 'fine':
+        setFines(fines.map(f =>
+          f.id === transaction.id
+            ? {
+                ...f,
+                paid: newStatus === 'paid',
+                paidAt: newStatus === 'paid' ? new Date().toISOString() : undefined
+              }
+            : f
+        ));
+        break;
+
+      case 'due':
+        setDuePayments(duePayments.map(dp =>
+          dp.id === transaction.id
+            ? {
+                ...dp,
+                paid: newStatus === 'paid',
+                paidAt: newStatus === 'paid' ? new Date().toISOString() : undefined
+              }
+            : dp
+        ));
+        break;
+
+      case 'beverage':
+        setBeverageConsumptions(beverageConsumptions.map(bc =>
+          bc.id === transaction.id
+            ? {
+                ...bc,
+                paid: newStatus === 'paid',
+                paidAt: newStatus === 'paid' ? new Date().toISOString() : undefined
+              }
+            : bc
+        ));
+        break;
+    }
+
+    toast({
+      title: "Status Updated",
+      description: `Transaction marked as ${newStatus}.`
+    });
+  };
+
   const clearFilters = () => {
     setSearchQuery('');
     setFilterType('all');
@@ -284,14 +352,47 @@ export default function MoneyPage() {
     }
   };
 
-  const getStatusBadge = (status: 'paid' | 'unpaid' | 'exempt') => {
-    switch (status) {
+  const getStatusBadge = (transaction: UnifiedTransaction) => {
+    const isClickable = transaction.type !== 'payment' && transaction.status !== 'exempt';
+    const baseClass = isClickable ? 'cursor-pointer hover:opacity-70 transition-opacity' : '';
+
+    const handleClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (isClickable) {
+        handleToggleStatus(transaction);
+      }
+    };
+
+    switch (transaction.status) {
       case 'paid':
-        return <Badge variant="outline" className="text-positive border-positive/50">Paid</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className={`text-positive border-positive/50 ${baseClass}`}
+            onClick={handleClick}
+          >
+            Paid
+          </Badge>
+        );
       case 'exempt':
-        return <Badge variant="outline" className="text-muted-foreground border-muted">Exempt</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="text-muted-foreground border-muted"
+          >
+            Exempt
+          </Badge>
+        );
       case 'unpaid':
-        return <Badge variant="destructive" className="bg-destructive/10 text-destructive border-destructive/20">Unpaid</Badge>;
+        return (
+          <Badge
+            variant="destructive"
+            className={`bg-destructive/10 text-destructive border-destructive/20 ${baseClass}`}
+            onClick={handleClick}
+          >
+            Unpaid
+          </Badge>
+        );
     }
   };
 
@@ -442,7 +543,7 @@ export default function MoneyPage() {
                       <TableCell className={`text-right font-mono ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
                         {transaction.amount >= 0 ? '+' : ''}€{transaction.amount.toFixed(2)}
                       </TableCell>
-                      <TableCell>{getStatusBadge(transaction.status)}</TableCell>
+                      <TableCell>{getStatusBadge(transaction)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
