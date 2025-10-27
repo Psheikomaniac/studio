@@ -35,6 +35,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Player, PredefinedFine } from "@/lib/types";
 import { PlayerMultiSelect } from "./player-multi-select";
+import { getFineSuggestion } from "@/lib/actions";
 
 
 const fineSchema = z.object({
