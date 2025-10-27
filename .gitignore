@@ -43,3 +43,15 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# claude code / AI tools
+.claude-flow/
+.hive-mind/
+reviews/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
