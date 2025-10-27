@@ -46,6 +46,18 @@ export interface Beverage {
     price: number;
 }
 
+export interface BeverageConsumption {
+  id: string;
+  userId: string;
+  beverageId: string;
+  beverageName: string;
+  amount: number;           // Price of beverage
+  date: string;             // ISO string
+  paid: boolean;
+  paidAt?: string;          // ISO string
+  createdAt: string;        // ISO string
+}
+
 export interface Transaction {
   id: string;
   userId: string;
@@ -65,4 +77,25 @@ export interface AuditLog {
   entityId: string;
   userId: string; // ID of the admin/treasurer who performed the action
   details: string; // e.g., "Changed fine amount from 5.00 to 7.50"
+}
+
+export interface Due {
+  id: string;
+  name: string;              // "Saison2526", "Meistershi", etc.
+  amount: number;            // In EUR (converted from cents)
+  createdAt: string;         // ISO string
+  active: boolean;
+  archived: boolean;
+}
+
+export interface DuePayment {
+  id: string;
+  dueId: string;            // Links to Due.id
+  userId: string;           // Links to Player.id
+  userName: string;         // Player display name
+  amountDue: number;
+  paid: boolean;
+  paidAt?: string;          // ISO string
+  exempt: boolean;          // STATUS_EXEMPT from CSV
+  createdAt: string;        // ISO string
 }

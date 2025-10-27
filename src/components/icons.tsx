@@ -1,4 +1,4 @@
-import { Landmark, Users, ReceiptText, Settings, Beer, HandCoins, List, type LucideProps } from "lucide-react";
+import { Landmark, Users, ReceiptText, Settings, Beer, HandCoins, List, Wallet, type LucideProps } from "lucide-react";
 
 export const Icons = {
   Logo: (props: LucideProps) => (
@@ -23,6 +23,7 @@ export const Icons = {
   Players: Users,
   Fines: ReceiptText,
   Payments: HandCoins,
+  Dues: Wallet,
   Beverages: Beer,
   Transactions: List,
   Settings: Settings,
