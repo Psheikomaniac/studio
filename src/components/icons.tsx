@@ -21,6 +21,7 @@ export const Icons = {
   ),
   Dashboard: Landmark,
   Players: Users,
+  Money: HandCoins,
   Fines: ReceiptText,
   Payments: HandCoins,
   Dues: Wallet,

@@ -14,11 +14,7 @@ import {
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Icons.Dashboard },
   { href: "/players", label: "Players", icon: Icons.Players },
-  { href: "/fines", label: "Fines", icon: Icons.Fines },
-  { href: "/payments", label: "Payments", icon: Icons.Payments },
-  { href: "/dues", label: "Dues", icon: Icons.Dues },
-  { href: "/beverages", label: "Beverages", icon: Icons.Beverages },
-  { href: "/transactions", label: "Transactions", icon: Icons.Transactions },
+  { href: "/money", label: "Money", icon: Icons.Money },
   { href: "/settings", label: "Settings", icon: Icons.Settings },
 ];
 
