@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -16,13 +17,15 @@ export type PlayerMultiSelectProps = {
 };
 
 export function PlayerMultiSelect({ players, value, onChange, placeholder = "Select players", className }: PlayerMultiSelectProps) {
+  const [open, setOpen] = React.useState(false);
+
   const toggle = (id: string) => {
     const selected = value.includes(id) ? value.filter((x) => x !== id) : [...value, id];
     onChange(selected);
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           type="button"
@@ -48,7 +51,14 @@ export function PlayerMultiSelect({ players, value, onChange, placeholder = "Sel
                   key={player.id}
                   value={player.id}
                   keywords={[player.name, player.nickname]}
-                  onSelect={() => toggle(player.id)}
+                  onSelect={() => {
+                    // Prevent default behavior
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle(player.id);
+                  }}
+                  className="cursor-pointer"
                 >
                   <Check className={cn("mr-2 h-4 w-4", value.includes(player.id) ? "opacity-100" : "opacity-0")} />
                   {player.name} ({player.nickname})
