@@ -20,6 +20,7 @@ export interface Fine {
   date: string; // ISO string
   paid: boolean;
   paidAt?: string; // ISO string for when it was paid
+  amountPaid?: number; // Amount already paid (for partial payments)
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
 }
@@ -55,6 +56,7 @@ export interface BeverageConsumption {
   date: string;             // ISO string
   paid: boolean;
   paidAt?: string;          // ISO string
+  amountPaid?: number;      // Amount already paid (for partial payments)
   createdAt: string;        // ISO string
 }
 
@@ -96,6 +98,7 @@ export interface DuePayment {
   amountDue: number;
   paid: boolean;
   paidAt?: string;          // ISO string
+  amountPaid?: number;      // Amount already paid (for partial payments)
   exempt: boolean;          // STATUS_EXEMPT from CSV
   createdAt: string;        // ISO string
 }

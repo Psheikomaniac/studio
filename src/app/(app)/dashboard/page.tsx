@@ -36,7 +36,9 @@ interface UnifiedTransaction {
   description: string;
   amount: number;
   type: TransactionType;
-  status: 'paid' | 'unpaid' | 'exempt';
+  status: 'paid' | 'unpaid' | 'exempt' | 'partially_paid';
+  amountPaid?: number;
+  totalAmount?: number;
 }
 
 export default function DashboardPage() {
@@ -65,6 +67,7 @@ export default function DashboardPage() {
     const transactions: UnifiedTransaction[] = [];
 
     fines.forEach(fine => {
+      const isPartiallyPaid = !fine.paid && fine.amountPaid && fine.amountPaid > 0;
       transactions.push({
         id: fine.id,
         date: fine.date,
@@ -73,7 +76,9 @@ export default function DashboardPage() {
         description: fine.reason,
         amount: -fine.amount,
         type: 'fine',
-        status: fine.paid ? 'paid' : 'unpaid',
+        status: fine.paid ? 'paid' : (isPartiallyPaid ? 'partially_paid' : 'unpaid'),
+        amountPaid: fine.amountPaid,
+        totalAmount: fine.amount,
       });
     });
 
@@ -91,6 +96,7 @@ export default function DashboardPage() {
     });
 
     duePayments.forEach(duePayment => {
+      const isPartiallyPaid = !duePayment.paid && duePayment.amountPaid && duePayment.amountPaid > 0;
       transactions.push({
         id: duePayment.id,
         date: duePayment.createdAt,
@@ -99,11 +105,14 @@ export default function DashboardPage() {
         description: `Due: ${getDueName(duePayment.dueId)}`,
         amount: -duePayment.amountDue,
         type: 'due',
-        status: duePayment.exempt ? 'exempt' : (duePayment.paid ? 'paid' : 'unpaid'),
+        status: duePayment.exempt ? 'exempt' : (duePayment.paid ? 'paid' : (isPartiallyPaid ? 'partially_paid' : 'unpaid')),
+        amountPaid: duePayment.amountPaid,
+        totalAmount: duePayment.amountDue,
       });
     });
 
     beverageConsumptions.forEach(beverage => {
+      const isPartiallyPaid = !beverage.paid && beverage.amountPaid && beverage.amountPaid > 0;
       transactions.push({
         id: beverage.id,
         date: beverage.date,
@@ -112,7 +121,9 @@ export default function DashboardPage() {
         description: `Beverage: ${beverage.beverageName}`,
         amount: -beverage.amount,
         type: 'beverage',
-        status: beverage.paid ? 'paid' : 'unpaid',
+        status: beverage.paid ? 'paid' : (isPartiallyPaid ? 'partially_paid' : 'unpaid'),
+        amountPaid: beverage.amountPaid,
+        totalAmount: beverage.amount,
       });
     });
 
@@ -135,16 +146,22 @@ export default function DashboardPage() {
   const handleAddFine = (newFineData: any) => {
     const newFines = newFineData.playerIds.map((playerId: string) => {
       const player = players.find(p => p.id === playerId);
-      const hasCredit = player && player.balance >= newFineData.amount;
+      const playerBalance = player?.balance || 0;
+      const fineAmount = newFineData.amount;
+
+      // Determine payment status
+      const hasFullCredit = playerBalance >= fineAmount;
+      const hasPartialCredit = playerBalance > 0 && playerBalance < fineAmount;
 
       return {
         id: `fine-${Date.now()}-${playerId}`,
         userId: playerId,
         reason: newFineData.reason,
-        amount: newFineData.amount,
+        amount: fineAmount,
         date: new Date().toISOString(),
-        paid: hasCredit || false,
-        paidAt: hasCredit ? new Date().toISOString() : undefined,
+        paid: hasFullCredit,
+        paidAt: hasFullCredit ? new Date().toISOString() : undefined,
+        amountPaid: hasPartialCredit ? playerBalance : (hasFullCredit ? fineAmount : undefined),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -152,21 +169,33 @@ export default function DashboardPage() {
 
     setFines(prevFines => [...prevFines, ...newFines]);
 
-    // Update player balances for auto-paid fines
-    const paidFines = newFines.filter(f => f.paid);
-    if (paidFines.length > 0) {
+    // Update player balances for auto-paid and partially-paid fines
+    const finesWithPayment = newFines.filter((f: Fine) => f.paid || (f.amountPaid && f.amountPaid > 0));
+    if (finesWithPayment.length > 0) {
       setPlayers(prevPlayers => prevPlayers.map(p => {
-        const paidFine = paidFines.find(f => f.userId === p.id);
-        return paidFine ? { ...p, balance: p.balance - paidFine.amount } : p;
+        const fineWithPayment = finesWithPayment.find((f: Fine) => f.userId === p.id);
+        if (fineWithPayment) {
+          const deduction = fineWithPayment.amountPaid || fineWithPayment.amount;
+          return { ...p, balance: p.balance - deduction };
+        }
+        return p;
       }));
     }
 
-    const autoPaidCount = paidFines.length;
+    const autoPaidCount = newFines.filter((f: Fine) => f.paid).length;
+    const partiallyPaidCount = newFines.filter((f: Fine) => !f.paid && f.amountPaid && f.amountPaid > 0).length;
+
+    let description = `${newFineData.reason} assigned to ${newFineData.playerIds.length} player(s).`;
+    if (autoPaidCount > 0) {
+      description += ` ${autoPaidCount} automatically paid from credit.`;
+    }
+    if (partiallyPaidCount > 0) {
+      description += ` ${partiallyPaidCount} partially paid from available credit.`;
+    }
+
     toast({
       title: "Fine(s) Added",
-      description: autoPaidCount > 0
-        ? `${newFineData.reason} assigned to ${newFineData.playerIds.length} player(s). ${autoPaidCount} automatically paid from credit.`
-        : `${newFineData.reason} was assigned to ${newFineData.playerIds.length} player(s).`
+      description
     });
   };
 
@@ -202,19 +231,23 @@ export default function DashboardPage() {
 
     const newPayments: DuePayment[] = data.playerIds.map(playerId => {
       const player = players.find(p => p.id === playerId);
+      const playerBalance = player?.balance || 0;
+      const dueAmount = due.amount;
 
-      // Auto-pay if player has credit (unless explicitly marking as exempt)
-      const hasCredit = player && player.balance >= due.amount;
-      const autoPaid = data.status !== 'exempt' && hasCredit;
+      // Determine payment status (unless explicitly marking as exempt)
+      const hasFullCredit = playerBalance >= dueAmount;
+      const hasPartialCredit = playerBalance > 0 && playerBalance < dueAmount;
+      const autoPaid = data.status !== 'exempt' && hasFullCredit;
 
       return {
         id: `dp-${Date.now()}-${playerId}`,
         dueId: data.dueId,
         userId: playerId,
         userName: player?.name || 'Unknown',
-        amountDue: due.amount,
+        amountDue: dueAmount,
         paid: data.status === 'paid' || autoPaid || false,
         paidAt: (data.status === 'paid' || autoPaid) ? new Date().toISOString() : undefined,
+        amountPaid: data.status !== 'exempt' && hasPartialCredit ? playerBalance : (autoPaid ? dueAmount : undefined),
         exempt: data.status === 'exempt',
         createdAt: new Date().toISOString(),
       };
@@ -222,21 +255,33 @@ export default function DashboardPage() {
 
     setDuePayments(prevPayments => [...prevPayments, ...newPayments]);
 
-    // Update player balances for auto-paid dues
-    const paidDues = newPayments.filter(dp => dp.paid && !dp.exempt);
-    if (paidDues.length > 0) {
+    // Update player balances for auto-paid and partially-paid dues
+    const duesWithPayment = newPayments.filter(dp => !dp.exempt && ((dp.paid && data.status !== 'paid') || (dp.amountPaid && dp.amountPaid > 0)));
+    if (duesWithPayment.length > 0) {
       setPlayers(prevPlayers => prevPlayers.map(p => {
-        const paidDue = paidDues.find(dp => dp.userId === p.id);
-        return paidDue ? { ...p, balance: p.balance - paidDue.amountDue } : p;
+        const dueWithPayment = duesWithPayment.find(dp => dp.userId === p.id);
+        if (dueWithPayment) {
+          const deduction = dueWithPayment.amountPaid || dueWithPayment.amountDue;
+          return { ...p, balance: p.balance - deduction };
+        }
+        return p;
       }));
     }
 
     const autoPaidCount = newPayments.filter(dp => dp.paid && data.status !== 'paid' && !dp.exempt).length;
+    const partiallyPaidCount = newPayments.filter(dp => !dp.paid && dp.amountPaid && dp.amountPaid > 0 && !dp.exempt).length;
+
+    let description = `Payment recorded for ${data.playerIds.length} player(s).`;
+    if (autoPaidCount > 0) {
+      description += ` ${autoPaidCount} automatically paid from credit.`;
+    }
+    if (partiallyPaidCount > 0) {
+      description += ` ${partiallyPaidCount} partially paid from available credit.`;
+    }
+
     toast({
       title: "Payment Recorded",
-      description: autoPaidCount > 0
-        ? `Payment recorded for ${data.playerIds.length} player(s). ${autoPaidCount} automatically paid from credit.`
-        : `Payment recorded for ${data.playerIds.length} player(s).`
+      description
     });
   };
 
@@ -246,38 +291,56 @@ export default function DashboardPage() {
 
     const newConsumptions: BeverageConsumption[] = data.playerIds.map(playerId => {
       const player = players.find(p => p.id === playerId);
-      const hasCredit = player && player.balance >= beverage.price;
+      const playerBalance = player?.balance || 0;
+      const beveragePrice = beverage.price;
+
+      // Determine payment status
+      const hasFullCredit = playerBalance >= beveragePrice;
+      const hasPartialCredit = playerBalance > 0 && playerBalance < beveragePrice;
 
       return {
         id: `bc-${Date.now()}-${playerId}`,
         userId: playerId,
         beverageId: beverage.id,
         beverageName: beverage.name,
-        amount: beverage.price,
+        amount: beveragePrice,
         date: new Date().toISOString(),
-        paid: hasCredit || false,
-        paidAt: hasCredit ? new Date().toISOString() : undefined,
+        paid: hasFullCredit,
+        paidAt: hasFullCredit ? new Date().toISOString() : undefined,
+        amountPaid: hasPartialCredit ? playerBalance : (hasFullCredit ? beveragePrice : undefined),
         createdAt: new Date().toISOString(),
       };
     });
 
     setBeverageConsumptions(prevConsumptions => [...prevConsumptions, ...newConsumptions]);
 
-    // Update player balances for auto-paid beverages
-    const paidBeverages = newConsumptions.filter(bc => bc.paid);
-    if (paidBeverages.length > 0) {
+    // Update player balances for auto-paid and partially-paid beverages
+    const beveragesWithPayment = newConsumptions.filter(bc => bc.paid || (bc.amountPaid && bc.amountPaid > 0));
+    if (beveragesWithPayment.length > 0) {
       setPlayers(prevPlayers => prevPlayers.map(p => {
-        const paidBeverage = paidBeverages.find(bc => bc.userId === p.id);
-        return paidBeverage ? { ...p, balance: p.balance - paidBeverage.amount } : p;
+        const beverageWithPayment = beveragesWithPayment.find(bc => bc.userId === p.id);
+        if (beverageWithPayment) {
+          const deduction = beverageWithPayment.amountPaid || beverageWithPayment.amount;
+          return { ...p, balance: p.balance - deduction };
+        }
+        return p;
       }));
     }
 
-    const autoPaidCount = paidBeverages.length;
+    const autoPaidCount = newConsumptions.filter(bc => bc.paid).length;
+    const partiallyPaidCount = newConsumptions.filter(bc => !bc.paid && bc.amountPaid && bc.amountPaid > 0).length;
+
+    let description = `${beverage.name} recorded for ${data.playerIds.length} player(s).`;
+    if (autoPaidCount > 0) {
+      description += ` ${autoPaidCount} automatically paid from credit.`;
+    }
+    if (partiallyPaidCount > 0) {
+      description += ` ${partiallyPaidCount} partially paid from available credit.`;
+    }
+
     toast({
       title: "Beverage Recorded",
-      description: autoPaidCount > 0
-        ? `${beverage.name} recorded for ${data.playerIds.length} player(s). ${autoPaidCount} automatically paid from credit.`
-        : `${beverage.name} recorded for ${data.playerIds.length} player(s).`
+      description
     });
   };
 
