@@ -23,8 +23,8 @@ function validateFirebaseConfig() {
   }
 }
 
-// Validate configuration in development
-if (process.env.NODE_ENV === 'development') {
+// Only validate configuration if Firebase is enabled
+if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_FIREBASE === 'true') {
   validateFirebaseConfig();
 }
 
