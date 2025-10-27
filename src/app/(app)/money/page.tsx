@@ -45,7 +45,7 @@ export default function MoneyPage() {
   const [payments, setPayments] = useState<Payment[]>(staticPayments);
   const [duePayments, setDuePayments] = useState<DuePayment[]>(staticDuePayments);
   const [beverageConsumptions, setBeverageConsumptions] = useState<BeverageConsumption[]>(staticBeverageConsumptions);
-  const [players] = useState<Player[]>(staticPlayers);
+  const [players, setPlayers] = useState<Player[]>(staticPlayers);
   const [dues] = useState<Due[]>(staticDues);
   const [predefinedFines] = useState<PredefinedFine[]>(staticPredefinedFines);
   const [beverages] = useState<Beverage[]>(staticBeverages);
@@ -178,21 +178,40 @@ export default function MoneyPage() {
   }, [filteredTransactions]);
 
   const handleAddFine = (newFineData: any) => {
-    const newFines = newFineData.playerIds.map((playerId: string) => ({
-      id: `fine-${Date.now()}-${playerId}`,
-      userId: playerId,
-      reason: newFineData.reason,
-      amount: newFineData.amount,
-      date: new Date().toISOString(),
-      paid: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }));
+    const newFines = newFineData.playerIds.map((playerId: string) => {
+      const player = players.find(p => p.id === playerId);
+      const hasCredit = player && player.balance >= newFineData.amount;
+
+      return {
+        id: `fine-${Date.now()}-${playerId}`,
+        userId: playerId,
+        reason: newFineData.reason,
+        amount: newFineData.amount,
+        date: new Date().toISOString(),
+        paid: hasCredit || false,
+        paidAt: hasCredit ? new Date().toISOString() : undefined,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    });
 
     setFines(prevFines => [...prevFines, ...newFines]);
+
+    // Update player balances for auto-paid fines
+    const paidFines = newFines.filter(f => f.paid);
+    if (paidFines.length > 0) {
+      setPlayers(prevPlayers => prevPlayers.map(p => {
+        const paidFine = paidFines.find(f => f.userId === p.id);
+        return paidFine ? { ...p, balance: p.balance - paidFine.amount } : p;
+      }));
+    }
+
+    const autoPaidCount = paidFines.length;
     toast({
       title: "Fine(s) Added",
-      description: `${newFineData.reason} was assigned to ${newFineData.playerIds.length} player(s).`
+      description: autoPaidCount > 0
+        ? `${newFineData.reason} assigned to ${newFineData.playerIds.length} player(s). ${autoPaidCount} automatically paid from credit.`
+        : `${newFineData.reason} was assigned to ${newFineData.playerIds.length} player(s).`
     });
   };
 
@@ -208,9 +227,17 @@ export default function MoneyPage() {
     };
 
     setPayments(prevPayments => [...prevPayments, newPayment]);
+
+    // Update player balance (add credit)
+    setPlayers(prevPlayers => prevPlayers.map(p =>
+      p.id === paymentData.userId
+        ? { ...p, balance: p.balance + paymentData.amount }
+        : p
+    ));
+
     toast({
       title: "Payment Added",
-      description: `Payment of €${paymentData.amount.toFixed(2)} recorded.`
+      description: `Payment of €${paymentData.amount.toFixed(2)} recorded. Player credit updated.`
     });
   };
 
@@ -220,23 +247,41 @@ export default function MoneyPage() {
 
     const newPayments: DuePayment[] = data.playerIds.map(playerId => {
       const player = players.find(p => p.id === playerId);
+
+      // Auto-pay if player has credit (unless explicitly marking as exempt)
+      const hasCredit = player && player.balance >= due.amount;
+      const autoPaid = data.status !== 'exempt' && hasCredit;
+
       return {
         id: `dp-${Date.now()}-${playerId}`,
         dueId: data.dueId,
         userId: playerId,
         userName: player?.name || 'Unknown',
         amountDue: due.amount,
-        paid: data.status === 'paid',
-        paidAt: data.status === 'paid' ? new Date().toISOString() : undefined,
+        paid: data.status === 'paid' || autoPaid || false,
+        paidAt: (data.status === 'paid' || autoPaid) ? new Date().toISOString() : undefined,
         exempt: data.status === 'exempt',
         createdAt: new Date().toISOString(),
       };
     });
 
     setDuePayments(prevPayments => [...prevPayments, ...newPayments]);
+
+    // Update player balances for auto-paid dues
+    const paidDues = newPayments.filter(dp => dp.paid && !dp.exempt);
+    if (paidDues.length > 0) {
+      setPlayers(prevPlayers => prevPlayers.map(p => {
+        const paidDue = paidDues.find(dp => dp.userId === p.id);
+        return paidDue ? { ...p, balance: p.balance - paidDue.amountDue } : p;
+      }));
+    }
+
+    const autoPaidCount = newPayments.filter(dp => dp.paid && data.status !== 'paid' && !dp.exempt).length;
     toast({
       title: "Payment Recorded",
-      description: `Payment recorded for ${data.playerIds.length} player(s).`
+      description: autoPaidCount > 0
+        ? `Payment recorded for ${data.playerIds.length} player(s). ${autoPaidCount} automatically paid from credit.`
+        : `Payment recorded for ${data.playerIds.length} player(s).`
     });
   };
 
@@ -244,21 +289,40 @@ export default function MoneyPage() {
     const beverage = beverages.find(b => b.id === data.beverageId);
     if (!beverage) return;
 
-    const newConsumptions: BeverageConsumption[] = data.playerIds.map(playerId => ({
-      id: `bc-${Date.now()}-${playerId}`,
-      userId: playerId,
-      beverageId: beverage.id,
-      beverageName: beverage.name,
-      amount: beverage.price,
-      date: new Date().toISOString(),
-      paid: false,
-      createdAt: new Date().toISOString(),
-    }));
+    const newConsumptions: BeverageConsumption[] = data.playerIds.map(playerId => {
+      const player = players.find(p => p.id === playerId);
+      const hasCredit = player && player.balance >= beverage.price;
+
+      return {
+        id: `bc-${Date.now()}-${playerId}`,
+        userId: playerId,
+        beverageId: beverage.id,
+        beverageName: beverage.name,
+        amount: beverage.price,
+        date: new Date().toISOString(),
+        paid: hasCredit || false,
+        paidAt: hasCredit ? new Date().toISOString() : undefined,
+        createdAt: new Date().toISOString(),
+      };
+    });
 
     setBeverageConsumptions(prevConsumptions => [...prevConsumptions, ...newConsumptions]);
+
+    // Update player balances for auto-paid beverages
+    const paidBeverages = newConsumptions.filter(bc => bc.paid);
+    if (paidBeverages.length > 0) {
+      setPlayers(prevPlayers => prevPlayers.map(p => {
+        const paidBeverage = paidBeverages.find(bc => bc.userId === p.id);
+        return paidBeverage ? { ...p, balance: p.balance - paidBeverage.amount } : p;
+      }));
+    }
+
+    const autoPaidCount = paidBeverages.length;
     toast({
       title: "Beverage Recorded",
-      description: `${beverage.name} recorded for ${data.playerIds.length} player(s).`
+      description: autoPaidCount > 0
+        ? `${beverage.name} recorded for ${data.playerIds.length} player(s). ${autoPaidCount} automatically paid from credit.`
+        : `${beverage.name} recorded for ${data.playerIds.length} player(s).`
     });
   };
 
