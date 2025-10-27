@@ -25,6 +25,7 @@ import { RecordDuePaymentDialog } from '@/components/dues/record-due-payment-dia
 import { AddEditPaymentDialog } from '@/components/payments/add-edit-payment-dialog';
 import { RecordConsumptionDialog } from '@/components/beverages/record-consumption-dialog';
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
+import { updatePlayersWithCalculatedBalances } from '@/lib/utils';
 
 type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
 
@@ -47,10 +48,20 @@ export default function MoneyPage() {
   const [payments, setPayments] = useState<Payment[]>(staticPayments);
   const [duePayments, setDuePayments] = useState<DuePayment[]>(staticDuePayments);
   const [beverageConsumptions, setBeverageConsumptions] = useState<BeverageConsumption[]>(staticBeverageConsumptions);
-  const [players, setPlayers] = useState<Player[]>(staticPlayers);
   const [dues] = useState<Due[]>(staticDues);
   const [predefinedFines] = useState<PredefinedFine[]>(staticPredefinedFines);
   const [beverages] = useState<Beverage[]>(staticBeverages);
+
+  // Calculate player balances dynamically based on all transactions
+  const players = useMemo(() => {
+    return updatePlayersWithCalculatedBalances(
+      staticPlayers,
+      payments,
+      fines,
+      duePayments,
+      beverageConsumptions
+    );
+  }, [payments, fines, duePayments, beverageConsumptions]);
 
   // Dialog states
   const [isAddFineOpen, setAddFineOpen] = useState(false);
@@ -214,19 +225,7 @@ export default function MoneyPage() {
 
     setFines(prevFines => [...prevFines, ...newFines]);
 
-    // Update player balances for auto-paid and partially-paid fines
-    const finesWithPayment = newFines.filter((f: Fine) => f.paid || (f.amountPaid && f.amountPaid > 0));
-    if (finesWithPayment.length > 0) {
-      setPlayers(prevPlayers => prevPlayers.map(p => {
-        const fineWithPayment = finesWithPayment.find((f: Fine) => f.userId === p.id);
-        if (fineWithPayment) {
-          const deduction = fineWithPayment.amountPaid || fineWithPayment.amount;
-          return { ...p, balance: p.balance - deduction };
-        }
-        return p;
-      }));
-    }
-
+    // Balance is now calculated automatically - no manual update needed!
     const autoPaidCount = newFines.filter((f: Fine) => f.paid).length;
     const partiallyPaidCount = newFines.filter((f: Fine) => !f.paid && f.amountPaid && f.amountPaid > 0).length;
 
@@ -257,12 +256,7 @@ export default function MoneyPage() {
 
     setPayments(prevPayments => [...prevPayments, newPayment]);
 
-    // Update player balance (add credit)
-    setPlayers(prevPlayers => prevPlayers.map(p =>
-      p.id === paymentData.userId
-        ? { ...p, balance: p.balance + paymentData.amount }
-        : p
-    ));
+    // Balance is now calculated automatically - no manual update needed!
 
     toast({
       title: "Payment Added",
@@ -300,19 +294,7 @@ export default function MoneyPage() {
 
     setDuePayments(prevPayments => [...prevPayments, ...newPayments]);
 
-    // Update player balances for auto-paid and partially-paid dues
-    const duesWithPayment = newPayments.filter(dp => !dp.exempt && ((dp.paid && data.status !== 'paid') || (dp.amountPaid && dp.amountPaid > 0)));
-    if (duesWithPayment.length > 0) {
-      setPlayers(prevPlayers => prevPlayers.map(p => {
-        const dueWithPayment = duesWithPayment.find(dp => dp.userId === p.id);
-        if (dueWithPayment) {
-          const deduction = dueWithPayment.amountPaid || dueWithPayment.amountDue;
-          return { ...p, balance: p.balance - deduction };
-        }
-        return p;
-      }));
-    }
-
+    // Balance is now calculated automatically - no manual update needed!
     const autoPaidCount = newPayments.filter(dp => dp.paid && data.status !== 'paid' && !dp.exempt).length;
     const partiallyPaidCount = newPayments.filter(dp => !dp.paid && dp.amountPaid && dp.amountPaid > 0 && !dp.exempt).length;
 
@@ -359,19 +341,7 @@ export default function MoneyPage() {
 
     setBeverageConsumptions(prevConsumptions => [...prevConsumptions, ...newConsumptions]);
 
-    // Update player balances for auto-paid and partially-paid beverages
-    const beveragesWithPayment = newConsumptions.filter(bc => bc.paid || (bc.amountPaid && bc.amountPaid > 0));
-    if (beveragesWithPayment.length > 0) {
-      setPlayers(prevPlayers => prevPlayers.map(p => {
-        const beverageWithPayment = beveragesWithPayment.find(bc => bc.userId === p.id);
-        if (beverageWithPayment) {
-          const deduction = beverageWithPayment.amountPaid || beverageWithPayment.amount;
-          return { ...p, balance: p.balance - deduction };
-        }
-        return p;
-      }));
-    }
-
+    // Balance is now calculated automatically - no manual update needed!
     const autoPaidCount = newConsumptions.filter(bc => bc.paid).length;
     const partiallyPaidCount = newConsumptions.filter(bc => !bc.paid && bc.amountPaid && bc.amountPaid > 0).length;
 
