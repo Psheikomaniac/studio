@@ -22,6 +22,8 @@ import {
 } from '@/lib/static-data';
 import { AddFineDialog } from '@/components/dashboard/add-fine-dialog';
 import { RecordDuePaymentDialog } from '@/components/dues/record-due-payment-dialog';
+import { AddEditPaymentDialog } from '@/components/payments/add-edit-payment-dialog';
+import { RecordConsumptionDialog } from '@/components/beverages/record-consumption-dialog';
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 
 type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
@@ -50,7 +52,7 @@ export default function MoneyPage() {
 
   // Dialog states
   const [isAddFineOpen, setAddFineOpen] = useState(false);
-  const [isRecordPaymentOpen, setRecordPaymentOpen] = useState(false);
+  const [isAddPaymentOpen, setAddPaymentOpen] = useState(false);
   const [isRecordDueOpen, setRecordDueOpen] = useState(false);
   const [isRecordBeverageOpen, setRecordBeverageOpen] = useState(false);
 
@@ -194,6 +196,24 @@ export default function MoneyPage() {
     });
   };
 
+  const handleAddPayment = (paymentData: any) => {
+    const newPayment: Payment = {
+      id: `payment-${Date.now()}`,
+      userId: paymentData.userId,
+      reason: paymentData.reason,
+      amount: paymentData.amount,
+      date: new Date().toISOString(),
+      paid: true,
+      paidAt: new Date().toISOString(),
+    };
+
+    setPayments(prevPayments => [...prevPayments, newPayment]);
+    toast({
+      title: "Payment Added",
+      description: `Payment of €${paymentData.amount.toFixed(2)} recorded.`
+    });
+  };
+
   const handleRecordDuePayment = (data: { playerIds: string[], dueId: string, status: "paid" | "exempt" }) => {
     const due = dues.find(d => d.id === data.dueId);
     if (!due) return;
@@ -217,6 +237,28 @@ export default function MoneyPage() {
     toast({
       title: "Payment Recorded",
       description: `Payment recorded for ${data.playerIds.length} player(s).`
+    });
+  };
+
+  const handleRecordBeverage = (data: { playerIds: string[], beverageId: string }) => {
+    const beverage = beverages.find(b => b.id === data.beverageId);
+    if (!beverage) return;
+
+    const newConsumptions: BeverageConsumption[] = data.playerIds.map(playerId => ({
+      id: `bc-${Date.now()}-${playerId}`,
+      userId: playerId,
+      beverageId: beverage.id,
+      beverageName: beverage.name,
+      amount: beverage.price,
+      date: new Date().toISOString(),
+      paid: false,
+      createdAt: new Date().toISOString(),
+    }));
+
+    setBeverageConsumptions(prevConsumptions => [...prevConsumptions, ...newConsumptions]);
+    toast({
+      title: "Beverage Recorded",
+      description: `${beverage.name} recorded for ${data.playerIds.length} player(s).`
     });
   };
 
@@ -264,7 +306,7 @@ export default function MoneyPage() {
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Fine
               </Button>
-              <Button onClick={() => setRecordPaymentOpen(true)} variant="outline" size="sm">
+              <Button onClick={() => setAddPaymentOpen(true)} variant="outline" size="sm">
                 <Receipt className="mr-2 h-4 w-4" />
                 Add Payment
               </Button>
@@ -423,6 +465,13 @@ export default function MoneyPage() {
         predefinedFines={predefinedFines}
         onFineAdded={handleAddFine}
       />
+      <AddEditPaymentDialog
+        isOpen={isAddPaymentOpen}
+        setOpen={setAddPaymentOpen}
+        players={players}
+        payment={null}
+        onSave={handleAddPayment}
+      />
       <RecordDuePaymentDialog
         isOpen={isRecordDueOpen}
         setOpen={setRecordDueOpen}
@@ -430,7 +479,13 @@ export default function MoneyPage() {
         dues={dues}
         onRecord={handleRecordDuePayment}
       />
-      {/* TODO: Add payment and beverage dialogs */}
+      <RecordConsumptionDialog
+        isOpen={isRecordBeverageOpen}
+        setOpen={setRecordBeverageOpen}
+        players={players}
+        beverages={beverages}
+        onRecord={handleRecordBeverage}
+      />
     </>
   );
 }
