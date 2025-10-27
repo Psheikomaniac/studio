@@ -7,14 +7,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2, RotateCcw } from "lucide-react";
 import { importCSV } from "@/lib/csv-import";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { collection, getDocs, writeBatch } from "firebase/firestore";
+import { useFirebase } from "@/firebase/config";
+import { getFirestore } from "firebase/firestore";
+import { getApp } from "firebase/app";
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const isFirebaseEnabled = useFirebase;
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<string>("");
+
+  // Dialog states
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Loading states
+  const [isResetting, setIsResetting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -107,6 +131,169 @@ export default function SettingsPage() {
     }
   };
 
+  /**
+   * Reset all balances - marks all transactions as paid
+   * This clears all debts but keeps players and transaction history
+   */
+  const handleResetBalances = async () => {
+    if (!isFirebaseEnabled) {
+      toast({
+        title: "Firebase nicht aktiviert",
+        description: "Diese Funktion benötigt Firebase. Setze NEXT_PUBLIC_USE_FIREBASE=true in .env.local",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      // Get Firebase instances
+      const firestore = getFirestore(getApp());
+
+      // Get all users
+      const usersSnapshot = await getDocs(collection(firestore, 'users'));
+      const batch = writeBatch(firestore);
+      let transactionCount = 0;
+
+      // For each user, mark all their transactions as paid
+      for (const userDoc of usersSnapshot.docs) {
+        const userId = userDoc.id;
+
+        // Mark all fines as paid
+        const finesSnapshot = await getDocs(collection(firestore, `users/${userId}/fines`));
+        finesSnapshot.docs.forEach((fineDoc) => {
+          batch.update(fineDoc.ref, {
+            paid: true,
+            paidAt: new Date().toISOString(),
+            amountPaid: fineDoc.data().amount
+          });
+          transactionCount++;
+        });
+
+        // Mark all dues as paid
+        const duesSnapshot = await getDocs(collection(firestore, `users/${userId}/duePayments`));
+        duesSnapshot.docs.forEach((dueDoc) => {
+          batch.update(dueDoc.ref, {
+            paid: true,
+            paidAt: new Date().toISOString(),
+            amountPaid: dueDoc.data().amountDue
+          });
+          transactionCount++;
+        });
+
+        // Mark all beverages as paid
+        const beveragesSnapshot = await getDocs(collection(firestore, `users/${userId}/beverageConsumptions`));
+        beveragesSnapshot.docs.forEach((bevDoc) => {
+          batch.update(bevDoc.ref, {
+            paid: true,
+            paidAt: new Date().toISOString(),
+            amountPaid: bevDoc.data().amount
+          });
+          transactionCount++;
+        });
+      }
+
+      await batch.commit();
+
+      toast({
+        title: "Erfolgreich zurückgesetzt",
+        description: `Alle ${transactionCount} Transaktionen wurden als bezahlt markiert. Alle Guthaben sind jetzt 0€.`,
+      });
+
+      setShowResetDialog(false);
+    } catch (error) {
+      console.error('Error resetting balances:', error);
+      toast({
+        title: "Fehler beim Zurücksetzen",
+        description: error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  /**
+   * Delete all data - removes ALL players and ALL transactions
+   * This is a complete reset and cannot be undone
+   */
+  const handleDeleteAllData = async () => {
+    if (!isFirebaseEnabled) {
+      toast({
+        title: "Firebase nicht aktiviert",
+        description: "Diese Funktion benötigt Firebase. Setze NEXT_PUBLIC_USE_FIREBASE=true in .env.local",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      // Get Firebase instances
+      const firestore = getFirestore(getApp());
+
+      // Get all users
+      const usersSnapshot = await getDocs(collection(firestore, 'users'));
+      const batch = writeBatch(firestore);
+      let deleteCount = 0;
+
+      // For each user, delete all subcollections first, then the user
+      for (const userDoc of usersSnapshot.docs) {
+        const userId = userDoc.id;
+
+        // Delete all fines
+        const finesSnapshot = await getDocs(collection(firestore, `users/${userId}/fines`));
+        finesSnapshot.docs.forEach((fineDoc) => {
+          batch.delete(fineDoc.ref);
+          deleteCount++;
+        });
+
+        // Delete all payments
+        const paymentsSnapshot = await getDocs(collection(firestore, `users/${userId}/payments`));
+        paymentsSnapshot.docs.forEach((paymentDoc) => {
+          batch.delete(paymentDoc.ref);
+          deleteCount++;
+        });
+
+        // Delete all dues
+        const duesSnapshot = await getDocs(collection(firestore, `users/${userId}/duePayments`));
+        duesSnapshot.docs.forEach((dueDoc) => {
+          batch.delete(dueDoc.ref);
+          deleteCount++;
+        });
+
+        // Delete all beverages
+        const beveragesSnapshot = await getDocs(collection(firestore, `users/${userId}/beverageConsumptions`));
+        beveragesSnapshot.docs.forEach((bevDoc) => {
+          batch.delete(bevDoc.ref);
+          deleteCount++;
+        });
+
+        // Delete the user document
+        batch.delete(userDoc.ref);
+        deleteCount++;
+      }
+
+      await batch.commit();
+
+      toast({
+        title: "Alle Daten gelöscht",
+        description: `${deleteCount} Dokumente wurden erfolgreich gelöscht. Die Datenbank ist jetzt leer.`,
+      });
+
+      setShowDeleteDialog(false);
+    } catch (error) {
+      console.error('Error deleting all data:', error);
+      toast({
+        title: "Fehler beim Löschen",
+        description: error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="grid gap-4">
@@ -168,11 +355,143 @@ export default function SettingsPage() {
             <CardDescription>These actions are irreversible.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-start gap-4">
-             <Button variant="destructive">Reset All Balances</Button>
-             <Button variant="outline">Delete All Data</Button>
+            <div className="space-y-4 w-full">
+              <div className="flex items-start gap-4">
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowResetDialog(true)}
+                  disabled={isResetting || isDeleting || !isFirebaseEnabled}
+                >
+                  {isResetting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Resetting...
+                    </>
+                  ) : (
+                    <>
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Reset All Balances
+                    </>
+                  )}
+                </Button>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Reset All Balances</p>
+                  <p className="text-sm text-muted-foreground">
+                    Marks all transactions as paid. Players remain but all debts are cleared to 0€.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <Button
+                  variant="outline"
+                  className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  onClick={() => setShowDeleteDialog(true)}
+                  disabled={isResetting || isDeleting || !isFirebaseEnabled}
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete All Data
+                    </>
+                  )}
+                </Button>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Delete All Data</p>
+                  <p className="text-sm text-muted-foreground">
+                    Permanently deletes ALL players and ALL transactions. Cannot be undone!
+                  </p>
+                </div>
+              </div>
+
+              {!isFirebaseEnabled && (
+                <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+                  ⚠️ Firebase ist derzeit deaktiviert. Diese Funktionen benötigen eine aktive Datenbankverbindung.
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Reset All Balances Confirmation Dialog */}
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Alle Guthaben zurücksetzen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Diese Aktion wird alle offenen Transaktionen (Strafen, Beiträge, Getränke) als bezahlt markieren.
+              Alle Spieler-Guthaben werden auf 0€ gesetzt.
+              <br /><br />
+              <strong>Die Spieler und die Transaction-History bleiben erhalten.</strong>
+              <br /><br />
+              Diese Aktion kann nicht rückgängig gemacht werden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isResetting}>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetBalances}
+              disabled={isResetting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isResetting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Wird zurückgesetzt...
+                </>
+              ) : (
+                "Ja, alle Guthaben zurücksetzen"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete All Data Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">⚠️ Alle Daten löschen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong className="text-destructive">ACHTUNG: Diese Aktion löscht PERMANENT:</strong>
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Alle Spieler</li>
+                <li>Alle Strafen</li>
+                <li>Alle Zahlungen</li>
+                <li>Alle Beiträge</li>
+                <li>Alle Getränke-Konsumierungen</li>
+              </ul>
+              <br />
+              <strong className="text-destructive">Die Datenbank wird komplett geleert!</strong>
+              <br /><br />
+              Diese Aktion kann <strong>NICHT</strong> rückgängig gemacht werden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAllData}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Wird gelöscht...
+                </>
+              ) : (
+                "Ja, ALLES löschen"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }
