@@ -41,20 +41,36 @@ function generateId(prefix: string): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// Helper function to parse German date format (DD-MM-YYYY) to ISO string
+// Helper function to parse date strings to ISO (supports DD-MM-YYYY and YYYY-MM-DD)
 function parseGermanDate(dateStr: string): string {
-  if (!dateStr || dateStr.trim() === '') {
-    return new Date().toISOString();
+  if (!dateStr) return new Date().toISOString();
+  const raw = dateStr.trim();
+  if (raw === '') return new Date().toISOString();
+
+  const parts = raw.split('-');
+  if (parts.length !== 3) return new Date().toISOString();
+
+  let day: number, month: number, year: number;
+  // Detect format by which part has 4 digits
+  if (parts[0].length === 4) {
+    // YYYY-MM-DD
+    year = parseInt(parts[0], 10);
+    month = parseInt(parts[1], 10);
+    day = parseInt(parts[2], 10);
+  } else if (parts[2].length === 4) {
+    // DD-MM-YYYY
+    day = parseInt(parts[0], 10);
+    month = parseInt(parts[1], 10);
+    year = parseInt(parts[2], 10);
+  } else {
+    // Fallback: assume DD-MM-YYYY
+    day = parseInt(parts[0], 10);
+    month = parseInt(parts[1], 10);
+    year = parseInt(parts[2], 10);
   }
 
-  const parts = dateStr.split('-');
-  if (parts.length !== 3) {
-    return new Date().toISOString();
-  }
-
-  const [day, month, year] = parts;
   // Create date at noon UTC to avoid timezone issues
-  const date = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0));
+  const date = new Date(Date.UTC(year, (month || 1) - 1, day || 1, 12, 0, 0));
   return date.toISOString();
 }
 
@@ -62,6 +78,17 @@ function parseGermanDate(dateStr: string): string {
 function centsToEUR(cents: string | number): number {
   const amount = typeof cents === 'string' ? parseInt(cents, 10) : cents;
   return amount / 100;
+}
+
+// Remove undefined fields and internal props before writing to Firestore
+function sanitizeFirestoreData<T extends Record<string, any>>(obj: T): T {
+  const sanitized: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (key.startsWith('__')) continue;
+    if (value === undefined) continue;
+    sanitized[key] = value as any;
+  }
+  return sanitized as T;
 }
 
 // Helper function to classify punishment as DRINK or FINE
@@ -96,10 +123,10 @@ async function findOrCreatePlayer(
 
   // Then check Firestore by ID if provided
   if (id) {
-    const docRef = doc(firestore, 'users', id);
     const docSnap = await getDocs(query(collection(firestore, 'users'), where('__name__', '==', id)));
     if (!docSnap.empty) {
       const player = { id, ...docSnap.docs[0].data() } as Player;
+      (player as any).__isNew = false;
       existingPlayers?.set(normalizedName, player);
       return player;
     }
@@ -112,24 +139,24 @@ async function findOrCreatePlayer(
 
   for (const doc of snapshot.docs) {
     const player = { id: doc.id, ...doc.data() } as Player;
-    if (player.name.toLowerCase().trim() === normalizedName) {
+    if ((player.name || '').toLowerCase().trim() === normalizedName) {
+      (player as any).__isNew = false;
       existingPlayers?.set(normalizedName, player);
       return player;
     }
   }
 
-  // Create new player
+  // Create new player (not yet written to Firestore)
   const newPlayer: Player = {
     id: id || generateId('player'),
     name: name.trim(),
     nickname: name.trim().split(' ')[0],
     photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=400&background=0ea5e9&color=fff`,
     balance: 0,
-    email: undefined,
-    phone: undefined,
     totalUnpaidPenalties: 0,
     totalPaidPenalties: 0,
   };
+  (newPlayer as any).__isNew = true;
 
   existingPlayers?.set(normalizedName, newPlayer);
   return newPlayer;
@@ -157,18 +184,20 @@ async function findOrCreateBeverage(
 
   for (const doc of snapshot.docs) {
     const beverage = { id: doc.id, ...doc.data() } as Beverage;
-    if (beverage.name.toLowerCase().trim() === normalizedName) {
+    if ((beverage.name || '').toLowerCase().trim() === normalizedName) {
+      (beverage as any).__isNew = false;
       existingBeverages?.set(normalizedName, beverage);
       return beverage;
     }
   }
 
-  // Create new beverage
+  // Create new beverage (not yet written to Firestore)
   const newBeverage: Beverage = {
     id: generateId('bev'),
     name: name.trim(),
     price: price
   };
+  (newBeverage as any).__isNew = true;
 
   existingBeverages?.set(normalizedName, newBeverage);
   return newBeverage;
@@ -259,8 +288,8 @@ export async function importDuesCSVToFirestore(
         // Find or create player
         const player = await findOrCreatePlayer(firestore, row.username, row.user_id, existingPlayers);
 
-        // Track if player is new
-        if (!existingPlayers.has(player.name.toLowerCase())) {
+        // Track if player is new (based on __isNew flag set by finder)
+        if ((player as any).__isNew && !playersToCreate.some(p => p.id === player.id)) {
           playersToCreate.push(player);
           result.playersCreated++;
         }
@@ -300,7 +329,7 @@ export async function importDuesCSVToFirestore(
 
       for (const player of batchPlayers) {
         const playerRef = doc(firestore, 'users', player.id);
-        batch.set(playerRef, player);
+        batch.set(playerRef, sanitizeFirestoreData(player as any));
       }
 
       await batch.commit();
@@ -314,7 +343,7 @@ export async function importDuesCSVToFirestore(
 
       for (const due of batchDues) {
         const dueRef = doc(firestore, 'dues', due.id);
-        batch.set(dueRef, due);
+        batch.set(dueRef, sanitizeFirestoreData(due as any));
       }
 
       await batch.commit();
@@ -327,7 +356,7 @@ export async function importDuesCSVToFirestore(
 
       for (const payment of batchPayments) {
         const paymentRef = doc(firestore, `users/${payment.userId}/duePayments`, payment.id);
-        batch.set(paymentRef, payment);
+        batch.set(paymentRef, sanitizeFirestoreData(payment as any));
       }
 
       await batch.commit();
@@ -420,7 +449,8 @@ export async function importPunishmentsCSVToFirestore(
         // Find or create player
         const player = await findOrCreatePlayer(firestore, row.penatly_user, undefined, existingPlayers);
 
-        if (!existingPlayers.has(player.name.toLowerCase())) {
+        // Queue player creation if this is a newly discovered player
+        if ((player as any).__isNew && !playersToCreate.some(p => p.id === player.id)) {
           playersToCreate.push(player);
           result.playersCreated++;
         }
@@ -432,7 +462,7 @@ export async function importPunishmentsCSVToFirestore(
           // Create beverage consumption record
           const beverage = await findOrCreateBeverage(firestore, row.penatly_reason, amountEUR, existingBeverages);
 
-          if (!existingBeverages.has(beverage.name.toLowerCase())) {
+          if ((beverage as any).__isNew && !beveragesToCreate.some(b => b.id === (beverage as any).id)) {
             beveragesToCreate.push(beverage);
           }
 
@@ -484,7 +514,7 @@ export async function importPunishmentsCSVToFirestore(
 
       for (const player of batchPlayers) {
         const playerRef = doc(firestore, 'users', player.id);
-        batch.set(playerRef, player);
+        batch.set(playerRef, sanitizeFirestoreData(player as any));
       }
 
       await batch.commit();
@@ -497,7 +527,7 @@ export async function importPunishmentsCSVToFirestore(
 
       for (const beverage of batchBeverages) {
         const beverageRef = doc(firestore, 'beverages', beverage.id);
-        batch.set(beverageRef, beverage);
+        batch.set(beverageRef, sanitizeFirestoreData(beverage as any));
       }
 
       await batch.commit();
@@ -510,7 +540,7 @@ export async function importPunishmentsCSVToFirestore(
 
       for (const { userId, fine } of batchFines) {
         const fineRef = doc(firestore, `users/${userId}/fines`, fine.id);
-        batch.set(fineRef, fine);
+        batch.set(fineRef, sanitizeFirestoreData(fine as any));
       }
 
       await batch.commit();
@@ -523,7 +553,7 @@ export async function importPunishmentsCSVToFirestore(
 
       for (const { userId, consumption } of batchConsumptions) {
         const consumptionRef = doc(firestore, `users/${userId}/beverageConsumptions`, consumption.id);
-        batch.set(consumptionRef, consumption);
+        batch.set(consumptionRef, sanitizeFirestoreData(consumption as any));
       }
 
       await batch.commit();
@@ -635,7 +665,7 @@ export async function importTransactionsCSVToFirestore(
         // Find or create player
         const player = await findOrCreatePlayer(firestore, playerName, undefined, existingPlayers);
 
-        if (!existingPlayers.has(player.name.toLowerCase())) {
+        if ((player as any).__isNew && !playersToCreate.some(p => p.id === player.id)) {
           playersToCreate.push(player);
           result.playersCreated++;
         }
@@ -675,7 +705,7 @@ export async function importTransactionsCSVToFirestore(
 
       for (const player of batchPlayers) {
         const playerRef = doc(firestore, 'users', player.id);
-        batch.set(playerRef, player);
+        batch.set(playerRef, sanitizeFirestoreData(player as any));
       }
 
       await batch.commit();
@@ -688,7 +718,7 @@ export async function importTransactionsCSVToFirestore(
 
       for (const { userId, payment } of batchPayments) {
         const paymentRef = doc(firestore, `users/${userId}/payments`, payment.id);
-        batch.set(paymentRef, payment);
+        batch.set(paymentRef, sanitizeFirestoreData(payment as any));
       }
 
       await batch.commit();
