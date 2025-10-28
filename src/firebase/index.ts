@@ -35,6 +35,16 @@ function initializePerformanceMonitoring(firebaseApp: FirebaseApp) {
       return null;
     }
 
+    // Only enable Performance Monitoring in production or when explicitly enabled
+    // This prevents quota/CORS errors in development
+    const enablePerformance = process.env.NODE_ENV === 'production' ||
+                              process.env.NEXT_PUBLIC_ENABLE_PERFORMANCE === 'true';
+
+    if (!enablePerformance) {
+      console.info('Firebase Performance Monitoring: Disabled in development');
+      return null;
+    }
+
     const perf = getPerformance(firebaseApp);
     console.info('Firebase Performance Monitoring initialized');
     return perf;
