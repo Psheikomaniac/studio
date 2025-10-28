@@ -10,16 +10,16 @@ import { useToast } from "@/hooks/use-toast";
 import type { Player, Fine, Payment, Due, DuePayment, BeverageConsumption, PredefinedFine, Beverage } from '@/lib/types';
 import { Stats } from '@/components/dashboard/stats';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { usePlayers } from '@/services/players.service';
+import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
 import {
-  players as staticPlayers,
-  fines as staticFines,
-  payments as staticPayments,
   dues as staticDues,
-  duePayments as staticDuePayments,
-  beverageConsumptions as staticBeverageConsumptions,
   predefinedFines as staticPredefinedFines,
   beverages as staticBeverages
 } from '@/lib/static-data';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 import { AddFineDialog } from '@/components/dashboard/add-fine-dialog';
 import { RecordDuePaymentDialog } from '@/components/dues/record-due-payment-dialog';
 import { AddEditPaymentDialog } from '@/components/payments/add-edit-payment-dialog';
@@ -43,24 +43,40 @@ interface UnifiedTransaction {
 }
 
 export default function DashboardPage() {
-  const [fines, setFines] = useState<Fine[]>(staticFines);
-  const [payments, setPayments] = useState<Payment[]>(staticPayments);
-  const [duePayments, setDuePayments] = useState<DuePayment[]>(staticDuePayments);
-  const [beverageConsumptions, setBeverageConsumptions] = useState<BeverageConsumption[]>(staticBeverageConsumptions);
+  // Fetch all players and their transactions from Firebase
+  const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
+  const { data: finesData, isLoading: finesLoading } = useAllFines();
+  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments();
+  const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();
+  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions();
+
+  // Keep static data for catalogs (dues, predefined fines, beverages)
   const [dues] = useState<Due[]>(staticDues);
   const [predefinedFines] = useState<PredefinedFine[]>(staticPredefinedFines);
   const [beverages] = useState<Beverage[]>(staticBeverages);
 
+  // Use Firebase data or empty arrays while loading
+  const fines = finesData || [];
+  const payments = paymentsData || [];
+  const duePayments = duePaymentsData || [];
+  const beverageConsumptions = consumptionsData || [];
+
   // Calculate player balances dynamically based on all transactions
   const players = useMemo(() => {
+    if (!playersData) return [];
+
     return updatePlayersWithCalculatedBalances(
-      staticPlayers,
+      playersData,
       payments,
       fines,
       duePayments,
       beverageConsumptions
     );
-  }, [payments, fines, duePayments, beverageConsumptions]);
+  }, [playersData, payments, fines, duePayments, beverageConsumptions]);
+
+  // Determine overall loading state
+  const isLoading = playersLoading || finesLoading || paymentsLoading ||
+                    duePaymentsLoading || consumptionsLoading;
 
   // Dialog states
   const [isAddFineOpen, setAddFineOpen] = useState(false);
@@ -70,8 +86,91 @@ export default function DashboardPage() {
 
   const { toast } = useToast();
 
-  const getPlayerName = (id: string) => players?.find(p => p.id === id)?.name || 'Unknown';
-  const getDueName = (id: string) => dues?.find(d => d.id === id)?.name || 'Unknown';
+  const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Unknown';
+  const getDueName = (id: string) => dues.find(d => d.id === id)?.name || 'Unknown';
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <>
+        <main className="flex flex-1 flex-col">
+          <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-8">
+            <SidebarTrigger className="md:hidden" />
+            <h1 className="font-headline text-xl font-semibold md:text-2xl">
+              Dashboard
+            </h1>
+          </header>
+
+          <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+            <div className="grid gap-4 md:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <Card key={i}>
+                  <CardHeader className="pb-2">
+                    <Skeleton className="h-4 w-24" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-8 w-16" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-64 w-full" />
+              </CardContent>
+            </Card>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-48 w-full" />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-48 w-full" />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  // Show error state
+  if (playersError) {
+    return (
+      <>
+        <main className="flex flex-1 flex-col">
+          <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-8">
+            <SidebarTrigger className="md:hidden" />
+            <h1 className="font-headline text-xl font-semibold md:text-2xl">
+              Dashboard
+            </h1>
+          </header>
+
+          <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error Loading Dashboard</AlertTitle>
+              <AlertDescription>
+                {playersError.message || 'Failed to load dashboard data. Please try again later.'}
+              </AlertDescription>
+            </Alert>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   // Convert all data sources into unified transactions
   const unifiedTransactions = useMemo<UnifiedTransaction[]>(() => {
@@ -154,165 +253,8 @@ export default function DashboardPage() {
     return unifiedTransactions.slice(0, 5);
   }, [unifiedTransactions]);
 
-  const handleAddFine = (newFineData: any) => {
-    const newFines = newFineData.playerIds.map((playerId: string) => {
-      const player = players.find(p => p.id === playerId);
-      const playerBalance = player?.balance || 0;
-      const fineAmount = newFineData.amount;
-
-      // Determine payment status
-      const hasFullCredit = playerBalance >= fineAmount;
-      const hasPartialCredit = playerBalance > 0 && playerBalance < fineAmount;
-
-      return {
-        id: `fine-${Date.now()}-${playerId}`,
-        userId: playerId,
-        reason: newFineData.reason,
-        amount: fineAmount,
-        date: new Date().toISOString(),
-        paid: hasFullCredit,
-        paidAt: hasFullCredit ? new Date().toISOString() : undefined,
-        amountPaid: hasPartialCredit ? playerBalance : (hasFullCredit ? fineAmount : undefined),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-    });
-
-    setFines(prevFines => [...prevFines, ...newFines]);
-
-    // Balance is now calculated automatically - no manual update needed!
-    const autoPaidCount = newFines.filter((f: Fine) => f.paid).length;
-    const partiallyPaidCount = newFines.filter((f: Fine) => !f.paid && f.amountPaid && f.amountPaid > 0).length;
-
-    let description = `${newFineData.reason} assigned to ${newFineData.playerIds.length} player(s).`;
-    if (autoPaidCount > 0) {
-      description += ` ${autoPaidCount} automatically paid from credit.`;
-    }
-    if (partiallyPaidCount > 0) {
-      description += ` ${partiallyPaidCount} partially paid from available credit.`;
-    }
-
-    toast({
-      title: "Fine(s) Added",
-      description
-    });
-  };
-
-  const handleAddPayment = (paymentData: any) => {
-    const newPayment: Payment = {
-      id: `payment-${Date.now()}`,
-      userId: paymentData.userId,
-      reason: paymentData.reason,
-      amount: paymentData.amount,
-      date: new Date().toISOString(),
-      paid: true,
-      paidAt: new Date().toISOString(),
-    };
-
-    setPayments(prevPayments => [...prevPayments, newPayment]);
-
-    // Balance is now calculated automatically - no manual update needed!
-
-    toast({
-      title: "Payment Added",
-      description: `Payment of €${paymentData.amount.toFixed(2)} recorded. Player credit updated.`
-    });
-  };
-
-  const handleRecordDuePayment = (data: { playerIds: string[], dueId: string, status: "paid" | "exempt" }) => {
-    const due = dues.find(d => d.id === data.dueId);
-    if (!due) return;
-
-    const newPayments: DuePayment[] = data.playerIds.map(playerId => {
-      const player = players.find(p => p.id === playerId);
-      const playerBalance = player?.balance || 0;
-      const dueAmount = due.amount;
-
-      // Determine payment status (unless explicitly marking as exempt)
-      const hasFullCredit = playerBalance >= dueAmount;
-      const hasPartialCredit = playerBalance > 0 && playerBalance < dueAmount;
-      const autoPaid = data.status !== 'exempt' && hasFullCredit;
-
-      return {
-        id: `dp-${Date.now()}-${playerId}`,
-        dueId: data.dueId,
-        userId: playerId,
-        userName: player?.name || 'Unknown',
-        amountDue: dueAmount,
-        paid: data.status === 'paid' || autoPaid || false,
-        paidAt: (data.status === 'paid' || autoPaid) ? new Date().toISOString() : undefined,
-        amountPaid: data.status !== 'exempt' && hasPartialCredit ? playerBalance : (autoPaid ? dueAmount : undefined),
-        exempt: data.status === 'exempt',
-        createdAt: new Date().toISOString(),
-      };
-    });
-
-    setDuePayments(prevPayments => [...prevPayments, ...newPayments]);
-
-    // Balance is now calculated automatically - no manual update needed!
-    const autoPaidCount = newPayments.filter(dp => dp.paid && data.status !== 'paid' && !dp.exempt).length;
-    const partiallyPaidCount = newPayments.filter(dp => !dp.paid && dp.amountPaid && dp.amountPaid > 0 && !dp.exempt).length;
-
-    let description = `Payment recorded for ${data.playerIds.length} player(s).`;
-    if (autoPaidCount > 0) {
-      description += ` ${autoPaidCount} automatically paid from credit.`;
-    }
-    if (partiallyPaidCount > 0) {
-      description += ` ${partiallyPaidCount} partially paid from available credit.`;
-    }
-
-    toast({
-      title: "Payment Recorded",
-      description
-    });
-  };
-
-  const handleRecordBeverage = (data: { playerIds: string[], beverageId: string }) => {
-    const beverage = beverages.find(b => b.id === data.beverageId);
-    if (!beverage) return;
-
-    const newConsumptions: BeverageConsumption[] = data.playerIds.map(playerId => {
-      const player = players.find(p => p.id === playerId);
-      const playerBalance = player?.balance || 0;
-      const beveragePrice = beverage.price;
-
-      // Determine payment status
-      const hasFullCredit = playerBalance >= beveragePrice;
-      const hasPartialCredit = playerBalance > 0 && playerBalance < beveragePrice;
-
-      return {
-        id: `bc-${Date.now()}-${playerId}`,
-        userId: playerId,
-        beverageId: beverage.id,
-        beverageName: beverage.name,
-        amount: beveragePrice,
-        date: new Date().toISOString(),
-        paid: hasFullCredit,
-        paidAt: hasFullCredit ? new Date().toISOString() : undefined,
-        amountPaid: hasPartialCredit ? playerBalance : (hasFullCredit ? beveragePrice : undefined),
-        createdAt: new Date().toISOString(),
-      };
-    });
-
-    setBeverageConsumptions(prevConsumptions => [...prevConsumptions, ...newConsumptions]);
-
-    // Balance is now calculated automatically - no manual update needed!
-    const autoPaidCount = newConsumptions.filter(bc => bc.paid).length;
-    const partiallyPaidCount = newConsumptions.filter(bc => !bc.paid && bc.amountPaid && bc.amountPaid > 0).length;
-
-    let description = `${beverage.name} recorded for ${data.playerIds.length} player(s).`;
-    if (autoPaidCount > 0) {
-      description += ` ${autoPaidCount} automatically paid from credit.`;
-    }
-    if (partiallyPaidCount > 0) {
-      description += ` ${partiallyPaidCount} partially paid from available credit.`;
-    }
-
-    toast({
-      title: "Beverage Recorded",
-      description
-    });
-  };
+  // Note: Dialog handlers removed - dialogs now handle Firebase operations directly
+  // Real-time listeners will automatically update the UI when data changes
 
   const getTypeBadge = (type: TransactionType) => {
     switch (type) {
@@ -448,34 +390,34 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Dialogs */}
+      {/* Dialogs - handlers removed, they now use Firebase services directly */}
       <AddFineDialog
         isOpen={isAddFineOpen}
         setOpen={setAddFineOpen}
         players={players}
         predefinedFines={predefinedFines}
-        onFineAdded={handleAddFine}
+        onFineAdded={() => {}} // Kept for backwards compatibility
       />
       <AddEditPaymentDialog
         isOpen={isAddPaymentOpen}
         setOpen={setAddPaymentOpen}
         players={players}
         payment={null}
-        onSave={handleAddPayment}
+        onSave={() => {}} // Kept for backwards compatibility
       />
       <RecordDuePaymentDialog
         isOpen={isRecordDueOpen}
         setOpen={setRecordDueOpen}
         players={players}
         dues={dues}
-        onRecord={handleRecordDuePayment}
+        onRecord={() => {}} // Kept for backwards compatibility
       />
       <RecordConsumptionDialog
         isOpen={isRecordBeverageOpen}
         setOpen={setRecordBeverageOpen}
         players={players}
         beverages={beverages}
-        onRecord={handleRecordBeverage}
+        onRecord={() => {}} // Kept for backwards compatibility
       />
     </>
   );

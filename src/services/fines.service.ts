@@ -244,8 +244,8 @@ export class FinesService extends BaseFirebaseService<Fine> {
 
         const updateData = {
           paid,
-          paidAt: paid ? now : undefined,
-          amountPaid: paid ? currentFine.amount : (currentFine.amountPaid || undefined),
+          paidAt: paid ? now : null,
+          amountPaid: paid ? currentFine.amount : (currentFine.amountPaid || null),
           updatedAt: now,
           ...(options.userId && { updatedBy: options.userId }),
         };
@@ -286,7 +286,7 @@ export class FinesService extends BaseFirebaseService<Fine> {
     // Use with caution - prefer the transactional version
     updateDocumentNonBlocking(docRef, {
       paid,
-      paidAt: paid ? now : undefined,
+      paidAt: paid ? now : null,
       updatedAt: now,
       ...(options.userId && { updatedBy: options.userId }),
     });

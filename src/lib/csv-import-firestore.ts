@@ -277,7 +277,7 @@ export async function importDuesCSVToFirestore(
           userName: player.name,
           amountDue: amountEUR,
           paid: isPaid,
-          paidAt: isPaid && paymentDate ? paymentDate : undefined,
+          paidAt: isPaid && paymentDate ? paymentDate : null,
           exempt: isExempt,
           createdAt: dueCreated
         };
@@ -444,7 +444,7 @@ export async function importPunishmentsCSVToFirestore(
             amount: amountEUR,
             date: createdDate,
             paid: !!paidDate,
-            paidAt: paidDate,
+            paidAt: paidDate || null,
             createdAt: createdDate
           };
 
@@ -460,7 +460,7 @@ export async function importPunishmentsCSVToFirestore(
             amount: amountEUR,
             date: createdDate,
             paid: !!paidDate,
-            paidAt: paidDate,
+            paidAt: paidDate || null,
             createdAt: createdDate,
             updatedAt: paidDate || createdDate
           };
@@ -654,7 +654,7 @@ export async function importTransactionsCSVToFirestore(
           amount: Math.abs(amountEUR),
           date: transactionDate,
           paid: !isStorno,
-          paidAt: !isStorno ? transactionDate : undefined
+          paidAt: !isStorno ? transactionDate : null
         };
 
         paymentsToCreate.push({ userId: player.id, payment });

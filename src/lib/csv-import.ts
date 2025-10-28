@@ -259,7 +259,7 @@ export async function importDuesCSV(text: string): Promise<ImportResult> {
             userName: player.name,
             amountDue: amountEUR,
             paid: isPaid,
-            paidAt: isPaid && paymentDate ? paymentDate : undefined,
+            paidAt: isPaid && paymentDate ? paymentDate : null,
             exempt: isExempt,
             createdAt: dueCreated
           };
@@ -365,7 +365,7 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
             amount: amountEUR,
             date: createdDate,
             paid: !!paidDate,
-            paidAt: paidDate,
+            paidAt: paidDate || null,
             createdAt: createdDate
           };
 
@@ -381,7 +381,7 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
             amount: amountEUR,
             date: createdDate,
             paid: !!paidDate,
-            paidAt: paidDate,
+            paidAt: paidDate || null,
             createdAt: createdDate,
             updatedAt: paidDate || createdDate
           };
@@ -511,7 +511,7 @@ export async function importTransactionsCSV(text: string): Promise<ImportResult>
           amount: Math.abs(amountEUR), // Store as positive amount
           date: transactionDate,
           paid: !isStorno, // Stornos are not considered "paid"
-          paidAt: !isStorno ? transactionDate : undefined
+          paidAt: !isStorno ? transactionDate : null
         };
 
         payments.push(payment);

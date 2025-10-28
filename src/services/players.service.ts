@@ -18,7 +18,8 @@ import { useMemo } from 'react';
 import { BaseFirebaseService } from './base.service';
 import type { ServiceResult, CreateOptions, UpdateOptions, DeleteOptions } from './types';
 import type { Player } from '@/lib/types';
-import { useFirestore, useMemoFirebase, useCollection, useDoc } from '@/firebase';
+import { useMemoFirebase, useCollection, useDoc } from '@/firebase';
+import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 import { setDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 /**
@@ -163,14 +164,19 @@ export class PlayersService extends BaseFirebaseService<Player> {
 
 /**
  * Hook to get the PlayersService instance
- * @returns PlayersService instance
+ * @returns PlayersService instance or null if Firebase is not available
  * @example
  * const playersService = usePlayersService();
- * await playersService.createPlayer({ name: 'John Doe', ... });
+ * if (playersService) {
+ *   await playersService.createPlayer({ name: 'John Doe', ... });
+ * }
  */
-export function usePlayersService(): PlayersService {
-  const firestore = useFirestore();
-  return useMemo(() => new PlayersService(firestore), [firestore]);
+export function usePlayersService(): PlayersService | null {
+  const firebase = useFirebaseOptional();
+  return useMemo(() => {
+    if (!firebase?.firestore) return null;
+    return new PlayersService(firebase.firestore);
+  }, [firebase?.firestore]);
 }
 
 /**
@@ -180,12 +186,13 @@ export function usePlayersService(): PlayersService {
  * const { data: players, isLoading, error } = usePlayers();
  */
 export function usePlayers() {
-  const firestore = useFirestore();
+  const firebase = useFirebaseOptional();
 
   const playersQuery = useMemoFirebase(() => {
-    const playersCol = collection(firestore, 'users');
+    if (!firebase?.firestore) return null;
+    const playersCol = collection(firebase.firestore, 'users');
     return query(playersCol, orderBy('name', 'asc'));
-  }, [firestore]);
+  }, [firebase?.firestore]);
 
   return useCollection<Player>(playersQuery);
 }
@@ -198,12 +205,12 @@ export function usePlayers() {
  * const { data: player, isLoading, error } = usePlayer(playerId);
  */
 export function usePlayer(playerId: string | null | undefined) {
-  const firestore = useFirestore();
+  const firebase = useFirebaseOptional();
 
   const playerRef = useMemoFirebase(() => {
-    if (!playerId) return null;
-    return doc(firestore, 'users', playerId);
-  }, [firestore, playerId]);
+    if (!playerId || !firebase?.firestore) return null;
+    return doc(firebase.firestore, 'users', playerId);
+  }, [firebase?.firestore, playerId]);
 
   return useDoc<Player>(playerRef);
 }

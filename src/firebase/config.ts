@@ -51,7 +51,7 @@ export const firebaseConfig = {
  * Feature flag to enable/disable Firebase integration
  * @default false
  */
-export const useFirebase = process.env.NEXT_PUBLIC_USE_FIREBASE === 'true';
+export const isFirebaseEnabled = process.env.NEXT_PUBLIC_USE_FIREBASE === 'true';
 
 /**
  * Feature flag to enable/disable Firestore offline persistence

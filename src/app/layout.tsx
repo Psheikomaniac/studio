@@ -1,14 +1,9 @@
+'use client';
 
-import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-
-export const metadata: Metadata = {
-  title: 'balanceUp',
-  description: 'A modern, real-time web app for managing team fines and beverage balances in a handball club.',
-};
 
 export default function RootLayout({
   children,
