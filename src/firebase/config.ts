@@ -3,17 +3,19 @@
  * @throws Error if required environment variables are missing
  */
 function validateFirebaseConfig() {
-  const requiredVars = [
-    'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
-    'NEXT_PUBLIC_FIREBASE_APP_ID',
-    'NEXT_PUBLIC_FIREBASE_API_KEY',
-    'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-    'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
-  ];
+  // Check actual config values instead of dynamic process.env lookup
+  // This works correctly with Turbopack's compile-time inlining
+  const config = {
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  };
 
-  const missing = requiredVars.filter(
-    (varName) => !process.env[varName]
-  );
+  const missing = Object.entries(config)
+    .filter(([_, value]) => !value)
+    .map(([key]) => `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`);
 
   if (missing.length > 0) {
     throw new Error(
@@ -23,8 +25,11 @@ function validateFirebaseConfig() {
   }
 }
 
-// Only validate configuration if Firebase is enabled
-if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_FIREBASE === 'true') {
+// Only validate configuration in development when Firebase is enabled
+// Run only server-side to avoid Turbopack bundling issues
+if (typeof window === 'undefined' &&
+    process.env.NODE_ENV === 'development' &&
+    process.env.NEXT_PUBLIC_USE_FIREBASE === 'true') {
   validateFirebaseConfig();
 }
 
@@ -52,4 +57,4 @@ export const useFirebase = process.env.NEXT_PUBLIC_USE_FIREBASE === 'true';
  * Feature flag to enable/disable Firestore offline persistence
  * @default false
  */
-export const enablePersistence = process.env.NEXT_PUBLIC_ENABLE_PERSISTENCE === 'true';
+export const enablePersistence = process.env.NEXT_PUBLIC_FIREBASE_PERSISTENCE === 'true';
