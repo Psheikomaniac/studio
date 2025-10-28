@@ -4,9 +4,11 @@ import { firebaseConfig, enablePersistence as shouldEnablePersistence } from '@/
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import {
+  initializeFirestore,
   getFirestore,
-  enableIndexedDbPersistence,
-  enableMultiTabIndexedDbPersistence,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  memoryLocalCache,
   CACHE_SIZE_UNLIMITED
 } from 'firebase/firestore';
 import { getPerformance } from 'firebase/performance';
@@ -20,50 +22,6 @@ function isBrowserCompatible(): boolean {
   return typeof window !== 'undefined' &&
          typeof navigator !== 'undefined' &&
          'indexedDB' in window;
-}
-
-/**
- * Enables Firestore offline persistence with IndexedDB
- * Attempts multi-tab persistence first, falls back to single-tab if needed
- * @param firestore - Firestore instance to enable persistence on
- */
-async function enableFirestorePersistence(firestore: ReturnType<typeof getFirestore>) {
-  if (!shouldEnablePersistence || !isBrowserCompatible()) {
-    return;
-  }
-
-  try {
-    // Try to enable multi-tab persistence first
-    await enableMultiTabIndexedDbPersistence(firestore);
-    console.info('Firestore: Multi-tab persistence enabled');
-  } catch (err: any) {
-    if (err.code === 'failed-precondition') {
-      // Multiple tabs open, persistence can only be enabled in one tab at a time.
-      console.warn(
-        'Firestore: Failed to enable persistence - multiple tabs open. ' +
-        'Persistence is only enabled in the first tab.'
-      );
-
-      // Try single-tab persistence as fallback
-      try {
-        await enableIndexedDbPersistence(firestore, {
-          forceOwnership: false
-        });
-        console.info('Firestore: Single-tab persistence enabled');
-      } catch (singleTabErr: any) {
-        console.warn('Firestore: Failed to enable single-tab persistence', singleTabErr);
-      }
-    } else if (err.code === 'unimplemented') {
-      // The current browser doesn't support persistence
-      console.warn(
-        'Firestore: Persistence is not supported in this browser. ' +
-        'Data will not be cached offline.'
-      );
-    } else {
-      // Unexpected error
-      console.error('Firestore: Failed to enable persistence', err);
-    }
-  }
 }
 
 /**
@@ -94,6 +52,13 @@ function initializePerformanceMonitoring(firebaseApp: FirebaseApp) {
 async function initializeAnalytics(firebaseApp: FirebaseApp) {
   try {
     if (!isBrowserCompatible()) {
+      return null;
+    }
+
+    // Skip analytics if measurement ID is not configured or is a placeholder
+    const measurementId = firebaseConfig.measurementId;
+    if (!measurementId || measurementId === 'G-XXXXXXXXXX' || measurementId.length === 0) {
+      console.info('Firebase Analytics: Measurement ID not configured, skipping initialization');
       return null;
     }
 
@@ -141,12 +106,28 @@ export function initializeFirebase() {
 
 export function getSdks(firebaseApp: FirebaseApp) {
   const auth = getAuth(firebaseApp);
-  const firestore = getFirestore(firebaseApp);
 
-  // Enable persistence asynchronously (non-blocking)
-  enableFirestorePersistence(firestore).catch(err => {
-    console.error('Failed to initialize Firestore persistence', err);
-  });
+  // Initialize Firestore with modern cache API (persistence is configured during initialization)
+  let firestore;
+  try {
+    // Check if Firestore was already initialized with cache settings
+    firestore = getFirestore(firebaseApp);
+  } catch {
+    // If not initialized yet, initialize with cache settings
+    if (shouldEnablePersistence && isBrowserCompatible()) {
+      firestore = initializeFirestore(firebaseApp, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager()
+        })
+      });
+      console.info('Firestore: Multi-tab persistence enabled (modern API)');
+    } else {
+      firestore = initializeFirestore(firebaseApp, {
+        localCache: memoryLocalCache()
+      });
+      console.info('Firestore: Memory-only cache enabled');
+    }
+  }
 
   // Initialize monitoring services asynchronously (non-blocking)
   initializePerformanceMonitoring(firebaseApp);
