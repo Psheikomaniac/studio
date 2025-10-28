@@ -1,0 +1,8 @@
+team_id;team_name;transaction_date;transaction_amount;transaction_currency;transaction_subject;balance_total;balance_filtered;search_params
+team123;HSG Musterstadt;10-05-2024;-500;EUR;Strafen: Max Mustermann (Training zu spät);-500;-500;
+team123;HSG Musterstadt;15-05-2024;500;EUR;Einzahlung: Max Mustermann;0;0;
+team123;HSG Musterstadt;12-05-2024;-750;EUR;Strafen: Anna Schmidt (Gelbe Karte);-750;-750;
+team123;HSG Musterstadt;14-05-2024;-150;EUR;Getränke: Tom Weber (Bier);-150;-150;
+team123;HSG Musterstadt;18-05-2024;-120;EUR;Getränke: Lisa Müller (Cola);-120;-120;
+team123;HSG Musterstadt;20-05-2024;-2000;EUR;Strafen: Tom Weber (Rote Karte);-2150;-2150;
+team123;HSG Musterstadt;22-05-2024;1000;EUR;Einzahlung: Tom Weber;-1150;-1150;

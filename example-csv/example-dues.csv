@@ -1,0 +1,7 @@
+team_id;team_name;due_name;due_created;due_amount;due_currency;due_archived;user_id;username;user_paid;user_payment_date;search_params
+team123;HSG Musterstadt;Saison2425;01-08-2024;15000;EUR;NO;player1;Max Mustermann;STATUS_PAID;15-08-2024;
+team123;HSG Musterstadt;Saison2425;01-08-2024;15000;EUR;NO;player2;Anna Schmidt;STATUS_UNPAID;;
+team123;HSG Musterstadt;Saison2425;01-08-2024;15000;EUR;NO;player3;Tom Weber;STATUS_EXEMPT;;
+team123;HSG Musterstadt;Meisterfeier;15-06-2024;4500;EUR;NO;player1;Max Mustermann;STATUS_PAID;20-06-2024;
+team123;HSG Musterstadt;Meisterfeier;15-06-2024;4500;EUR;NO;player2;Anna Schmidt;STATUS_PAID;22-06-2024;
+team123;HSG Musterstadt;Trainingslager;01-05-2024;8000;EUR;YES;player1;Max Mustermann;STATUS_PAID;10-05-2024;

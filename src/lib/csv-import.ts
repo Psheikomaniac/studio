@@ -85,7 +85,7 @@ function findOrCreatePlayer(name: string, id?: string): Player {
     id: id || generateId('player'),
     name: name.trim(),
     nickname: name.trim().split(' ')[0], // Use first name as nickname
-    photoUrl: `https://picsum.photos/seed/${encodeURIComponent(name)}/400/400`,
+    photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=400&background=0ea5e9&color=fff`,
     balance: 0,
     email: undefined,
     phone: undefined,

@@ -1,0 +1,8 @@
+team_id;team_name;penatly_created;penatly_user;penatly_reason;penatly_archived;penatly_paid;penatly_amount;penatly_currency;penatly_subject;search_params
+team123;HSG Musterstadt;10-05-2024;Max Mustermann;Zu spät zum Training;NO;15-05-2024;500;EUR;Strafe;
+team123;HSG Musterstadt;12-05-2024;Anna Schmidt;Gelbe Karte;NO;;750;EUR;Strafe;
+team123;HSG Musterstadt;14-05-2024;Tom Weber;Bier nach dem Spiel;NO;14-05-2024;150;EUR;Getränk;
+team123;HSG Musterstadt;15-05-2024;Max Mustermann;Vergessenes Equipment;NO;;250;EUR;Strafe;
+team123;HSG Musterstadt;18-05-2024;Lisa Müller;Cola;NO;18-05-2024;120;EUR;Getränk;
+team123;HSG Musterstadt;20-05-2024;Tom Weber;Rote Karte;NO;;2000;EUR;Strafe;
+team123;HSG Musterstadt;22-05-2024;Anna Schmidt;Wasser;NO;22-05-2024;100;EUR;Getränk;
