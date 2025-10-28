@@ -1,0 +1,733 @@
+/**
+ * CSV Import with Firestore Integration
+ *
+ * This module imports CSV data directly into Firestore using the service classes.
+ * Unlike csv-import.ts which writes to local arrays, this writes to the database.
+ */
+
+'use client';
+
+import * as Papa from 'papaparse';
+import {
+  collection,
+  writeBatch,
+  doc,
+  getDocs,
+  query,
+  where,
+  Firestore,
+} from 'firebase/firestore';
+import { Player, Fine, Payment, Due, DuePayment, Beverage, BeverageConsumption } from './types';
+
+export interface ImportResult {
+  success: boolean;
+  rowsProcessed: number;
+  playersCreated: number;
+  recordsCreated: number;
+  errors: string[];
+  warnings: string[];
+}
+
+// Helper function to strip BOM (Byte Order Mark) if present
+function stripBOM(text: string): string {
+  if (text.charCodeAt(0) === 0xFEFF) {
+    return text.slice(1);
+  }
+  return text;
+}
+
+// Helper function to generate unique ID
+function generateId(prefix: string): string {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+// Helper function to parse German date format (DD-MM-YYYY) to ISO string
+function parseGermanDate(dateStr: string): string {
+  if (!dateStr || dateStr.trim() === '') {
+    return new Date().toISOString();
+  }
+
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) {
+    return new Date().toISOString();
+  }
+
+  const [day, month, year] = parts;
+  // Create date at noon UTC to avoid timezone issues
+  const date = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0));
+  return date.toISOString();
+}
+
+// Helper function to convert cents to EUR
+function centsToEUR(cents: string | number): number {
+  const amount = typeof cents === 'string' ? parseInt(cents, 10) : cents;
+  return amount / 100;
+}
+
+// Helper function to classify punishment as DRINK or FINE
+function classifyPunishment(reason: string): 'DRINK' | 'FINE' {
+  const lowerReason = reason.toLowerCase();
+  const drinkKeywords = ['getränke', 'getränk', 'bier', 'beer', 'drink', 'beverage', 'wasser', 'water', 'cola', 'sprite'];
+
+  for (const keyword of drinkKeywords) {
+    if (lowerReason.includes(keyword)) {
+      return 'DRINK';
+    }
+  }
+
+  return 'FINE';
+}
+
+/**
+ * Find or create player in Firestore
+ */
+async function findOrCreatePlayer(
+  firestore: Firestore,
+  name: string,
+  id?: string,
+  existingPlayers?: Map<string, Player>
+): Promise<Player> {
+  const normalizedName = name.trim().toLowerCase();
+
+  // First check in-memory cache
+  if (existingPlayers?.has(normalizedName)) {
+    return existingPlayers.get(normalizedName)!;
+  }
+
+  // Then check Firestore by ID if provided
+  if (id) {
+    const docRef = doc(firestore, 'users', id);
+    const docSnap = await getDocs(query(collection(firestore, 'users'), where('__name__', '==', id)));
+    if (!docSnap.empty) {
+      const player = { id, ...docSnap.docs[0].data() } as Player;
+      existingPlayers?.set(normalizedName, player);
+      return player;
+    }
+  }
+
+  // Then check Firestore by name
+  const usersRef = collection(firestore, 'users');
+  const q = query(usersRef);
+  const snapshot = await getDocs(q);
+
+  for (const doc of snapshot.docs) {
+    const player = { id: doc.id, ...doc.data() } as Player;
+    if (player.name.toLowerCase().trim() === normalizedName) {
+      existingPlayers?.set(normalizedName, player);
+      return player;
+    }
+  }
+
+  // Create new player
+  const newPlayer: Player = {
+    id: id || generateId('player'),
+    name: name.trim(),
+    nickname: name.trim().split(' ')[0],
+    photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=400&background=0ea5e9&color=fff`,
+    balance: 0,
+    email: undefined,
+    phone: undefined,
+    totalUnpaidPenalties: 0,
+    totalPaidPenalties: 0,
+  };
+
+  existingPlayers?.set(normalizedName, newPlayer);
+  return newPlayer;
+}
+
+/**
+ * Find or create beverage in Firestore
+ */
+async function findOrCreateBeverage(
+  firestore: Firestore,
+  name: string,
+  price: number,
+  existingBeverages?: Map<string, Beverage>
+): Promise<Beverage> {
+  const normalizedName = name.trim().toLowerCase();
+
+  // Check in-memory cache
+  if (existingBeverages?.has(normalizedName)) {
+    return existingBeverages.get(normalizedName)!;
+  }
+
+  // Check Firestore
+  const beveragesRef = collection(firestore, 'beverages');
+  const snapshot = await getDocs(beveragesRef);
+
+  for (const doc of snapshot.docs) {
+    const beverage = { id: doc.id, ...doc.data() } as Beverage;
+    if (beverage.name.toLowerCase().trim() === normalizedName) {
+      existingBeverages?.set(normalizedName, beverage);
+      return beverage;
+    }
+  }
+
+  // Create new beverage
+  const newBeverage: Beverage = {
+    id: generateId('bev'),
+    name: name.trim(),
+    price: price
+  };
+
+  existingBeverages?.set(normalizedName, newBeverage);
+  return newBeverage;
+}
+
+/**
+ * Import Dues CSV into Firestore
+ */
+export async function importDuesCSVToFirestore(
+  firestore: Firestore,
+  text: string,
+  onProgress?: (progress: number, total: number) => void
+): Promise<ImportResult> {
+  const result: ImportResult = {
+    success: false,
+    rowsProcessed: 0,
+    playersCreated: 0,
+    recordsCreated: 0,
+    errors: [],
+    warnings: []
+  };
+
+  try {
+    // Strip BOM and parse CSV
+    const cleanText = stripBOM(text);
+    const parsed = Papa.parse(cleanText, {
+      delimiter: ';',
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim().replace(/^"/, '').replace(/"$/, '')
+    });
+
+    if (parsed.errors.length > 0) {
+      result.errors.push(...parsed.errors.map(e => `CSV Parse Error: ${e.message}`));
+    }
+
+    const rows = parsed.data as any[];
+    const duesMap = new Map<string, Due>();
+    const existingPlayers = new Map<string, Player>();
+    const playersToCreate: Player[] = [];
+    const duePaymentsToCreate: DuePayment[] = [];
+
+    // Process all rows first
+    for (let i = 0; i < rows.length; i++) {
+      try {
+        const row = rows[i];
+        result.rowsProcessed++;
+
+        if (onProgress) {
+          onProgress(i + 1, rows.length);
+        }
+
+        // Validate required fields
+        if (!row.due_name || !row.due_amount || !row.username) {
+          result.warnings.push(`Row ${i + 1}: Missing required fields`);
+          continue;
+        }
+
+        // Parse dates
+        const dueCreated = parseGermanDate(row.due_created);
+        const paymentDate = row.user_payment_date ? parseGermanDate(row.user_payment_date) : undefined;
+
+        // Convert amount from cents to EUR
+        const amountEUR = centsToEUR(row.due_amount);
+
+        // Validate amount
+        if (isNaN(amountEUR) || amountEUR < 0) {
+          result.warnings.push(`Row ${i + 1}: Invalid amount: ${row.due_amount}`);
+          continue;
+        }
+
+        // Find or create Due record
+        const dueName = row.due_name.trim();
+        let due = duesMap.get(dueName);
+
+        if (!due) {
+          due = {
+            id: generateId('due'),
+            name: dueName,
+            amount: amountEUR,
+            createdAt: dueCreated,
+            active: row.due_archived !== 'YES',
+            archived: row.due_archived === 'YES'
+          };
+          duesMap.set(dueName, due);
+        }
+
+        // Find or create player
+        const player = await findOrCreatePlayer(firestore, row.username, row.user_id, existingPlayers);
+
+        // Track if player is new
+        if (!existingPlayers.has(player.name.toLowerCase())) {
+          playersToCreate.push(player);
+          result.playersCreated++;
+        }
+
+        // Determine payment status
+        const isPaid = row.user_paid === 'STATUS_PAID';
+        const isExempt = row.user_paid === 'STATUS_EXEMPT';
+
+        // Create DuePayment record
+        const duePayment: DuePayment = {
+          id: generateId('dp'),
+          dueId: due.id,
+          userId: player.id,
+          userName: player.name,
+          amountDue: amountEUR,
+          paid: isPaid,
+          paidAt: isPaid && paymentDate ? paymentDate : undefined,
+          exempt: isExempt,
+          createdAt: dueCreated
+        };
+
+        duePaymentsToCreate.push(duePayment);
+        result.recordsCreated++;
+
+      } catch (error) {
+        result.errors.push(`Row ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+
+    // Now write to Firestore in batches
+    const BATCH_SIZE = 500; // Firestore batch limit
+
+    // Write players
+    for (let i = 0; i < playersToCreate.length; i += BATCH_SIZE) {
+      const batch = writeBatch(firestore);
+      const batchPlayers = playersToCreate.slice(i, i + BATCH_SIZE);
+
+      for (const player of batchPlayers) {
+        const playerRef = doc(firestore, 'users', player.id);
+        batch.set(playerRef, player);
+      }
+
+      await batch.commit();
+    }
+
+    // Write dues
+    const duesArray = Array.from(duesMap.values());
+    for (let i = 0; i < duesArray.length; i += BATCH_SIZE) {
+      const batch = writeBatch(firestore);
+      const batchDues = duesArray.slice(i, i + BATCH_SIZE);
+
+      for (const due of batchDues) {
+        const dueRef = doc(firestore, 'dues', due.id);
+        batch.set(dueRef, due);
+      }
+
+      await batch.commit();
+    }
+
+    // Write due payments (in user subcollections)
+    for (let i = 0; i < duePaymentsToCreate.length; i += BATCH_SIZE) {
+      const batch = writeBatch(firestore);
+      const batchPayments = duePaymentsToCreate.slice(i, i + BATCH_SIZE);
+
+      for (const payment of batchPayments) {
+        const paymentRef = doc(firestore, `users/${payment.userId}/duePayments`, payment.id);
+        batch.set(paymentRef, payment);
+      }
+
+      await batch.commit();
+    }
+
+    result.success = result.errors.length === 0;
+
+  } catch (error) {
+    result.errors.push(`Fatal error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    result.success = false;
+  }
+
+  return result;
+}
+
+/**
+ * Import Punishments CSV into Firestore
+ */
+export async function importPunishmentsCSVToFirestore(
+  firestore: Firestore,
+  text: string,
+  onProgress?: (progress: number, total: number) => void
+): Promise<ImportResult> {
+  const result: ImportResult = {
+    success: false,
+    rowsProcessed: 0,
+    playersCreated: 0,
+    recordsCreated: 0,
+    errors: [],
+    warnings: []
+  };
+
+  try {
+    // Strip BOM and parse CSV
+    const cleanText = stripBOM(text);
+    const parsed = Papa.parse(cleanText, {
+      delimiter: ';',
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim().replace(/^"/, '').replace(/"$/, '')
+    });
+
+    if (parsed.errors.length > 0) {
+      result.errors.push(...parsed.errors.map(e => `CSV Parse Error: ${e.message}`));
+    }
+
+    const rows = parsed.data as any[];
+    const existingPlayers = new Map<string, Player>();
+    const existingBeverages = new Map<string, Beverage>();
+    const playersToCreate: Player[] = [];
+    const beveragesToCreate: Beverage[] = [];
+    const finesToCreate: { userId: string; fine: Fine }[] = [];
+    const consumptionsToCreate: { userId: string; consumption: BeverageConsumption }[] = [];
+
+    // Process all rows first
+    for (let i = 0; i < rows.length; i++) {
+      try {
+        const row = rows[i];
+        result.rowsProcessed++;
+
+        if (onProgress) {
+          onProgress(i + 1, rows.length);
+        }
+
+        // Validate required fields
+        if (!row.penatly_user || !row.penatly_reason || !row.penatly_amount) {
+          result.warnings.push(`Row ${i + 1}: Missing required fields`);
+          continue;
+        }
+
+        // Parse dates
+        const createdDate = parseGermanDate(row.penatly_created);
+        const paidDate = row.penatly_paid ? parseGermanDate(row.penatly_paid) : undefined;
+
+        // Convert amount from cents to EUR
+        const amountEUR = centsToEUR(row.penatly_amount);
+
+        // Validate amount
+        if (isNaN(amountEUR)) {
+          result.warnings.push(`Row ${i + 1}: Invalid amount: ${row.penatly_amount}`);
+          continue;
+        }
+
+        // Skip zero-amount penalties
+        if (amountEUR === 0) {
+          result.warnings.push(`Row ${i + 1}: Skipped zero-amount penalty`);
+          continue;
+        }
+
+        // Find or create player
+        const player = await findOrCreatePlayer(firestore, row.penatly_user, undefined, existingPlayers);
+
+        if (!existingPlayers.has(player.name.toLowerCase())) {
+          playersToCreate.push(player);
+          result.playersCreated++;
+        }
+
+        // Classify as DRINK or FINE
+        const type = classifyPunishment(row.penatly_reason);
+
+        if (type === 'DRINK') {
+          // Create beverage consumption record
+          const beverage = await findOrCreateBeverage(firestore, row.penatly_reason, amountEUR, existingBeverages);
+
+          if (!existingBeverages.has(beverage.name.toLowerCase())) {
+            beveragesToCreate.push(beverage);
+          }
+
+          const consumption: BeverageConsumption = {
+            id: generateId('bc'),
+            userId: player.id,
+            beverageId: beverage.id,
+            beverageName: beverage.name,
+            amount: amountEUR,
+            date: createdDate,
+            paid: !!paidDate,
+            paidAt: paidDate,
+            createdAt: createdDate
+          };
+
+          consumptionsToCreate.push({ userId: player.id, consumption });
+          result.recordsCreated++;
+
+        } else {
+          // Create fine record
+          const fine: Fine = {
+            id: generateId('fine'),
+            userId: player.id,
+            reason: row.penatly_reason.trim(),
+            amount: amountEUR,
+            date: createdDate,
+            paid: !!paidDate,
+            paidAt: paidDate,
+            createdAt: createdDate,
+            updatedAt: paidDate || createdDate
+          };
+
+          finesToCreate.push({ userId: player.id, fine });
+          result.recordsCreated++;
+        }
+
+      } catch (error) {
+        result.errors.push(`Row ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+
+    // Write to Firestore in batches
+    const BATCH_SIZE = 500;
+
+    // Write players
+    for (let i = 0; i < playersToCreate.length; i += BATCH_SIZE) {
+      const batch = writeBatch(firestore);
+      const batchPlayers = playersToCreate.slice(i, i + BATCH_SIZE);
+
+      for (const player of batchPlayers) {
+        const playerRef = doc(firestore, 'users', player.id);
+        batch.set(playerRef, player);
+      }
+
+      await batch.commit();
+    }
+
+    // Write beverages
+    for (let i = 0; i < beveragesToCreate.length; i += BATCH_SIZE) {
+      const batch = writeBatch(firestore);
+      const batchBeverages = beveragesToCreate.slice(i, i + BATCH_SIZE);
+
+      for (const beverage of batchBeverages) {
+        const beverageRef = doc(firestore, 'beverages', beverage.id);
+        batch.set(beverageRef, beverage);
+      }
+
+      await batch.commit();
+    }
+
+    // Write fines (in user subcollections)
+    for (let i = 0; i < finesToCreate.length; i += BATCH_SIZE) {
+      const batch = writeBatch(firestore);
+      const batchFines = finesToCreate.slice(i, i + BATCH_SIZE);
+
+      for (const { userId, fine } of batchFines) {
+        const fineRef = doc(firestore, `users/${userId}/fines`, fine.id);
+        batch.set(fineRef, fine);
+      }
+
+      await batch.commit();
+    }
+
+    // Write beverage consumptions (in user subcollections)
+    for (let i = 0; i < consumptionsToCreate.length; i += BATCH_SIZE) {
+      const batch = writeBatch(firestore);
+      const batchConsumptions = consumptionsToCreate.slice(i, i + BATCH_SIZE);
+
+      for (const { userId, consumption } of batchConsumptions) {
+        const consumptionRef = doc(firestore, `users/${userId}/beverageConsumptions`, consumption.id);
+        batch.set(consumptionRef, consumption);
+      }
+
+      await batch.commit();
+    }
+
+    result.success = result.errors.length === 0;
+
+  } catch (error) {
+    result.errors.push(`Fatal error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    result.success = false;
+  }
+
+  return result;
+}
+
+/**
+ * Import Transactions CSV into Firestore
+ */
+export async function importTransactionsCSVToFirestore(
+  firestore: Firestore,
+  text: string,
+  onProgress?: (progress: number, total: number) => void
+): Promise<ImportResult> {
+  const result: ImportResult = {
+    success: false,
+    rowsProcessed: 0,
+    playersCreated: 0,
+    recordsCreated: 0,
+    errors: [],
+    warnings: []
+  };
+
+  try {
+    // Strip BOM and parse CSV
+    const cleanText = stripBOM(text);
+    const parsed = Papa.parse(cleanText, {
+      delimiter: ';',
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim().replace(/^"/, '').replace(/"$/, '')
+    });
+
+    if (parsed.errors.length > 0) {
+      result.errors.push(...parsed.errors.map(e => `CSV Parse Error: ${e.message}`));
+    }
+
+    const rows = parsed.data as any[];
+    const existingPlayers = new Map<string, Player>();
+    const playersToCreate: Player[] = [];
+    const paymentsToCreate: { userId: string; payment: Payment }[] = [];
+
+    // Process all rows first
+    for (let i = 0; i < rows.length; i++) {
+      try {
+        const row = rows[i];
+        result.rowsProcessed++;
+
+        if (onProgress) {
+          onProgress(i + 1, rows.length);
+        }
+
+        // Validate required fields
+        if (!row.transaction_date || !row.transaction_amount || !row.transaction_subject) {
+          result.warnings.push(`Row ${i + 1}: Missing required fields`);
+          continue;
+        }
+
+        // Parse date
+        const transactionDate = parseGermanDate(row.transaction_date);
+
+        // Convert amount from cents to EUR
+        const amountEUR = centsToEUR(row.transaction_amount);
+
+        // Validate amount
+        if (isNaN(amountEUR)) {
+          result.warnings.push(`Row ${i + 1}: Invalid amount: ${row.transaction_amount}`);
+          continue;
+        }
+
+        // Parse transaction subject to extract player name and category
+        const subject = row.transaction_subject.trim();
+        let playerName = '';
+        let category = '';
+
+        const colonIndex = subject.indexOf(':');
+        if (colonIndex > -1) {
+          const afterColon = subject.substring(colonIndex + 1).trim();
+
+          const parenIndex = afterColon.indexOf('(');
+          if (parenIndex > -1) {
+            playerName = afterColon.substring(0, parenIndex).trim();
+            const closeParen = afterColon.indexOf(')');
+            if (closeParen > parenIndex) {
+              category = afterColon.substring(parenIndex + 1, closeParen).trim();
+            }
+          } else {
+            playerName = afterColon;
+          }
+        } else {
+          result.warnings.push(`Row ${i + 1}: Could not parse player name from subject: ${subject}`);
+          continue;
+        }
+
+        if (!playerName) {
+          result.warnings.push(`Row ${i + 1}: Could not extract player name from subject: ${subject}`);
+          continue;
+        }
+
+        // Find or create player
+        const player = await findOrCreatePlayer(firestore, playerName, undefined, existingPlayers);
+
+        if (!existingPlayers.has(player.name.toLowerCase())) {
+          playersToCreate.push(player);
+          result.playersCreated++;
+        }
+
+        // Determine if this is a storno
+        const isStorno = amountEUR < 0;
+        if (isStorno) {
+          result.warnings.push(`Row ${i + 1}: Storno transaction detected (negative amount)`);
+        }
+
+        // Create payment record
+        const payment: Payment = {
+          id: generateId('payment'),
+          userId: player.id,
+          reason: category || subject,
+          amount: Math.abs(amountEUR),
+          date: transactionDate,
+          paid: !isStorno,
+          paidAt: !isStorno ? transactionDate : undefined
+        };
+
+        paymentsToCreate.push({ userId: player.id, payment });
+        result.recordsCreated++;
+
+      } catch (error) {
+        result.errors.push(`Row ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+
+    // Write to Firestore in batches
+    const BATCH_SIZE = 500;
+
+    // Write players
+    for (let i = 0; i < playersToCreate.length; i += BATCH_SIZE) {
+      const batch = writeBatch(firestore);
+      const batchPlayers = playersToCreate.slice(i, i + BATCH_SIZE);
+
+      for (const player of batchPlayers) {
+        const playerRef = doc(firestore, 'users', player.id);
+        batch.set(playerRef, player);
+      }
+
+      await batch.commit();
+    }
+
+    // Write payments (in user subcollections)
+    for (let i = 0; i < paymentsToCreate.length; i += BATCH_SIZE) {
+      const batch = writeBatch(firestore);
+      const batchPayments = paymentsToCreate.slice(i, i + BATCH_SIZE);
+
+      for (const { userId, payment } of batchPayments) {
+        const paymentRef = doc(firestore, `users/${userId}/payments`, payment.id);
+        batch.set(paymentRef, payment);
+      }
+
+      await batch.commit();
+    }
+
+    result.success = result.errors.length === 0;
+
+  } catch (error) {
+    result.errors.push(`Fatal error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    result.success = false;
+  }
+
+  return result;
+}
+
+/**
+ * Generic import function for all CSV types
+ */
+export async function importCSVToFirestore(
+  firestore: Firestore,
+  text: string,
+  type: 'dues' | 'punishments' | 'transactions',
+  onProgress?: (progress: number, total: number) => void
+): Promise<ImportResult> {
+  switch (type) {
+    case 'dues':
+      return importDuesCSVToFirestore(firestore, text, onProgress);
+    case 'punishments':
+      return importPunishmentsCSVToFirestore(firestore, text, onProgress);
+    case 'transactions':
+      return importTransactionsCSVToFirestore(firestore, text, onProgress);
+    default:
+      return {
+        success: false,
+        rowsProcessed: 0,
+        playersCreated: 0,
+        recordsCreated: 0,
+        errors: [`Unknown CSV type: ${type}`],
+        warnings: []
+      };
+  }
+}

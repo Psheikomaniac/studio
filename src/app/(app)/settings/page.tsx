@@ -1,14 +1,14 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Trash2, RotateCcw } from "lucide-react";
-import { importCSV } from "@/lib/csv-import";
+import { importCSVToFirestore } from "@/lib/csv-import-firestore";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,17 +20,28 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { collection, getDocs, writeBatch } from "firebase/firestore";
-import { useFirebase } from "@/firebase/config";
-import { getFirestore } from "firebase/firestore";
-import { getApp } from "firebase/app";
+import { useFirebaseOptional } from "@/firebase/use-firebase-optional";
+import { Progress } from "@/components/ui/progress";
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const isFirebaseEnabled = useFirebase;
+  const firebase = useFirebaseOptional();
+  const [isFirebaseAvailable, setIsFirebaseAvailable] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Wait for client-side mount to check Firebase availability
+  useEffect(() => {
+    setIsMounted(true);
+    setIsFirebaseAvailable(firebase?.firestore != null);
+  }, [firebase]);
+
+  const firestore = firebase?.firestore ?? null;
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<string>("");
+  const [importProgress, setImportProgress] = useState(0);
+  const [importTotal, setImportTotal] = useState(0);
 
   // Dialog states
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -56,6 +67,15 @@ export default function SettingsPage() {
   };
 
   const handleImport = async () => {
+    if (!firestore) {
+      toast({
+        title: "Firebase not available",
+        description: "Firebase must be enabled to import data. Set NEXT_PUBLIC_USE_FIREBASE=true in .env.local",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!selectedFile) {
       toast({
         title: "No file selected",
@@ -67,6 +87,8 @@ export default function SettingsPage() {
 
     setUploading(true);
     setUploadResult("");
+    setImportProgress(0);
+    setImportTotal(0);
 
     try {
       // Detect CSV type by filename
@@ -91,9 +113,18 @@ export default function SettingsPage() {
         throw new Error('Unknown CSV type. Filename must contain "dues", "transaction", or "punishment"');
       }
 
-      const result = await importCSV(text, csvType);
+      // Import to Firestore with progress callback
+      const result = await importCSVToFirestore(
+        firestore,
+        text,
+        csvType,
+        (progress, total) => {
+          setImportProgress(progress);
+          setImportTotal(total);
+        }
+      );
 
-      const successMessage = `Successfully imported ${csvType} data: ${result.rowsProcessed} rows, ${result.playersCreated} players created, ${result.errors.length} errors`;
+      const successMessage = `Successfully imported ${csvType} data to Firestore: ${result.rowsProcessed} rows, ${result.playersCreated} players created, ${result.recordsCreated} records created`;
       setUploadResult(successMessage);
 
       if (result.warnings.length > 0) {
@@ -105,7 +136,7 @@ export default function SettingsPage() {
       } else {
         toast({
           title: "Import successful",
-          description: `${csvType} data imported successfully`,
+          description: `${csvType} data imported to Firestore successfully`,
         });
       }
 
@@ -128,6 +159,8 @@ export default function SettingsPage() {
       });
     } finally {
       setUploading(false);
+      setImportProgress(0);
+      setImportTotal(0);
     }
   };
 
@@ -136,10 +169,10 @@ export default function SettingsPage() {
    * This clears all debts but keeps players and transaction history
    */
   const handleResetBalances = async () => {
-    if (!isFirebaseEnabled) {
+    if (!firestore) {
       toast({
-        title: "Firebase nicht aktiviert",
-        description: "Diese Funktion benötigt Firebase. Setze NEXT_PUBLIC_USE_FIREBASE=true in .env.local",
+        title: "Firebase not available",
+        description: "Firebase must be enabled for this action.",
         variant: "destructive"
       });
       return;
@@ -147,9 +180,6 @@ export default function SettingsPage() {
 
     setIsResetting(true);
     try {
-      // Get Firebase instances
-      const firestore = getFirestore(getApp());
-
       // Get all users
       const usersSnapshot = await getDocs(collection(firestore, 'users'));
       const batch = writeBatch(firestore);
@@ -218,10 +248,10 @@ export default function SettingsPage() {
    * This is a complete reset and cannot be undone
    */
   const handleDeleteAllData = async () => {
-    if (!isFirebaseEnabled) {
+    if (!firestore) {
       toast({
-        title: "Firebase nicht aktiviert",
-        description: "Diese Funktion benötigt Firebase. Setze NEXT_PUBLIC_USE_FIREBASE=true in .env.local",
+        title: "Firebase not available",
+        description: "Firebase must be enabled for this action.",
         variant: "destructive"
       });
       return;
@@ -229,9 +259,6 @@ export default function SettingsPage() {
 
     setIsDeleting(true);
     try {
-      // Get Firebase instances
-      const firestore = getFirestore(getApp());
-
       // Get all users
       const usersSnapshot = await getDocs(collection(firestore, 'users'));
       const batch = writeBatch(firestore);
@@ -336,11 +363,20 @@ export default function SettingsPage() {
             <Button
               className="w-fit"
               onClick={handleImport}
-              disabled={!selectedFile || uploading}
+              disabled={!selectedFile || uploading || !isMounted || !isFirebaseAvailable}
             >
               {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {uploading ? 'Importing...' : 'Import Data'}
             </Button>
+            {uploading && importTotal > 0 && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Processing rows...</span>
+                  <span>{importProgress} / {importTotal}</span>
+                </div>
+                <Progress value={(importProgress / importTotal) * 100} />
+              </div>
+            )}
             {uploadResult && (
               <p className={`text-sm ${uploadResult.startsWith('Error') ? 'text-destructive' : 'text-green-600'}`}>
                 {uploadResult}
@@ -360,7 +396,7 @@ export default function SettingsPage() {
                 <Button
                   variant="destructive"
                   onClick={() => setShowResetDialog(true)}
-                  disabled={isResetting || isDeleting || !isFirebaseEnabled}
+                  disabled={isResetting || isDeleting || !isMounted || !isFirebaseAvailable}
                 >
                   {isResetting ? (
                     <>
@@ -387,7 +423,7 @@ export default function SettingsPage() {
                   variant="outline"
                   className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                   onClick={() => setShowDeleteDialog(true)}
-                  disabled={isResetting || isDeleting || !isFirebaseEnabled}
+                  disabled={isResetting || isDeleting || !isMounted || !isFirebaseAvailable}
                 >
                   {isDeleting ? (
                     <>
@@ -409,9 +445,10 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {!isFirebaseEnabled && (
+              {isMounted && !isFirebaseAvailable && (
                 <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
-                  ⚠️ Firebase ist derzeit deaktiviert. Diese Funktionen benötigen eine aktive Datenbankverbindung.
+                  ⚠️ Firebase ist derzeit nicht verfügbar. Diese Funktionen benötigen eine aktive Datenbankverbindung.
+                  Bitte setze NEXT_PUBLIC_USE_FIREBASE=true in .env.local und starte den Server neu.
                 </div>
               )}
             </div>
