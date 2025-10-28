@@ -54,6 +54,13 @@
       ]
     },
     {
+      "collectionGroup": "duePayments",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionId": "duePayments",
       "queryScope": "COLLECTION",
       "fields": [

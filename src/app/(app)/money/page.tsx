@@ -103,63 +103,7 @@ export default function MoneyPage() {
   const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Unknown';
   const getDueName = (id: string) => dues.find(d => d.id === id)?.name || 'Unknown';
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <div className="grid gap-4">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-9 w-48" />
-            <div className="flex gap-2">
-              {[...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="h-9 w-32" />
-              ))}
-            </div>
-          </div>
-          <Card>
-            <CardContent className="pt-6">
-              <Skeleton className="h-12 w-full" />
-            </CardContent>
-          </Card>
-          <div className="grid gap-4 md:grid-cols-3">
-            {[...Array(3)].map((_, i) => (
-              <Card key={i}>
-                <CardHeader className="pb-2">
-                  <Skeleton className="h-4 w-24" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-8 w-20" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-96 w-full" />
-            </CardContent>
-          </Card>
-        </div>
-      </main>
-    );
-  }
-
-  // Show error state
-  if (playersError) {
-    return (
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error Loading Transactions</AlertTitle>
-          <AlertDescription>
-            {playersError.message || 'Failed to load transaction data. Please try again later.'}
-          </AlertDescription>
-        </Alert>
-      </main>
-    );
-  }
+  // Note: Loading and error UI are handled via conditional rendering in the JSX below to keep hook order stable.
 
   // Convert all data sources into unified transactions
   const unifiedTransactions = useMemo<UnifiedTransaction[]>(() => {
@@ -435,163 +379,209 @@ export default function MoneyPage() {
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <div className="grid gap-4">
-          <div className="flex items-center justify-between">
-            <h1 className="font-headline text-3xl font-bold">Money</h1>
-            <div className="flex gap-2">
-              <Button onClick={() => setAddFineOpen(true)} variant="outline" size="sm">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Fine
-              </Button>
-              <Button onClick={() => setAddPaymentOpen(true)} variant="outline" size="sm">
-                <Receipt className="mr-2 h-4 w-4" />
-                Add Payment
-              </Button>
-              <Button onClick={() => setRecordDueOpen(true)} variant="outline" size="sm">
-                <Wallet className="mr-2 h-4 w-4" />
-                Record Due
-              </Button>
-              <Button onClick={() => setRecordBeverageOpen(true)} variant="outline" size="sm">
-                <Beer className="mr-2 h-4 w-4" />
-                Record Beverage
-              </Button>
-            </div>
-          </div>
-
-          {/* Filter Section */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid gap-4 md:grid-cols-5">
-                <div className="relative md:col-span-2">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search player or description..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8"
-                  />
-                </div>
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger suppressHydrationWarning>
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="fine">Fine</SelectItem>
-                    <SelectItem value="payment">Payment</SelectItem>
-                    <SelectItem value="due">Due</SelectItem>
-                    <SelectItem value="beverage">Beverage</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={filterPlayer} onValueChange={setFilterPlayer}>
-                  <SelectTrigger suppressHydrationWarning>
-                    <SelectValue placeholder="Player" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Players</SelectItem>
-                    {players.map(player => (
-                      <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger suppressHydrationWarning>
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="unpaid">Unpaid</SelectItem>
-                    <SelectItem value="exempt">Exempt</SelectItem>
-                  </SelectContent>
-                </Select>
+        {playersError ? (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error Loading Transactions</AlertTitle>
+            <AlertDescription>
+              {playersError.message || 'Failed to load transaction data. Please try again later.'}
+            </AlertDescription>
+          </Alert>
+        ) : isLoading ? (
+          <div className="grid gap-4">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-9 w-48" />
+              <div className="flex gap-2">
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-9 w-32" />
+                ))}
               </div>
-              {hasActiveFilters && (
-                <div className="mt-4 flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    Showing {filteredTransactions.length} of {unifiedTransactions.length} transactions
-                  </p>
-                  <Button variant="ghost" size="sm" onClick={clearFilters}>
-                    <X className="mr-2 h-4 w-4" />
-                    Clear Filters
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Summary Cards */}
-          <div className="grid gap-4 md:grid-cols-3">
+            </div>
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Debits</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-destructive">-€{totals.totalDebits.toFixed(2)}</div>
+              <CardContent className="pt-6">
+                <Skeleton className="h-12 w-full" />
               </CardContent>
             </Card>
+            <div className="grid gap-4 md:grid-cols-3">
+              {[...Array(3)].map((_, i) => (
+                <Card key={i}>
+                  <CardHeader className="pb-2">
+                    <Skeleton className="h-4 w-24" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-8 w-20" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Credits</CardTitle>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-positive">+€{totals.totalCredits.toFixed(2)}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Net Balance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className={`text-2xl font-bold ${totals.netBalance < 0 ? 'text-destructive' : 'text-positive'}`}>
-                  {totals.netBalance >= 0 ? '+' : ''}€{totals.netBalance.toFixed(2)}
-                </div>
+                <Skeleton className="h-96 w-full" />
               </CardContent>
             </Card>
           </div>
+        ) : (
+          <div className="grid gap-4">
+            <div className="flex items-center justify-between">
+              <h1 className="font-headline text-3xl font-bold">Money</h1>
+              <div className="flex gap-2">
+                <Button onClick={() => setAddFineOpen(true)} variant="outline" size="sm">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Fine
+                </Button>
+                <Button onClick={() => setAddPaymentOpen(true)} variant="outline" size="sm">
+                  <Receipt className="mr-2 h-4 w-4" />
+                  Add Payment
+                </Button>
+                <Button onClick={() => setRecordDueOpen(true)} variant="outline" size="sm">
+                  <Wallet className="mr-2 h-4 w-4" />
+                  Record Due
+                </Button>
+                <Button onClick={() => setRecordBeverageOpen(true)} variant="outline" size="sm">
+                  <Beer className="mr-2 h-4 w-4" />
+                  Record Beverage
+                </Button>
+              </div>
+            </div>
 
-          {/* Transactions Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>All Transactions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Player</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTransactions.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell>
-                        <SafeLocaleDate dateString={transaction.date} />
-                      </TableCell>
-                      <TableCell className="font-medium">{transaction.userName}</TableCell>
-                      <TableCell>{transaction.description}</TableCell>
-                      <TableCell>{getTypeBadge(transaction.type)}</TableCell>
-                      <TableCell className={`text-right font-mono ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
-                        {transaction.amount >= 0 ? '+' : ''}€{transaction.amount.toFixed(2)}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(transaction)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              {filteredTransactions.length === 0 && (
-                <div className="text-center p-8 text-muted-foreground">
-                  {hasActiveFilters ? 'No transactions match your filters.' : 'No transactions found.'}
+            {/* Filter Section */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="grid gap-4 md:grid-cols-5">
+                  <div className="relative md:col-span-2">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search player or description..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-8"
+                    />
+                  </div>
+                  <Select value={filterType} onValueChange={setFilterType}>
+                    <SelectTrigger suppressHydrationWarning>
+                      <SelectValue placeholder="Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="fine">Fine</SelectItem>
+                      <SelectItem value="payment">Payment</SelectItem>
+                      <SelectItem value="due">Due</SelectItem>
+                      <SelectItem value="beverage">Beverage</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterPlayer} onValueChange={setFilterPlayer}>
+                    <SelectTrigger suppressHydrationWarning>
+                      <SelectValue placeholder="Player" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Players</SelectItem>
+                      {players.map(player => (
+                        <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger suppressHydrationWarning>
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="unpaid">Unpaid</SelectItem>
+                      <SelectItem value="exempt">Exempt</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                {hasActiveFilters && (
+                  <div className="mt-4 flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      Showing {filteredTransactions.length} of {unifiedTransactions.length} transactions
+                    </p>
+                    <Button variant="ghost" size="sm" onClick={clearFilters}>
+                      <X className="mr-2 h-4 w-4" />
+                      Clear Filters
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Summary Cards */}
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Debits</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-destructive">-€{totals.totalDebits.toFixed(2)}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Credits</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-positive">+€{totals.totalCredits.toFixed(2)}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Net Balance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold ${totals.netBalance < 0 ? 'text-destructive' : 'text-positive'}`}>
+                    {totals.netBalance >= 0 ? '+' : ''}€{totals.netBalance.toFixed(2)}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Transactions Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle>All Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Player</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTransactions.map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell>
+                          <SafeLocaleDate dateString={transaction.date} />
+                        </TableCell>
+                        <TableCell className="font-medium">{transaction.userName}</TableCell>
+                        <TableCell>{transaction.description}</TableCell>
+                        <TableCell>{getTypeBadge(transaction.type)}</TableCell>
+                        <TableCell className={`text-right font-mono ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
+                          {transaction.amount >= 0 ? '+' : ''}€{transaction.amount.toFixed(2)}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(transaction)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {filteredTransactions.length === 0 && (
+                  <div className="text-center p-8 text-muted-foreground">
+                    {hasActiveFilters ? 'No transactions match your filters.' : 'No transactions found.'}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
 
       {/* Dialogs - handlers removed, they now use Firebase services directly */}

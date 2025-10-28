@@ -29,7 +29,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ============================================
-    // HELPER FUNCTIONS
+    // HELPER FUNCTIONS (Must be defined FIRST!)
     // ============================================
 
     function isSignedIn() {
@@ -50,6 +50,15 @@ service cloud.firestore {
     // ⚠️  DEVELOPMENT ONLY - Allow unauthenticated access
     function isDevelopment() {
       return true; // SET TO FALSE IN PRODUCTION!
+    }
+
+    // ============================================
+    // DEVELOPMENT: WIDE OPEN - Allow ALL operations
+    // ============================================
+    // This allows EVERYTHING unconditionally in development
+    // TODO: Remove before production deployment!
+    match /{document=**} {
+      allow read, write: if true;  // Wide open for development
     }
 
     // ============================================
@@ -210,6 +219,44 @@ service cloud.firestore {
       // Admin role can only be managed via Firebase Console or Admin SDK
       // No write access from client (except in dev mode)
       allow create, update, delete: if isDevelopment();
+    }
+
+    // ============================================
+    // COLLECTION GROUP QUERIES
+    // ============================================
+    // These rules support querying across all subcollections with the same name
+    // Example: collectionGroup('fines') will match all /users/{userId}/fines/{fineId}
+
+    match /{path=**}/fines/{fineId} {
+      // Allow reading fines from any user's subcollection
+      allow get, list: if isDevelopment() || isSignedIn();
+
+      // Only owner or admin can create/update/delete their fines
+      allow create, update, delete: if isDevelopment() || isAdmin();
+    }
+
+    match /{path=**}/payments/{paymentId} {
+      // Allow reading payments from any user's subcollection
+      allow get, list: if isDevelopment() || isSignedIn();
+
+      // Only owner or admin can create/update/delete their payments
+      allow create, update, delete: if isDevelopment() || isAdmin();
+    }
+
+    match /{path=**}/duePayments/{paymentId} {
+      // Allow reading due payments from any user's subcollection
+      allow get, list: if isDevelopment() || isSignedIn();
+
+      // Only owner or admin can create/update/delete their due payments
+      allow create, update, delete: if isDevelopment() || isAdmin();
+    }
+
+    match /{path=**}/beverageConsumptions/{consumptionId} {
+      // Allow reading beverage consumptions from any user's subcollection
+      allow get, list: if isDevelopment() || isSignedIn();
+
+      // Only owner or admin can create/update/delete their beverage consumptions
+      allow create, update, delete: if isDevelopment() || isAdmin();
     }
   }
 }

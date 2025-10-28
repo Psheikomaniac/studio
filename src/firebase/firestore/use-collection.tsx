@@ -87,22 +87,55 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (error: FirestoreError) => {
-        // This logic extracts the path from either a ref or a query
-        const path: string =
-          memoizedTargetRefOrQuery.type === 'collection'
-            ? (memoizedTargetRefOrQuery as CollectionReference).path
-            : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString()
+        // Compute a useful path for logs/errors
+        let path: string;
+        try {
+          if ((memoizedTargetRefOrQuery as any)?.type === 'collection') {
+            path = (memoizedTargetRefOrQuery as CollectionReference).path;
+          } else {
+            const internalQuery = memoizedTargetRefOrQuery as unknown as InternalQuery;
+            path = internalQuery._query?.path?.canonicalString() || 'collection-group-query';
+          }
+        } catch (e) {
+          console.warn('[useCollection] Failed to extract path for query:', e);
+          path = 'unknown-query-path';
+        }
 
+        // 1) Missing index (failed-precondition) → warn and return empty data
+        const isIndexMissing =
+          error.code === 'failed-precondition' || /create_exemption=/.test(error.message) || /index/i.test(error.message);
+        if (isIndexMissing) {
+          const linkMatch = error.message.match(/https?:\/\/\S+/);
+          if (linkMatch) {
+            console.warn(`[useCollection] Missing Firestore index for "${path}". Create it here: ${linkMatch[0]}`);
+          } else {
+            console.warn(`[useCollection] Missing Firestore index for "${path}". Query will return empty array in dev.`);
+          }
+          setData([]);
+          setError(null);
+          setIsLoading(false);
+          return;
+        }
+
+        // 2) Permission denied in development → warn and return empty data
+        if (error.code === 'permission-denied' || /permission/i.test(error.message)) {
+          console.warn('[useCollection] ⚠️ Permission denied - returning empty array for development mode');
+          console.warn('[useCollection] Query path:', path);
+          setData([]);
+          setError(null);
+          setIsLoading(false);
+          return;
+        }
+
+        // 3) Other errors → log as error and surface contextual error
+        console.error('[useCollection] Firestore error:', error.code, error.message);
         const contextualError = new FirestorePermissionError({
           operation: 'list',
           path,
-        })
-
-        setError(contextualError)
-        setData(null)
-        setIsLoading(false)
-
-        // trigger global error propagation
+        });
+        setError(contextualError);
+        setData(null);
+        setIsLoading(false);
         errorEmitter.emit('permission-error', contextualError);
       }
     );

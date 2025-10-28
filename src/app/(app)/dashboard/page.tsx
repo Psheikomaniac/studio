@@ -89,89 +89,6 @@ export default function DashboardPage() {
   const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Unknown';
   const getDueName = (id: string) => dues.find(d => d.id === id)?.name || 'Unknown';
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <>
-        <main className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-8">
-            <SidebarTrigger className="md:hidden" />
-            <h1 className="font-headline text-xl font-semibold md:text-2xl">
-              Dashboard
-            </h1>
-          </header>
-
-          <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-            <div className="grid gap-4 md:grid-cols-4">
-              {[...Array(4)].map((_, i) => (
-                <Card key={i}>
-                  <CardHeader className="pb-2">
-                    <Skeleton className="h-4 w-24" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-8 w-16" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-32" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-64 w-full" />
-              </CardContent>
-            </Card>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-32" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-48 w-full" />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-32" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-48 w-full" />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </main>
-      </>
-    );
-  }
-
-  // Show error state
-  if (playersError) {
-    return (
-      <>
-        <main className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-8">
-            <SidebarTrigger className="md:hidden" />
-            <h1 className="font-headline text-xl font-semibold md:text-2xl">
-              Dashboard
-            </h1>
-          </header>
-
-          <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error Loading Dashboard</AlertTitle>
-              <AlertDescription>
-                {playersError.message || 'Failed to load dashboard data. Please try again later.'}
-              </AlertDescription>
-            </Alert>
-          </div>
-        </main>
-      </>
-    );
-  }
-
   // Convert all data sources into unified transactions
   const unifiedTransactions = useMemo<UnifiedTransaction[]>(() => {
     const transactions: UnifiedTransaction[] = [];
@@ -280,113 +197,166 @@ export default function DashboardPage() {
         </header>
 
         <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-          {/* Stats Section */}
-          <Stats players={players} fines={fines} />
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common tasks for managing team finances</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={() => setAddFineOpen(true)} variant="outline">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Fine
-                </Button>
-                <Button onClick={() => setAddPaymentOpen(true)} variant="outline">
-                  <Receipt className="mr-2 h-4 w-4" />
-                  Add Payment
-                </Button>
-                <Button onClick={() => setRecordDueOpen(true)} variant="outline">
-                  <Wallet className="mr-2 h-4 w-4" />
-                  Record Due
-                </Button>
-                <Button onClick={() => setRecordBeverageOpen(true)} variant="outline">
-                  <Beer className="mr-2 h-4 w-4" />
-                  Record Beverage
-                </Button>
+          {playersError ? (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error Loading Dashboard</AlertTitle>
+              <AlertDescription>
+                {playersError.message || 'Failed to load dashboard data. Please try again later.'}
+              </AlertDescription>
+            </Alert>
+          ) : isLoading ? (
+            <>
+              <div className="grid gap-4 md:grid-cols-4">
+                {[...Array(4)].map((_, i) => (
+                  <Card key={i}>
+                    <CardHeader className="pb-2">
+                      <Skeleton className="h-4 w-24" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-8 w-16" />
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-64 w-full" />
+                </CardContent>
+              </Card>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-32" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-48 w-full" />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-32" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-48 w-full" />
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Stats Section */}
+              <Stats players={players} fines={fines} />
 
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* Top Debtors Widget */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingDown className="h-5 w-5 text-destructive" />
-                  Top Debtors
-                </CardTitle>
-                <CardDescription>Players with the highest debts</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {topDebtors.length > 0 ? (
-                  <div className="space-y-4">
-                    {topDebtors.map((player, index) => (
-                      <div key={player.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-sm font-bold text-destructive">
-                            {index + 1}
-                          </div>
-                          <div>
-                            <p className="font-medium">{player.name}</p>
-                            <p className="text-sm text-muted-foreground">{player.nickname}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-mono font-bold text-destructive">
-                            €{player.balance.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+              {/* Quick Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <CardDescription>Common tasks for managing team finances</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={() => setAddFineOpen(true)} variant="outline">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Fine
+                    </Button>
+                    <Button onClick={() => setAddPaymentOpen(true)} variant="outline">
+                      <Receipt className="mr-2 h-4 w-4" />
+                      Add Payment
+                    </Button>
+                    <Button onClick={() => setRecordDueOpen(true)} variant="outline">
+                      <Wallet className="mr-2 h-4 w-4" />
+                      Record Due
+                    </Button>
+                    <Button onClick={() => setRecordBeverageOpen(true)} variant="outline">
+                      <Beer className="mr-2 h-4 w-4" />
+                      Record Beverage
+                    </Button>
                   </div>
-                ) : (
-                  <p className="text-center text-sm text-muted-foreground py-4">
-                    No players in debt
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Recent Activity Widget */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Last 5 transactions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {recentTransactions.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Player</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {recentTransactions.map((transaction) => (
-                        <TableRow key={transaction.id}>
-                          <TableCell className="font-medium">{transaction.userName}</TableCell>
-                          <TableCell>{getTypeBadge(transaction.type)}</TableCell>
-                          <TableCell className={`text-right font-mono ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
-                            {transaction.amount >= 0 ? '+' : ''}€{transaction.amount.toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <p className="text-center text-sm text-muted-foreground py-4">
-                    No recent activity
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* Top Debtors Widget */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingDown className="h-5 w-5 text-destructive" />
+                      Top Debtors
+                    </CardTitle>
+                    <CardDescription>Players with the highest debts</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {topDebtors.length > 0 ? (
+                      <div className="space-y-4">
+                        {topDebtors.map((player, index) => (
+                          <div key={player.id} className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-sm font-bold text-destructive">
+                                {index + 1}
+                              </div>
+                              <div>
+                                <p className="font-medium">{player.name}</p>
+                                <p className="text-sm text-muted-foreground">{player.nickname}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-mono font-bold text-destructive">
+                                €{player.balance.toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-sm text-muted-foreground py-4">
+                        No players in debt
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Recent Activity Widget */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                    <CardDescription>Last 5 transactions</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {recentTransactions.length > 0 ? (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Player</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {recentTransactions.map((transaction) => (
+                            <TableRow key={transaction.id}>
+                              <TableCell className="font-medium">{transaction.userName}</TableCell>
+                              <TableCell>{getTypeBadge(transaction.type)}</TableCell>
+                              <TableCell className={`text-right font-mono ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
+                                {transaction.amount >= 0 ? '+' : ''}€{transaction.amount.toFixed(2)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    ) : (
+                      <p className="text-center text-sm text-muted-foreground py-4">
+                        No recent activity
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          )}
         </div>
       </main>
 

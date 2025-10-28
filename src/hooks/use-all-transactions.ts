@@ -17,12 +17,19 @@ export function useAllFines() {
   const firebase = useFirebaseOptional();
 
   const finesQuery = useMemoFirebase(() => {
-    if (!firebase?.firestore) return null;
+    if (!firebase?.firestore) {
+      console.log('[useAllFines] Firebase not available, returning null');
+      return null;
+    }
     // Use collection group query to get all fines from all users
+    console.log('[useAllFines] Creating collection group query for fines');
     const finesGroup = collectionGroup(firebase.firestore, 'fines');
-    return query(finesGroup, firestoreOrderBy('date', 'desc'));
+    const q = query(finesGroup, firestoreOrderBy('date', 'desc'));
+    console.log('[useAllFines] Query created:', q);
+    return q;
   }, [firebase?.firestore]);
 
+  console.log('[useAllFines] Returning query:', finesQuery);
   return useCollection<Fine>(finesQuery);
 }
 
