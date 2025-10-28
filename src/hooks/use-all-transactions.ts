@@ -10,6 +10,8 @@ import { collection, collectionGroup, query, orderBy as firestoreOrderBy } from 
 import { useMemoFirebase, useCollection } from '@/firebase';
 import type { Fine, Payment, DuePayment, BeverageConsumption } from '@/lib/types';
 
+const DEBUG_LOGS = process.env.NEXT_PUBLIC_FIREBASE_DEBUG_LOGS === 'true';
+
 /**
  * Hook to get all fines across all players using collection group query
  */
@@ -18,18 +20,18 @@ export function useAllFines() {
 
   const finesQuery = useMemoFirebase(() => {
     if (!firebase?.firestore) {
-      console.log('[useAllFines] Firebase not available, returning null');
+      if (DEBUG_LOGS) console.log('[useAllFines] Firebase not available, returning null');
       return null;
     }
     // Use collection group query to get all fines from all users
-    console.log('[useAllFines] Creating collection group query for fines');
+    if (DEBUG_LOGS) console.log('[useAllFines] Creating collection group query for fines');
     const finesGroup = collectionGroup(firebase.firestore, 'fines');
     const q = query(finesGroup, firestoreOrderBy('date', 'desc'));
-    console.log('[useAllFines] Query created:', q);
+    if (DEBUG_LOGS) console.log('[useAllFines] Query created:', q);
     return q;
   }, [firebase?.firestore]);
 
-  console.log('[useAllFines] Returning query:', finesQuery);
+  if (DEBUG_LOGS) console.log('[useAllFines] Returning query:', finesQuery);
   return useCollection<Fine>(finesQuery);
 }
 

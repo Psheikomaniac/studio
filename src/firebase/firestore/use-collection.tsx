@@ -13,6 +13,10 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Player } from '@/lib/types';
 
+// Debug logging flag (opt-in)
+const DEBUG_LOGS = process.env.NEXT_PUBLIC_FIREBASE_DEBUG_LOGS === 'true';
+// Track paths we've already warned about to avoid console spam
+const warnedPaths = new Set<string>();
 
 /** Utility type to add an 'id' field to a given type T. */
 export type WithId<T> = T & { id: string };
@@ -97,7 +101,7 @@ export function useCollection<T = any>(
             path = internalQuery._query?.path?.canonicalString() || 'collection-group-query';
           }
         } catch (e) {
-          console.warn('[useCollection] Failed to extract path for query:', e);
+          if (DEBUG_LOGS) console.warn('[useCollection] Failed to extract path for query:', e);
           path = 'unknown-query-path';
         }
 
@@ -105,11 +109,14 @@ export function useCollection<T = any>(
         const isIndexMissing =
           error.code === 'failed-precondition' || /create_exemption=/.test(error.message) || /index/i.test(error.message);
         if (isIndexMissing) {
-          const linkMatch = error.message.match(/https?:\/\/\S+/);
-          if (linkMatch) {
-            console.warn(`[useCollection] Missing Firestore index for "${path}". Create it here: ${linkMatch[0]}`);
-          } else {
-            console.warn(`[useCollection] Missing Firestore index for "${path}". Query will return empty array in dev.`);
+          if (DEBUG_LOGS && !warnedPaths.has(path)) {
+            const linkMatch = error.message.match(/https?:\/\/\S+/);
+            if (linkMatch) {
+              console.warn(`[useCollection] Missing Firestore index for "${path}". Create it here: ${linkMatch[0]}`);
+            } else {
+              console.warn(`[useCollection] Missing Firestore index for "${path}". Query will return empty array in dev.`);
+            }
+            warnedPaths.add(path);
           }
           setData([]);
           setError(null);
@@ -119,16 +126,22 @@ export function useCollection<T = any>(
 
         // 2) Permission denied in development → warn and return empty data
         if (error.code === 'permission-denied' || /permission/i.test(error.message)) {
-          console.warn('[useCollection] ⚠️ Permission denied - returning empty array for development mode');
-          console.warn('[useCollection] Query path:', path);
+          if (DEBUG_LOGS && !warnedPaths.has('perm:'+path)) {
+            console.warn('[useCollection] ⚠️ Permission denied - returning empty array for development mode');
+            console.warn('[useCollection] Query path:', path);
+            warnedPaths.add('perm:'+path);
+          }
           setData([]);
           setError(null);
           setIsLoading(false);
           return;
         }
 
-        // 3) Other errors → log as error and surface contextual error
-        console.error('[useCollection] Firestore error:', error.code, error.message);
+        // 3) Other errors → optionally log; surface contextual error for UI
+        if (DEBUG_LOGS && !warnedPaths.has('err:'+path+':'+error.code)) {
+          console.error('[useCollection] Firestore error:', error.code, error.message);
+          warnedPaths.add('err:'+path+':'+error.code);
+        }
         const contextualError = new FirestorePermissionError({
           operation: 'list',
           path,

@@ -128,12 +128,16 @@ export function getSdks(firebaseApp: FirebaseApp) {
       firestore = initializeFirestore(firebaseApp, {
         localCache: persistentLocalCache({
           tabManager: persistentMultipleTabManager()
-        })
+        }),
+        experimentalAutoDetectLongPolling: true,
+        experimentalForceLongPolling: process.env.NEXT_PUBLIC_FIREBASE_FORCE_LONG_POLLING === 'true'
       });
       console.info('Firestore: Multi-tab persistence enabled (modern API)');
     } else {
       firestore = initializeFirestore(firebaseApp, {
-        localCache: memoryLocalCache()
+        localCache: memoryLocalCache(),
+        experimentalAutoDetectLongPolling: true,
+        experimentalForceLongPolling: process.env.NEXT_PUBLIC_FIREBASE_FORCE_LONG_POLLING === 'true'
       });
       console.info('Firestore: Memory-only cache enabled');
     }
