@@ -551,7 +551,7 @@ export default function MoneyPage() {
                   />
                 </div>
                 <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger>
+                  <SelectTrigger suppressHydrationWarning>
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -563,7 +563,7 @@ export default function MoneyPage() {
                   </SelectContent>
                 </Select>
                 <Select value={filterPlayer} onValueChange={setFilterPlayer}>
-                  <SelectTrigger>
+                  <SelectTrigger suppressHydrationWarning>
                     <SelectValue placeholder="Player" />
                   </SelectTrigger>
                   <SelectContent>
@@ -574,7 +574,7 @@ export default function MoneyPage() {
                   </SelectContent>
                 </Select>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger>
+                  <SelectTrigger suppressHydrationWarning>
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
