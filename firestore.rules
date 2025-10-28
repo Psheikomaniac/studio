@@ -2,6 +2,10 @@
  * @file Firebase Security Rules for balanceUp handball club app
  * @updated 2025-10-27 - PRD-01 Firebase Infrastructure Setup
  *
+ * ⚠️  DEVELOPMENT MODE - TEMPORARY RELAXED RULES ⚠️
+ * These rules allow unauthenticated access for CSV import testing.
+ * DO NOT USE IN PRODUCTION! Revert to strict rules before deploying.
+ *
  * Core Philosophy:
  * - Team-wide read access for transparency (handball club team roster)
  * - Write access restricted to admins (team managers/treasurers)
@@ -43,20 +47,42 @@ service cloud.firestore {
              exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
+    // ⚠️  DEVELOPMENT ONLY - Allow unauthenticated access
+    function isDevelopment() {
+      return true; // SET TO FALSE IN PRODUCTION!
+    }
+
     // ============================================
     // USERS (Players)
     // ============================================
 
     match /users/{userId} {
       // Team-wide read access (transparency for team roster)
-      allow get, list: if isSignedIn();
+      allow get, list: if isDevelopment() || isSignedIn();
 
       // Only owner or admin can create/update profile
-      allow create: if isOwner(userId) || isAdmin();
-      allow update: if isOwner(userId) || isAdmin();
+      allow create: if isDevelopment() || isOwner(userId) || isAdmin();
+      allow update: if isDevelopment() || isOwner(userId) || isAdmin();
 
       // Only admin can delete players
-      allow delete: if isAdmin();
+      allow delete: if isDevelopment() || isAdmin();
+
+      // ⚠️  DEVELOPMENT: Allow access to subcollections
+      match /fines/{fineId} {
+        allow read, write: if isDevelopment() || isSignedIn();
+      }
+
+      match /payments/{paymentId} {
+        allow read, write: if isDevelopment() || isSignedIn();
+      }
+
+      match /duePayments/{paymentId} {
+        allow read, write: if isDevelopment() || isSignedIn();
+      }
+
+      match /beverageConsumptions/{consumptionId} {
+        allow read, write: if isDevelopment() || isSignedIn();
+      }
     }
 
     // ============================================
@@ -65,10 +91,10 @@ service cloud.firestore {
 
     match /fines/{fineId} {
       // Team-wide read access (everyone can see fines)
-      allow get, list: if isSignedIn();
+      allow get, list: if isDevelopment() || isSignedIn();
 
       // Only admins can create, update, or delete fines
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isDevelopment() || isAdmin();
     }
 
     // ============================================
@@ -77,10 +103,10 @@ service cloud.firestore {
 
     match /payments/{paymentId} {
       // Team-wide read access
-      allow get, list: if isSignedIn();
+      allow get, list: if isDevelopment() || isSignedIn();
 
       // Only admins can manage payments
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isDevelopment() || isAdmin();
     }
 
     // ============================================
@@ -89,10 +115,10 @@ service cloud.firestore {
 
     match /beverages/{beverageId} {
       // Everyone can read the beverage catalog
-      allow get, list: if isSignedIn();
+      allow get, list: if isDevelopment() || isSignedIn();
 
       // Only admins can manage catalog
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isDevelopment() || isAdmin();
     }
 
     // ============================================
@@ -101,10 +127,10 @@ service cloud.firestore {
 
     match /beverageConsumptions/{consumptionId} {
       // Team-wide read access
-      allow get, list: if isSignedIn();
+      allow get, list: if isDevelopment() || isSignedIn();
 
       // Only admins can manage consumption records
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isDevelopment() || isAdmin();
     }
 
     // ============================================
@@ -113,10 +139,10 @@ service cloud.firestore {
 
     match /dues/{dueId} {
       // Everyone can read dues
-      allow get, list: if isSignedIn();
+      allow get, list: if isDevelopment() || isSignedIn();
 
       // Only admins can create/update/delete dues
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isDevelopment() || isAdmin();
     }
 
     // ============================================
@@ -125,10 +151,10 @@ service cloud.firestore {
 
     match /duePayments/{paymentId} {
       // Team-wide read access
-      allow get, list: if isSignedIn();
+      allow get, list: if isDevelopment() || isSignedIn();
 
       // Only admins can manage due payments
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isDevelopment() || isAdmin();
     }
 
     // ============================================
@@ -137,13 +163,13 @@ service cloud.firestore {
 
     match /transactions/{transactionId} {
       // Team-wide read access
-      allow get, list: if isSignedIn();
+      allow get, list: if isDevelopment() || isSignedIn();
 
       // Only admins can create transactions
-      allow create: if isAdmin();
+      allow create: if isDevelopment() || isAdmin();
 
-      // Transactions are immutable once created
-      allow update, delete: if false;
+      // Transactions are immutable once created (except in dev mode)
+      allow update, delete: if isDevelopment();
     }
 
     // ============================================
@@ -152,10 +178,10 @@ service cloud.firestore {
 
     match /predefinedFines/{fineId} {
       // Everyone can read fine templates
-      allow get, list: if isSignedIn();
+      allow get, list: if isDevelopment() || isSignedIn();
 
       // Only admins can manage templates
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isDevelopment() || isAdmin();
     }
 
     // ============================================
@@ -164,13 +190,13 @@ service cloud.firestore {
 
     match /auditLogs/{logId} {
       // Only admins can read audit logs
-      allow get, list: if isAdmin();
+      allow get, list: if isDevelopment() || isAdmin();
 
       // Only admins can create audit logs
-      allow create: if isAdmin();
+      allow create: if isDevelopment() || isAdmin();
 
-      // Audit logs are immutable
-      allow update, delete: if false;
+      // Audit logs are immutable (except in dev mode)
+      allow update, delete: if isDevelopment();
     }
 
     // ============================================
@@ -179,11 +205,11 @@ service cloud.firestore {
 
     match /admins/{adminId} {
       // Anyone can read who the admins are (transparency)
-      allow get, list: if isSignedIn();
+      allow get, list: if isDevelopment() || isSignedIn();
 
       // Admin role can only be managed via Firebase Console or Admin SDK
-      // No write access from client
-      allow create, update, delete: if false;
+      // No write access from client (except in dev mode)
+      allow create, update, delete: if isDevelopment();
     }
   }
 }
