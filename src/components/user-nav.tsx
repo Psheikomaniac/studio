@@ -23,7 +23,7 @@ export function UserNav() {
   const user = {
     displayName: 'Kassenwart',
     email: 'treasurer@team.com',
-    photoURL: 'https://picsum.photos/seed/avatar1/100/100',
+    photoURL: 'https://ui-avatars.com/api/?name=Kassenwart&size=100&background=0ea5e9&color=fff',
   };
 
   const handleSignOut = () => {

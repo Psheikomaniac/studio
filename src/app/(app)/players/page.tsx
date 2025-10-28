@@ -122,7 +122,7 @@ export default function PlayersPage() {
                             alt="Player image"
                             className="aspect-square rounded-full object-cover"
                             height="40"
-                            src={player.photoUrl || 'https://picsum.photos/seed/placeholder/40/40'}
+                            src={player.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=40&background=94a3b8&color=fff`}
                             width="40"
                           />
                         </TableCell>

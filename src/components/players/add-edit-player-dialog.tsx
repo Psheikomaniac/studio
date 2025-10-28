@@ -68,7 +68,7 @@ export function AddEditPlayerDialog({ isOpen, setOpen, onSave, player }: AddEdit
   const onSubmit = (values: z.infer<typeof playerSchema>) => {
     onSave({
         ...values,
-        photoUrl: values.photoUrl || `https://picsum.photos/seed/${values.name}/400/400`,
+        photoUrl: values.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(values.name)}&size=400&background=0ea5e9&color=fff`,
     });
   };
   
