@@ -1,6 +1,9 @@
 
 'use client';
 
+// Force dynamic rendering since this page uses Firebase hooks
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -461,13 +464,19 @@ export default function SettingsPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Alle Guthaben zurücksetzen?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Diese Aktion wird alle offenen Transaktionen (Strafen, Beiträge, Getränke) als bezahlt markieren.
-              Alle Spieler-Guthaben werden auf 0€ gesetzt.
-              <br /><br />
-              <strong>Die Spieler und die Transaction-History bleiben erhalten.</strong>
-              <br /><br />
-              Diese Aktion kann nicht rückgängig gemacht werden.
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  Diese Aktion wird alle offenen Transaktionen (Strafen, Beiträge, Getränke) als bezahlt markieren.
+                  Alle Spieler-Guthaben werden auf 0€ gesetzt.
+                </p>
+                <p>
+                  <strong>Die Spieler und die Transaction-History bleiben erhalten.</strong>
+                </p>
+                <p>
+                  Diese Aktion kann nicht rückgängig gemacht werden.
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -495,19 +504,23 @@ export default function SettingsPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-destructive">⚠️ Alle Daten löschen?</AlertDialogTitle>
-            <AlertDialogDescription>
-              <strong className="text-destructive">ACHTUNG: Diese Aktion löscht PERMANENT:</strong>
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>Alle Spieler</li>
-                <li>Alle Strafen</li>
-                <li>Alle Zahlungen</li>
-                <li>Alle Beiträge</li>
-                <li>Alle Getränke-Konsumierungen</li>
-              </ul>
-              <br />
-              <strong className="text-destructive">Die Datenbank wird komplett geleert!</strong>
-              <br /><br />
-              Diese Aktion kann <strong>NICHT</strong> rückgängig gemacht werden.
+            <AlertDialogDescription asChild>
+              <div>
+                <strong className="text-destructive">ACHTUNG: Diese Aktion löscht PERMANENT:</strong>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>Alle Spieler</li>
+                  <li>Alle Strafen</li>
+                  <li>Alle Zahlungen</li>
+                  <li>Alle Beiträge</li>
+                  <li>Alle Getränke-Konsumierungen</li>
+                </ul>
+                <div className="mt-2">
+                  <strong className="text-destructive">Die Datenbank wird komplett geleert!</strong>
+                </div>
+                <div className="mt-2">
+                  Diese Aktion kann <strong>NICHT</strong> rückgängig gemacht werden.
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
