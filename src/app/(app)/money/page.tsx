@@ -31,6 +31,8 @@ import { RecordConsumptionDialog } from '@/components/beverages/record-consumpti
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 import { updatePlayersWithCalculatedBalances } from '@/lib/utils';
 import { formatEuro } from '@/lib/csv-utils';
+import { sumPaymentsToday, sumPaymentsInLastDays, computeARPPU, computeOpenFinesTotal, groupPaymentsByDay, maxDateFromCollections } from '@/lib/stats';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
 
@@ -253,6 +255,42 @@ export default function MoneyPage() {
       netBalance: filtered.reduce((sum, t) => sum + t.amount, 0),
     };
   }, [filteredTransactions]);
+
+  // KPIs and chart data (Money page stats)
+  const revenueToday = useMemo(() => sumPaymentsToday(payments), [payments]);
+  const revenue7d = useMemo(() => sumPaymentsInLastDays(payments, 7), [payments]);
+  const revenue28d = useMemo(() => sumPaymentsInLastDays(payments, 28), [payments]);
+  const arppu28d = useMemo(() => computeARPPU(payments, 28), [payments]);
+  const openFinesTotal = useMemo(() => computeOpenFinesTotal(fines), [fines]);
+
+  const paymentsSeries28d = useMemo(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 27); // inclusive, 28 days window
+    return groupPaymentsByDay(payments, start, end);
+  }, [payments]);
+
+  const lastDataDate = useMemo(() => {
+    return maxDateFromCollections([payments, fines, duePayments, beverageConsumptions]);
+  }, [payments, fines, duePayments, beverageConsumptions]);
+
+  const topPayersThisMonth = useMemo(() => {
+    // Sum payments per user for current calendar month
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = now;
+    const sums = new Map<string, number>();
+    for (const p of payments) {
+      if (!p?.date || typeof p.amount !== 'number') continue;
+      const d = new Date(p.date);
+      if (isNaN(d.getTime())) continue;
+      if (d < start || d > end) continue;
+      const key = p.userId || 'unknown';
+      sums.set(key, (sums.get(key) ?? 0) + (Number(p.amount) || 0));
+    }
+    const items = [...sums.entries()].map(([userId, total]) => ({ userId, userName: getPlayerName(userId), total }));
+    return items.sort((a, b) => b.total - a.total).slice(0, 5);
+  }, [payments, players]);
 
   // Note: Dialog handlers removed - dialogs now handle Firebase operations directly
   // Real-time listeners will automatically update the UI when data changes
@@ -538,6 +576,102 @@ export default function MoneyPage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Data Freshness */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <p>
+                Last data update: {lastDataDate ? <SafeLocaleDate dateString={lastDataDate} /> : 'Unknown'}
+              </p>
+            </div>
+
+            {/* KPIs */}
+            <div className="grid gap-4 md:grid-cols-5">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Revenue Today</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-positive">{formatEuro(revenueToday)}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Revenue 7d</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-positive">{formatEuro(revenue7d)}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Revenue 28d</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-positive">{formatEuro(revenue28d)}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Open Fines (Total)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-destructive">{formatEuro(openFinesTotal)}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">ARPPU (28d)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatEuro(arppu28d)}</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Revenue Chart + Top Payers */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenue by Day (last 28 days)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {paymentsSeries28d.length > 0 ? (
+                    <div className="w-full h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={paymentsSeries28d} margin={{ left: 12, right: 12 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                          <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
+                          <YAxis tickFormatter={(v) => `€${v}`} />
+                          <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
+                          <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No payments available to chart.</p>
+                  )}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Payers (This Month)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {topPayersThisMonth.length > 0 ? (
+                    <div className="space-y-3">
+                      {topPayersThisMonth.map((p) => (
+                        <div key={p.userId} className="flex items-center justify-between">
+                          <Link href={`/players/${p.userId}`} className="hover:underline">{p.userName}</Link>
+                          <div className="font-mono">{formatEuro(p.total)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No payers this month yet.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Summary Cards */}
             <div className="grid gap-4 md:grid-cols-3">
