@@ -31,8 +31,8 @@ import { RecordConsumptionDialog } from '@/components/beverages/record-consumpti
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 import { updatePlayersWithCalculatedBalances } from '@/lib/utils';
 import { formatEuro } from '@/lib/csv-utils';
-import { sumPaymentsToday, sumPaymentsInLastDays, computeARPPU, computeOpenFinesTotal, groupPaymentsByDay, maxDateFromCollections } from '@/lib/stats';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { sumPaymentsToday, sumPaymentsInLastDays, computeARPPU, computeOpenFinesTotal, groupPaymentsByDay, maxDateFromCollections, movingAverage, buildFirstPayersAndCumulativeRevenueByMonth } from '@/lib/stats';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Bar } from 'recharts';
 
 type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
 
@@ -270,6 +270,13 @@ export default function MoneyPage() {
     return groupPaymentsByDay(payments, start, end);
   }, [payments]);
 
+  const paymentsSeries28dWithMA = useMemo(() => {
+    const ma = movingAverage(paymentsSeries28d, 7);
+    return paymentsSeries28d.map((p, i) => ({ ...p, ma7: ma[i]?.value ?? null }));
+  }, [paymentsSeries28d]);
+
+  const monthlyCohorts = useMemo(() => buildFirstPayersAndCumulativeRevenueByMonth(payments), [payments]);
+
   const lastDataDate = useMemo(() => {
     return maxDateFromCollections([payments, fines, duePayments, beverageConsumptions]);
   }, [payments, fines, duePayments, beverageConsumptions]);
@@ -291,6 +298,22 @@ export default function MoneyPage() {
     const items = [...sums.entries()].map(([userId, total]) => ({ userId, userName: getPlayerName(userId), total }));
     return items.sort((a, b) => b.total - a.total).slice(0, 5);
   }, [payments, players]);
+
+  const topOpenFinesByPlayer = useMemo(() => {
+    // Compute total open fines (unpaid or partially paid) per user
+    const openByUser = new Map<string, number>();
+    for (const f of fines) {
+      if (!f) continue;
+      const amount = Number(f.amount) || 0;
+      const paidAmount = Number(f.amountPaid || 0) || 0;
+      const remaining = f.paid ? 0 : Math.max(0, amount - paidAmount);
+      if (remaining <= 0) continue;
+      const key = f.userId || 'unknown';
+      openByUser.set(key, (openByUser.get(key) ?? 0) + remaining);
+    }
+    const items = [...openByUser.entries()].map(([userId, total]) => ({ userId, userName: getPlayerName(userId), total }));
+    return items.sort((a, b) => b.total - a.total).slice(0, 10);
+  }, [fines, players]);
 
   // Note: Dialog handlers removed - dialogs now handle Firebase operations directly
   // Real-time listeners will automatically update the UI when data changes
@@ -638,12 +661,13 @@ export default function MoneyPage() {
                   {paymentsSeries28d.length > 0 ? (
                     <div className="w-full h-64">
                       <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={paymentsSeries28d} margin={{ left: 12, right: 12 }}>
+                        <LineChart data={paymentsSeries28dWithMA} margin={{ left: 12, right: 12 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} />
                           <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
                           <YAxis tickFormatter={(v) => `€${v}`} />
                           <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
-                          <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="value" name="Revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="ma7" name="7d MA" stroke="hsl(var(--muted-foreground))" strokeDasharray="5 5" strokeWidth={2} dot={false} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -672,6 +696,53 @@ export default function MoneyPage() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Cohorts: First Payers & Cumulative Revenue */}
+            <Card>
+              <CardHeader>
+                <CardTitle>First Payers & Cumulative Revenue (Monthly)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {monthlyCohorts.length > 0 ? (
+                  <div className="w-full h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={monthlyCohorts} margin={{ left: 12, right: 12 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="month" />
+                        <YAxis yAxisId="left" tickFormatter={(v) => `${v}`} />
+                        <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `€${v}`} />
+                        <Tooltip formatter={(value: number, name) => name === 'Cumulative Revenue' ? formatEuro(value as number) : (value as number)} />
+                        <Bar yAxisId="left" dataKey="firstPayers" name="First Payers" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
+                        <Line yAxisId="right" type="monotone" dataKey="cumulativeRevenue" name="Cumulative Revenue" stroke="hsl(var(--muted-foreground))" strokeWidth={2} dot={false} />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No cohorts to display yet.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Top Open Fines by Player */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Open Fines (Players)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {topOpenFinesByPlayer.length > 0 ? (
+                  <div className="space-y-3">
+                    {topOpenFinesByPlayer.map((p) => (
+                      <div key={p.userId} className="flex items-center justify-between">
+                        <Link href={`/players/${p.userId}`} className="hover:underline">{p.userName}</Link>
+                        <div className="font-mono text-destructive">{formatEuro(p.total)}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No open fines at the moment.</p>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Summary Cards */}
             <div className="grid gap-4 md:grid-cols-3">

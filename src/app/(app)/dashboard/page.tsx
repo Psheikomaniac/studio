@@ -28,6 +28,8 @@ import { RecordConsumptionDialog } from '@/components/beverages/record-consumpti
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 import { updatePlayersWithCalculatedBalances } from '@/lib/utils';
 import { formatEuro } from '@/lib/csv-utils';
+import { groupPaymentsByDay, maxDateFromCollections, movingAverage } from '@/lib/stats';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
 
@@ -252,6 +254,86 @@ export default function DashboardPage() {
             <>
               {/* Stats Section */}
               <Stats players={players} fines={fines} />
+
+              {/* Data Freshness */}
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <p>
+                  Last data update: {maxDateFromCollections ? (
+                    <>
+                      {(() => {
+                        const d = maxDateFromCollections([payments, fines, duePayments, beverageConsumptions]);
+                        return d ? <SafeLocaleDate dateString={d} /> : 'Unknown';
+                      })()}
+                    </>
+                  ) : 'Unknown'}
+                </p>
+              </div>
+
+              {/* Revenue + Top Beverages */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Revenue by Day (last 28 days)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {(() => {
+                      const end = new Date();
+                      const start = new Date();
+                      start.setDate(end.getDate() - 27);
+                      const series = groupPaymentsByDay(payments, start, end);
+                      const ma = movingAverage(series, 7);
+                      const chartData = series.map((p, i) => ({ ...p, ma7: ma[i]?.value ?? null }));
+                      return chartData.length > 0 ? (
+                        <div className="w-full h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={chartData} margin={{ left: 12, right: 12 }}>
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                              <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
+                              <YAxis tickFormatter={(v) => `€${v}`} />
+                              <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
+                              <Line type="monotone" dataKey="value" name="Revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                              <Line type="monotone" dataKey="ma7" name="7d MA" stroke="hsl(var(--muted-foreground))" strokeDasharray="5 5" strokeWidth={2} dot={false} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No payments available to chart.</p>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Top Beverages</CardTitle>
+                    <CardDescription>Most consumed drinks</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {(() => {
+                      const counts = new Map<string, { name: string; count: number }>();
+                      for (const c of beverageConsumptions) {
+                        if (!c) continue;
+                        const name = c.beverageName || (beverages.find(b => b.id === c.beverageId)?.name ?? 'Unknown');
+                        const item = counts.get(name) || { name, count: 0 };
+                        item.count += 1;
+                        counts.set(name, item);
+                      }
+                      const items = Array.from(counts.values()).sort((a, b) => b.count - a.count).slice(0, 5);
+                      return items.length > 0 ? (
+                        <div className="space-y-3">
+                          {items.map((it) => (
+                            <div key={it.name} className="flex items-center justify-between">
+                              <div>{it.name}</div>
+                              <div className="font-mono">{it.count}x</div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No beverage consumptions yet.</p>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+              </div>
 
               {/* Quick Actions */}
               <Card>

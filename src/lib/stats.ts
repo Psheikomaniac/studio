@@ -105,3 +105,71 @@ export function maxDateFromCollections(collections: Array<Array<{ date?: string;
   }
   return maxDateOfStrings(dates);
 }
+
+export type MonthlyCohortPoint = { month: string; firstPayers: number; revenue: number; cumulativeRevenue: number };
+
+function toMonthKey(d: Date): string {
+  // YYYY-MM
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+export function movingAverage(series: DayPoint[], window: number): DayPoint[] {
+  if (!Array.isArray(series) || series.length === 0 || window <= 1) return series.slice();
+  const values = series.map(p => p.value);
+  const out: DayPoint[] = [];
+  let sum = 0;
+  for (let i = 0; i < series.length; i++) {
+    sum += values[i];
+    if (i >= window) {
+      sum -= values[i - window];
+    }
+    const count = i + 1 < window ? i + 1 : window;
+    out.push({ date: series[i].date, value: sum / count });
+  }
+  return out;
+}
+
+export function buildFirstPayersAndCumulativeRevenueByMonth(payments: Payment[]): MonthlyCohortPoint[] {
+  const firstPayDateByUser = new Map<string, Date>();
+  const revenueByMonth = new Map<string, number>();
+
+  // Determine first payment date per user and sum revenue per month
+  for (const p of payments) {
+    if (!p?.date || typeof p.amount !== 'number') continue;
+    const d = new Date(p.date);
+    if (isNaN(d.getTime())) continue;
+    const key = toMonthKey(d);
+    revenueByMonth.set(key, (revenueByMonth.get(key) ?? 0) + (Number(p.amount) || 0));
+
+    if (p.userId) {
+      const prev = firstPayDateByUser.get(p.userId);
+      if (!prev || d < prev) firstPayDateByUser.set(p.userId, d);
+    }
+  }
+
+  // Count first payers per month
+  const firstPayersByMonth = new Map<string, number>();
+  for (const [, d] of firstPayDateByUser) {
+    const key = toMonthKey(d);
+    firstPayersByMonth.set(key, (firstPayersByMonth.get(key) ?? 0) + 1);
+  }
+
+  // Build sorted set of months present in either map
+  const months = Array.from(new Set<string>([...revenueByMonth.keys(), ...firstPayersByMonth.keys()]))
+    .sort((a, b) => a.localeCompare(b));
+
+  const result: MonthlyCohortPoint[] = [];
+  let cumulative = 0;
+  for (const m of months) {
+    const rev = revenueByMonth.get(m) ?? 0;
+    cumulative += rev;
+    result.push({
+      month: m,
+      firstPayers: firstPayersByMonth.get(m) ?? 0,
+      revenue: rev,
+      cumulativeRevenue: cumulative,
+    });
+  }
+
+  return result;
+}

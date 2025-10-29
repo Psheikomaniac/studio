@@ -5,7 +5,7 @@
 export const dynamic = 'force-dynamic';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -20,7 +20,10 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Player } from '@/lib/types';
+import { updatePlayersWithCalculatedBalances } from '@/lib/utils';
 import { usePlayers, usePlayersService } from '@/services/players.service';
+import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
+import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 import { AddEditPlayerDialog } from '@/components/players/add-edit-player-dialog';
 import { DeletePlayerDialog } from '@/components/players/delete-player-dialog';
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +34,53 @@ export default function PlayersPage() {
   // Firebase hooks for real-time data
   const { data: players, isLoading, error } = usePlayers();
   const playersService = usePlayersService();
+
+  // Collection group data used for per-player aggregates (Phase 2)
+  const { data: finesData } = useAllFines();
+  const { data: paymentsData } = useAllPayments();
+  const { data: duePaymentsData } = useAllDuePayments();
+  const { data: consumptionsData } = useAllBeverageConsumptions();
+
+  const fines = finesData || [];
+  const payments = paymentsData || [];
+  const duePayments = duePaymentsData || [];
+  const beverageConsumptions = consumptionsData || [];
+
+  // Recompute balances and derive per-user stats
+  const enhancedPlayers = useMemo(() => {
+    if (!players) return [] as Player[];
+    return updatePlayersWithCalculatedBalances(
+      players,
+      payments,
+      fines,
+      duePayments,
+      beverageConsumptions
+    );
+  }, [players, payments, fines, duePayments, beverageConsumptions]);
+
+  const lastActivityByUser = useMemo(() => {
+    const map = new Map<string, string>();
+    const setIfMax = (userId?: string, date?: string) => {
+      if (!userId || !date) return;
+      const t = new Date(date).getTime();
+      const prev = map.get(userId);
+      if (!prev || t > new Date(prev).getTime()) map.set(userId, date);
+    };
+    fines.forEach(f => setIfMax(f.userId, f.date));
+    payments.forEach(p => setIfMax(p.userId, p.date));
+    duePayments.forEach(d => setIfMax(d.userId, d.createdAt));
+    beverageConsumptions.forEach(b => setIfMax(b.userId, b.date));
+    return map;
+  }, [fines, payments, duePayments, beverageConsumptions]);
+
+  const beverageCountByUser = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const c of beverageConsumptions) {
+      if (!c?.userId) continue;
+      m.set(c.userId, (m.get(c.userId) ?? 0) + 1);
+    }
+    return m;
+  }, [beverageConsumptions]);
 
 
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
@@ -110,8 +160,8 @@ export default function PlayersPage() {
     }
   };
 
-  const activePlayers = (players ?? []).filter((p) => p.active !== false);
-  const inactivePlayers = (players ?? []).filter((p) => p.active === false);
+  const activePlayers = (enhancedPlayers ?? []).filter((p) => p.active !== false);
+  const inactivePlayers = (enhancedPlayers ?? []).filter((p) => p.active === false);
 
   // Loading state
   if (isLoading) {
@@ -182,6 +232,8 @@ export default function PlayersPage() {
                     </TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Nickname</TableHead>
+                    <TableHead>Last Activity</TableHead>
+                    <TableHead>Beverages</TableHead>
                     <TableHead className="text-right">Balance</TableHead>
                     <TableHead className="w-[140px] text-right">
                       <span className="sr-only">Actions</span>
@@ -208,6 +260,13 @@ export default function PlayersPage() {
                           <a href={`/players/${player.id}`} className="hover:underline">{player.name}</a>
                         </TableCell>
                         <TableCell>{player.nickname}</TableCell>
+                        <TableCell>
+                          {(() => {
+                            const d = lastActivityByUser.get(player.id);
+                            return d ? <SafeLocaleDate dateString={d} /> : '-';
+                          })()}
+                        </TableCell>
+                        <TableCell>{beverageCountByUser.get(player.id) ?? 0}</TableCell>
                         <TableCell
                           className={`text-right font-semibold ${
                             balance < 0
@@ -287,6 +346,8 @@ export default function PlayersPage() {
                     </TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Nickname</TableHead>
+                    <TableHead>Last Activity</TableHead>
+                    <TableHead>Beverages</TableHead>
                     <TableHead className="text-right">Balance</TableHead>
                     <TableHead className="w-[140px] text-right">
                       <span className="sr-only">Actions</span>
@@ -313,6 +374,13 @@ export default function PlayersPage() {
                           <a href={`/players/${player.id}`} className="hover:underline">{player.name}</a>
                         </TableCell>
                         <TableCell>{player.nickname}</TableCell>
+                        <TableCell>
+                          {(() => {
+                            const d = lastActivityByUser.get(player.id);
+                            return d ? <SafeLocaleDate dateString={d} /> : '-';
+                          })()}
+                        </TableCell>
+                        <TableCell>{beverageCountByUser.get(player.id) ?? 0}</TableCell>
                         <TableCell
                           className={`text-right font-semibold ${
                             balance < 0
