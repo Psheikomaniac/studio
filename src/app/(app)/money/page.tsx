@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -213,6 +213,33 @@ export default function MoneyPage() {
       return true;
     });
   }, [unifiedTransactions, searchQuery, filterType, filterPlayer, filterStatus]);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(20);
+
+  const totalItems = filteredTransactions.length;
+
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(totalItems / pageSize)), [totalItems, pageSize]);
+
+  // Clamp current page if it exceeds total pages (e.g., after filtering)
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  // Reset to first page when filters or page size change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterType, filterPlayer, filterStatus, pageSize]);
+
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+
+  const paginatedTransactions = useMemo(() =>
+    filteredTransactions.slice(startIndex, endIndex)
+  , [filteredTransactions, startIndex, endIndex]);
 
   // Calculate totals
   const totals = useMemo(() => {
@@ -557,7 +584,7 @@ export default function MoneyPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredTransactions.map((transaction) => (
+                    {paginatedTransactions.map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell>
                           <SafeLocaleDate dateString={transaction.date} />
@@ -578,6 +605,53 @@ export default function MoneyPage() {
                     {hasActiveFilters ? 'No transactions match your filters.' : 'No transactions found.'}
                   </div>
                 )}
+
+                {/* Pagination Controls */}
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>Rows per page:</span>
+                    <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+                      <SelectTrigger className="h-8 w-[84px]" suppressHydrationWarning>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="20">20</SelectItem>
+                        <SelectItem value="25">25</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="75">75</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+                    <p className="text-sm text-muted-foreground">
+                      Showing {totalItems === 0 ? 0 : startIndex + 1}
+                      -{totalItems === 0 ? 0 : Math.min(endIndex, totalItems)} of {totalItems}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage <= 1 || totalItems === 0}
+                      >
+                        Prev
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        Page {totalItems === 0 ? 1 : currentPage} of {totalItems === 0 ? 1 : totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage >= totalPages || totalItems === 0}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
