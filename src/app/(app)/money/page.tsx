@@ -52,17 +52,16 @@ export default function MoneyPage() {
   const firebase = useFirebaseOptional();
   const firestore = firebase?.firestore;
 
-  // Pagination state (early so we can limit Firestore queries)
+  // Pagination state (client-side only; fetch full datasets for stable counts)
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(20);
-  const effectiveLimit = Math.max(pageSize, currentPage * pageSize); // load only up to current page cumulatively
 
-  // Fetch all players and their transactions from Firebase
+  // Fetch all players and their transactions from Firebase (no per-page limits)
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
-  const { data: finesData, isLoading: finesLoading } = useAllFines({ limit: effectiveLimit });
-  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ limit: effectiveLimit });
-  const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments({ limit: effectiveLimit });
-  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ limit: effectiveLimit });
+  const { data: finesData, isLoading: finesLoading } = useAllFines();
+  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments();
+  const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();
+  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions();
 
   // Keep static data for catalogs (dues, predefined fines, beverages)
   const [dues] = useState<Due[]>(staticDues);
@@ -222,25 +221,15 @@ export default function MoneyPage() {
 
   const totalItems = filteredTransactions.length;
 
-  // We only fetch a limited slice from Firestore for performance. If any source
-  // returns exactly "effectiveLimit" items, more may exist and Next should remain enabled.
-  const hasMore = useMemo(() => {
-    return (
-      (fines.length === effectiveLimit) ||
-      (payments.length === effectiveLimit) ||
-      (duePayments.length === effectiveLimit) ||
-      (beverageConsumptions.length === effectiveLimit)
-    );
-  }, [fines.length, payments.length, duePayments.length, beverageConsumptions.length, effectiveLimit]);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(totalItems / pageSize)), [totalItems, pageSize]);
 
   // Clamp current page if it exceeds total pages (e.g., after filtering)
   useEffect(() => {
-    if (!hasMore && currentPage > totalPages) {
+    if (currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
-  }, [currentPage, totalPages, hasMore]);
+  }, [currentPage, totalPages]);
 
   // Reset to first page when filters or page size change
   useEffect(() => {
@@ -657,8 +646,8 @@ export default function MoneyPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage((p) => (hasMore ? p + 1 : Math.min(totalPages, p + 1)))}
-                        disabled={(!hasMore && currentPage >= totalPages) || totalItems === 0}
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage >= totalPages || totalItems === 0}
                       >
                         Next
                       </Button>
