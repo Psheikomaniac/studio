@@ -24,7 +24,8 @@ import { useMemo } from 'react';
 import { BaseFirebaseService } from './base.service';
 import type { ServiceResult, CreateOptions, UpdateOptions, DeleteOptions } from './types';
 import type { Fine } from '@/lib/types';
-import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { useMemoFirebase, useCollection } from '@/firebase';
+import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 import { setDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 /**
@@ -399,12 +400,12 @@ export class FinesService extends BaseFirebaseService<Fine> {
  * }
  */
 export function useFinesService(userId: string | null | undefined): FinesService | null {
-  const firestore = useFirestore();
+  const firebase = useFirebaseOptional();
 
   return useMemo(() => {
-    if (!userId) return null;
-    return new FinesService(firestore, userId);
-  }, [firestore, userId]);
+    if (!userId || !firebase?.firestore) return null;
+    return new FinesService(firebase.firestore, userId);
+  }, [firebase?.firestore, userId]);
 }
 
 /**
@@ -416,13 +417,13 @@ export function useFinesService(userId: string | null | undefined): FinesService
  * const { data: fines, isLoading, error } = usePlayerFines(playerId);
  */
 export function usePlayerFines(userId: string | null | undefined) {
-  const firestore = useFirestore();
+  const firebase = useFirebaseOptional();
 
   const finesQuery = useMemoFirebase(() => {
-    if (!userId) return null;
-    const finesCol = collection(firestore, `users/${userId}/fines`);
+    if (!userId || !firebase?.firestore) return null;
+    const finesCol = collection(firebase.firestore, `users/${userId}/fines`);
     return query(finesCol, orderBy('date', 'desc'));
-  }, [firestore, userId]);
+  }, [firebase?.firestore, userId]);
 
   return useCollection<Fine>(finesQuery);
 }

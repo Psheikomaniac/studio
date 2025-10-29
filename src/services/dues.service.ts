@@ -25,7 +25,8 @@ import { useMemo } from 'react';
 import { BaseFirebaseService } from './base.service';
 import type { ServiceResult, CreateOptions, UpdateOptions, DeleteOptions } from './types';
 import type { DuePayment } from '@/lib/types';
-import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { useMemoFirebase, useCollection } from '@/firebase';
+import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 import { setDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 /**

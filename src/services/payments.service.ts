@@ -24,7 +24,8 @@ import { useMemo } from 'react';
 import { BaseFirebaseService } from './base.service';
 import type { ServiceResult, CreateOptions, UpdateOptions, DeleteOptions } from './types';
 import type { Payment } from '@/lib/types';
-import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { useMemoFirebase, useCollection } from '@/firebase';
+import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 import { setDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 /**
@@ -217,12 +218,12 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
  * }
  */
 export function usePaymentsService(userId: string | null | undefined): PaymentsService | null {
-  const firestore = useFirestore();
+  const firebase = useFirebaseOptional();
 
   return useMemo(() => {
-    if (!userId) return null;
-    return new PaymentsService(firestore, userId);
-  }, [firestore, userId]);
+    if (!userId || !firebase?.firestore) return null;
+    return new PaymentsService(firebase.firestore, userId);
+  }, [firebase?.firestore, userId]);
 }
 
 /**
@@ -234,13 +235,13 @@ export function usePaymentsService(userId: string | null | undefined): PaymentsS
  * const { data: payments, isLoading, error } = usePlayerPayments(playerId);
  */
 export function usePlayerPayments(userId: string | null | undefined) {
-  const firestore = useFirestore();
+  const firebase = useFirebaseOptional();
 
   const paymentsQuery = useMemoFirebase(() => {
-    if (!userId) return null;
-    const paymentsCol = collection(firestore, `users/${userId}/payments`);
+    if (!userId || !firebase?.firestore) return null;
+    const paymentsCol = collection(firebase.firestore, `users/${userId}/payments`);
     return query(paymentsCol, orderBy('date', 'desc'));
-  }, [firestore, userId]);
+  }, [firebase?.firestore, userId]);
 
   return useCollection<Payment>(paymentsQuery);
 }

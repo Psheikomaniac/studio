@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SafeLocaleDate } from "@/components/shared/safe-locale-date";
@@ -29,6 +29,7 @@ type ActivityItem = {
   description: string;
   type: "fine" | "payment" | "due" | "beverage";
   amount: number; // negative for debits, positive for credits
+  paid?: boolean; // optional: green if paid, red if not
 };
 
 export default function PlayerDetailsPage() {
@@ -80,6 +81,25 @@ export default function PlayerDetailsPage() {
     };
   }, [fines, payments, duePayments, consumptions]);
 
+  // Pagination for fines (Strafen)
+  const FINES_PAGE_SIZE = 20;
+  const [finesPage, setFinesPage] = useState(1);
+
+  const sortedFines = useMemo(() => {
+    return (fines || []).slice().sort((a: Fine, b: Fine) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [fines]);
+
+  const finesTotalCount = sortedFines.length;
+  const finesTotalPages = Math.max(1, Math.ceil(finesTotalCount / FINES_PAGE_SIZE));
+  const finesPageStart = (finesPage - 1) * FINES_PAGE_SIZE;
+  const finesPageEnd = Math.min(finesPageStart + FINES_PAGE_SIZE, finesTotalCount);
+  const pagedFines = sortedFines.slice(finesPageStart, finesPageEnd);
+
+  // Keep current fines page in range when data changes
+  useEffect(() => {
+    setFinesPage((p) => Math.min(Math.max(1, p), finesTotalPages));
+  }, [finesTotalPages]);
+
   const recentActivity = useMemo<ActivityItem[]>(() => {
     const items: ActivityItem[] = [];
 
@@ -90,6 +110,7 @@ export default function PlayerDetailsPage() {
         description: f.reason,
         type: "fine",
         amount: -f.amount,
+        paid: !!f.paid,
       });
     });
 
@@ -100,6 +121,7 @@ export default function PlayerDetailsPage() {
         description: p.reason,
         type: "payment",
         amount: p.amount,
+        paid: !!p.paid,
       });
     });
 
@@ -110,6 +132,7 @@ export default function PlayerDetailsPage() {
         description: d.userName ? `Due payment (${d.userName})` : "Due payment",
         type: "due",
         amount: -d.amountDue,
+        paid: !!d.paid,
       });
     });
 
@@ -120,6 +143,7 @@ export default function PlayerDetailsPage() {
         description: c.beverageName || "Beverage",
         type: "beverage",
         amount: -c.amount,
+        paid: !!c.paid,
       });
     });
 
@@ -293,6 +317,74 @@ export default function PlayerDetailsPage() {
             </Card>
           </div>
 
+          {/* Strafen und Aktivitäten nebeneinander */}
+          <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Strafen</CardTitle>
+              <CardDescription>Alle Strafen dieses Spielers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {finesTotalCount > 0 ? (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Datum</TableHead>
+                        <TableHead className="text-right">Betrag</TableHead>
+                        <TableHead>Beschreibung</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pagedFines.map((f) => (
+                        <TableRow key={f.id}>
+                          <TableCell>
+                            <SafeLocaleDate dateString={f.date} />
+                          </TableCell>
+                          <TableCell className={`text-right font-mono ${f.paid ? 'text-positive' : 'text-destructive'}`}>
+                            {formatCurrency(-f.amount)}
+                          </TableCell>
+                          <TableCell>{f.reason}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+
+                  {finesTotalCount > FINES_PAGE_SIZE && (
+                    <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        Zeige {finesPageStart + 1}-{finesPageEnd} von {finesTotalCount}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setFinesPage((p) => Math.max(1, p - 1))}
+                          disabled={finesPage <= 1}
+                        >
+                          Zurück
+                        </Button>
+                        <span className="text-sm text-muted-foreground">
+                          Seite {finesPage} von {finesTotalPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setFinesPage((p) => Math.min(finesTotalPages, p + 1))}
+                          disabled={finesPage >= finesTotalPages}
+                        >
+                          Weiter
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center p-8 text-muted-foreground">Keine Strafen gefunden.</div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Recent activity */}
           <Card>
             <CardHeader>
@@ -305,7 +397,6 @@ export default function PlayerDetailsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Datum</TableHead>
-                      <TableHead>Typ</TableHead>
                       <TableHead className="text-right">Betrag</TableHead>
                       <TableHead>Beschreibung</TableHead>
                     </TableRow>
@@ -314,12 +405,7 @@ export default function PlayerDetailsPage() {
                     {recentActivity.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell><SafeLocaleDate dateString={item.date} /></TableCell>
-                        <TableCell>
-                          <Badge variant={item.amount < 0 ? "destructive" : "default"}>
-                            {item.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className={`text-right font-mono ${item.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
+                        <TableCell className={`text-right font-mono ${item.paid ? 'text-positive' : 'text-destructive'}`}>
                           {formatCurrency(item.amount)}
                         </TableCell>
                         <TableCell>{item.description}</TableCell>
@@ -332,6 +418,7 @@ export default function PlayerDetailsPage() {
               )}
             </CardContent>
           </Card>
+        </div>
         </div>
       )}
     </main>
