@@ -55,3 +55,4 @@ reviews/
 *.swp
 *.swo
 *~
+/scripts/check-firestore-data.ts
