@@ -6,7 +6,7 @@
 'use client';
 
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
-import { collection, collectionGroup, query, orderBy as firestoreOrderBy } from 'firebase/firestore';
+import { collection, collectionGroup, query, orderBy as firestoreOrderBy, limit as firestoreLimit } from 'firebase/firestore';
 import { useMemoFirebase, useCollection } from '@/firebase';
 import type { Fine, Payment, DuePayment, BeverageConsumption } from '@/lib/types';
 
@@ -15,7 +15,7 @@ const DEBUG_LOGS = process.env.NEXT_PUBLIC_FIREBASE_DEBUG_LOGS === 'true';
 /**
  * Hook to get all fines across all players using collection group query
  */
-export function useAllFines() {
+export function useAllFines(options?: { limit?: number }) {
   const firebase = useFirebaseOptional();
 
   const finesQuery = useMemoFirebase(() => {
@@ -26,10 +26,11 @@ export function useAllFines() {
     // Use collection group query to get all fines from all users
     if (DEBUG_LOGS) console.log('[useAllFines] Creating collection group query for fines');
     const finesGroup = collectionGroup(firebase.firestore, 'fines');
-    const q = query(finesGroup, firestoreOrderBy('date', 'desc'));
+    const base = query(finesGroup, firestoreOrderBy('date', 'desc'));
+    const q = options?.limit ? query(base, firestoreLimit(options.limit)) : base;
     if (DEBUG_LOGS) console.log('[useAllFines] Query created:', q);
     return q;
-  }, [firebase?.firestore]);
+  }, [firebase?.firestore, options?.limit]);
 
   if (DEBUG_LOGS) console.log('[useAllFines] Returning query:', finesQuery);
   return useCollection<Fine>(finesQuery);
@@ -38,15 +39,16 @@ export function useAllFines() {
 /**
  * Hook to get all payments across all players using collection group query
  */
-export function useAllPayments() {
+export function useAllPayments(options?: { limit?: number }) {
   const firebase = useFirebaseOptional();
 
   const paymentsQuery = useMemoFirebase(() => {
     if (!firebase?.firestore) return null;
     // Use collection group query to get all payments from all users
     const paymentsGroup = collectionGroup(firebase.firestore, 'payments');
-    return query(paymentsGroup, firestoreOrderBy('date', 'desc'));
-  }, [firebase?.firestore]);
+    const base = query(paymentsGroup, firestoreOrderBy('date', 'desc'));
+    return options?.limit ? query(base, firestoreLimit(options.limit)) : base;
+  }, [firebase?.firestore, options?.limit]);
 
   return useCollection<Payment>(paymentsQuery);
 }
@@ -54,15 +56,16 @@ export function useAllPayments() {
 /**
  * Hook to get all due payments across all players using collection group query
  */
-export function useAllDuePayments() {
+export function useAllDuePayments(options?: { limit?: number }) {
   const firebase = useFirebaseOptional();
 
   const duePaymentsQuery = useMemoFirebase(() => {
     if (!firebase?.firestore) return null;
     // Use collection group query to get all due payments from all users
     const duePaymentsGroup = collectionGroup(firebase.firestore, 'duePayments');
-    return query(duePaymentsGroup, firestoreOrderBy('createdAt', 'desc'));
-  }, [firebase?.firestore]);
+    const base = query(duePaymentsGroup, firestoreOrderBy('createdAt', 'desc'));
+    return options?.limit ? query(base, firestoreLimit(options.limit)) : base;
+  }, [firebase?.firestore, options?.limit]);
 
   return useCollection<DuePayment>(duePaymentsQuery);
 }
@@ -70,15 +73,16 @@ export function useAllDuePayments() {
 /**
  * Hook to get all beverage consumptions across all players using collection group query
  */
-export function useAllBeverageConsumptions() {
+export function useAllBeverageConsumptions(options?: { limit?: number }) {
   const firebase = useFirebaseOptional();
 
   const consumptionsQuery = useMemoFirebase(() => {
     if (!firebase?.firestore) return null;
     // Use collection group query to get all beverage consumptions from all users
     const consumptionsGroup = collectionGroup(firebase.firestore, 'beverageConsumptions');
-    return query(consumptionsGroup, firestoreOrderBy('date', 'desc'));
-  }, [firebase?.firestore]);
+    const base = query(consumptionsGroup, firestoreOrderBy('date', 'desc'));
+    return options?.limit ? query(base, firestoreLimit(options.limit)) : base;
+  }, [firebase?.firestore, options?.limit]);
 
   return useCollection<BeverageConsumption>(consumptionsQuery);
 }

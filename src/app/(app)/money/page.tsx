@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -51,12 +52,17 @@ export default function MoneyPage() {
   const firebase = useFirebaseOptional();
   const firestore = firebase?.firestore;
 
+  // Pagination state (early so we can limit Firestore queries)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(20);
+  const effectiveLimit = Math.max(pageSize, currentPage * pageSize); // load only up to current page cumulatively
+
   // Fetch all players and their transactions from Firebase
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
-  const { data: finesData, isLoading: finesLoading } = useAllFines();
-  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments();
-  const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();
-  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions();
+  const { data: finesData, isLoading: finesLoading } = useAllFines({ limit: effectiveLimit });
+  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ limit: effectiveLimit });
+  const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments({ limit: effectiveLimit });
+  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ limit: effectiveLimit });
 
   // Keep static data for catalogs (dues, predefined fines, beverages)
   const [dues] = useState<Due[]>(staticDues);
@@ -214,20 +220,27 @@ export default function MoneyPage() {
     });
   }, [unifiedTransactions, searchQuery, filterType, filterPlayer, filterStatus]);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(20);
-
   const totalItems = filteredTransactions.length;
+
+  // We only fetch a limited slice from Firestore for performance. If any source
+  // returns exactly "effectiveLimit" items, more may exist and Next should remain enabled.
+  const hasMore = useMemo(() => {
+    return (
+      (fines.length === effectiveLimit) ||
+      (payments.length === effectiveLimit) ||
+      (duePayments.length === effectiveLimit) ||
+      (beverageConsumptions.length === effectiveLimit)
+    );
+  }, [fines.length, payments.length, duePayments.length, beverageConsumptions.length, effectiveLimit]);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(totalItems / pageSize)), [totalItems, pageSize]);
 
   // Clamp current page if it exceeds total pages (e.g., after filtering)
   useEffect(() => {
-    if (currentPage > totalPages) {
+    if (!hasMore && currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, hasMore]);
 
   // Reset to first page when filters or page size change
   useEffect(() => {
@@ -589,7 +602,7 @@ export default function MoneyPage() {
                         <TableCell>
                           <SafeLocaleDate dateString={transaction.date} />
                         </TableCell>
-                        <TableCell className="font-medium">{transaction.userName}</TableCell>
+                        <TableCell className="font-medium"><Link href={`/players/${transaction.userId}`} className="hover:underline">{transaction.userName}</Link></TableCell>
                         <TableCell>{transaction.description}</TableCell>
                         <TableCell>{getTypeBadge(transaction.type)}</TableCell>
                         <TableCell className={`text-right font-mono ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
@@ -644,8 +657,8 @@ export default function MoneyPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                        disabled={currentPage >= totalPages || totalItems === 0}
+                        onClick={() => setCurrentPage((p) => (hasMore ? p + 1 : Math.min(totalPages, p + 1)))}
+                        disabled={(!hasMore && currentPage >= totalPages) || totalItems === 0}
                       >
                         Next
                       </Button>

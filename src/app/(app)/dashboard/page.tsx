@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -299,7 +300,7 @@ export default function DashboardPage() {
                                 {index + 1}
                               </div>
                               <div>
-                                <p className="font-medium">{player.name}</p>
+                                <p className="font-medium"><Link href={`/players/${player.id}`} className="hover:underline">{player.name}</Link></p>
                                 <p className="text-sm text-muted-foreground">{player.nickname}</p>
                               </div>
                             </div>
@@ -338,7 +339,7 @@ export default function DashboardPage() {
                         <TableBody>
                           {recentTransactions.map((transaction) => (
                             <TableRow key={transaction.id}>
-                              <TableCell className="font-medium">{transaction.userName}</TableCell>
+                              <TableCell className="font-medium"><Link href={`/players/${transaction.userId}`} className="hover:underline">{transaction.userName}</Link></TableCell>
                               <TableCell>{getTypeBadge(transaction.type)}</TableCell>
                               <TableCell className={`text-right font-mono ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
                                 {transaction.amount >= 0 ? '+' : ''}€{transaction.amount.toFixed(2)}

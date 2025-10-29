@@ -199,15 +199,19 @@ export default function PlayersPage() {
                     return (
                       <TableRow key={player.id}>
                         <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt="Player image"
-                            className="aspect-square rounded-full object-cover"
-                            height="40"
-                            src={player.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=40&background=94a3b8&color=fff`}
-                            width="40"
-                          />
+                          <a href={`/players/${player.id}`} className="inline-block">
+                            <Image
+                              alt="Player image"
+                              className="aspect-square rounded-full object-cover"
+                              height="40"
+                              src={player.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=40&background=94a3b8&color=fff`}
+                              width="40"
+                            />
+                          </a>
                         </TableCell>
-                        <TableCell className="font-medium">{player.name}</TableCell>
+                        <TableCell className="font-medium">
+                          <a href={`/players/${player.id}`} className="hover:underline">{player.name}</a>
+                        </TableCell>
                         <TableCell>{player.nickname}</TableCell>
                         <TableCell
                           className={`text-right font-semibold ${
