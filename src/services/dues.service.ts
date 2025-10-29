@@ -406,12 +406,12 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
  * }
  */
 export function useDuesService(userId: string | null | undefined): DuesService | null {
-  const firestore = useFirestore();
+  const firebase = useFirebaseOptional();
 
   return useMemo(() => {
-    if (!userId) return null;
-    return new DuesService(firestore, userId);
-  }, [firestore, userId]);
+    if (!userId || !firebase?.firestore) return null;
+    return new DuesService(firebase.firestore, userId);
+  }, [firebase?.firestore, userId]);
 }
 
 /**
@@ -423,13 +423,13 @@ export function useDuesService(userId: string | null | undefined): DuesService |
  * const { data: duePayments, isLoading, error } = usePlayerDuePayments(playerId);
  */
 export function usePlayerDuePayments(userId: string | null | undefined) {
-  const firestore = useFirestore();
+  const firebase = useFirebaseOptional();
 
   const duePaymentsQuery = useMemoFirebase(() => {
-    if (!userId) return null;
-    const duePaymentsCol = collection(firestore, `users/${userId}/duePayments`);
+    if (!userId || !firebase?.firestore) return null;
+    const duePaymentsCol = collection(firebase.firestore, `users/${userId}/duePayments`);
     return query(duePaymentsCol, orderBy('createdAt', 'desc'));
-  }, [firestore, userId]);
+  }, [firebase?.firestore, userId]);
 
   return useCollection<DuePayment>(duePaymentsQuery);
 }

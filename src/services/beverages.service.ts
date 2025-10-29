@@ -24,7 +24,8 @@ import { useMemo } from 'react';
 import { BaseFirebaseService } from './base.service';
 import type { ServiceResult, CreateOptions, UpdateOptions, DeleteOptions } from './types';
 import type { BeverageConsumption } from '@/lib/types';
-import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { useMemoFirebase, useCollection } from '@/firebase';
+import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 import { setDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 /**
@@ -393,12 +394,12 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
  * }
  */
 export function useBeveragesService(userId: string | null | undefined): BeveragesService | null {
-  const firestore = useFirestore();
+  const firebase = useFirebaseOptional();
 
   return useMemo(() => {
-    if (!userId) return null;
-    return new BeveragesService(firestore, userId);
-  }, [firestore, userId]);
+    if (!userId || !firebase?.firestore) return null;
+    return new BeveragesService(firebase.firestore, userId);
+  }, [firebase?.firestore, userId]);
 }
 
 /**
@@ -410,13 +411,13 @@ export function useBeveragesService(userId: string | null | undefined): Beverage
  * const { data: consumptions, isLoading, error } = usePlayerConsumptions(playerId);
  */
 export function usePlayerConsumptions(userId: string | null | undefined) {
-  const firestore = useFirestore();
+  const firebase = useFirebaseOptional();
 
   const consumptionsQuery = useMemoFirebase(() => {
-    if (!userId) return null;
-    const consumptionsCol = collection(firestore, `users/${userId}/beverageConsumptions`);
+    if (!userId || !firebase?.firestore) return null;
+    const consumptionsCol = collection(firebase.firestore, `users/${userId}/beverageConsumptions`);
     return query(consumptionsCol, orderBy('date', 'desc'));
-  }, [firestore, userId]);
+  }, [firebase?.firestore, userId]);
 
   return useCollection<BeverageConsumption>(consumptionsQuery);
 }
