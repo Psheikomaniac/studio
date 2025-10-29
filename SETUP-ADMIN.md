@@ -191,3 +191,34 @@ After setting up your admin user:
 ---
 
 **Important:** Do not share your Firebase Admin SDK service account keys or credentials in version control!
+
+
+## Firestore connection troubleshooting (development)
+
+If you see console errors like:
+
+- "Fetch API cannot load ... Firestore/Listen/channel ... due to access control checks"
+- network or CORS errors shortly after the page loads
+
+This is a common issue with Firestore's default WebChannel transport in some dev environments (proxies, Safari, ad blockers). The app now automatically switches to long-polling in development and on Safari, which usually resolves it.
+
+What "due to access control checks" means:
+- This message comes from the browser’s CORS enforcement, not from your Firestore security rules.
+- The browser blocked a network request before it could complete because the transport (Google WebChannel used by Firestore’s real‑time listener) didn’t pass the environment’s CORS restrictions (often on Safari, corporate proxies/VPNs, privacy extensions, or ad blockers).
+- It does not necessarily mean you lack Firestore permissions. It’s usually a networking/transport quirk in dev.
+
+Why clicking the Listen/channel URL shows "400 Unknown SID":
+- The URL you see is an internal, session‑bound streaming endpoint used by Firestore’s WebChannel. It includes a temporary session ID (SID) and other parameters.
+- That endpoint is only valid within the XHR session the SDK opened. Opening it directly in a new tab is a different context (no valid session), so Google’s servers respond with 400 Unknown SID. This is expected and not an app bug.
+
+Quick checklist to resolve/verify:
+- Let the app pick the safer transport automatically (we enable long‑polling in development and on Safari).
+- Or force long‑polling explicitly by setting in `.env.local`:
+  - `NEXT_PUBLIC_FIREBASE_FORCE_LONG_POLLING=true` (then restart `npm run dev`).
+- Temporarily disable ad blockers/privacy extensions for localhost.
+- If behind a proxy/VPN, try without it or with a different network.
+- Try a different browser (Chrome/Firefox) to compare behavior; Safari is more prone to WebChannel issues.
+
+Advanced notes:
+- We keep `experimentalAutoDetectLongPolling` enabled and preserve already‑loaded UI data if a transient network/CORS error occurs, so the page won’t flash empty.
+- If you also see missing index links in the console, follow them to create required Firestore indexes; the UI will continue to show cached data until indexes are available.

@@ -117,30 +117,56 @@ export function initializeFirebase() {
 export function getSdks(firebaseApp: FirebaseApp) {
   const auth = getAuth(firebaseApp);
 
-  // Initialize Firestore with modern cache API (persistence is configured during initialization)
+  // Decide on long-polling strategy
+  const envForce = process.env.NEXT_PUBLIC_FIREBASE_FORCE_LONG_POLLING;
+  let forceLongPolling: boolean;
+  if (envForce === 'true') {
+    forceLongPolling = true;
+  } else if (envForce === 'false') {
+    forceLongPolling = false;
+  } else {
+    // Default heuristics: enable in development or on Safari (WebChannel is flaky with CORS)
+    const isDev = process.env.NODE_ENV !== 'production';
+    let isSafari = false;
+    try {
+      if (typeof navigator !== 'undefined') {
+        const ua = navigator.userAgent;
+        isSafari = /Safari\//.test(ua) && !/Chrome\//.test(ua) && !/Chromium\//.test(ua) && !/Edg\//.test(ua);
+      }
+    } catch {}
+    forceLongPolling = isDev || isSafari;
+  }
+  if (forceLongPolling) {
+    console.info('Firestore networking: Using experimentalForceLongPolling (dev/safari fallback)');
+  }
+
+  // Initialize Firestore with modern cache API (persistence and network transport configured here)
   let firestore;
-  try {
-    // Check if Firestore was already initialized with cache settings
-    firestore = getFirestore(firebaseApp);
-  } catch {
-    // If not initialized yet, initialize with cache settings
-    if (shouldEnablePersistence && isBrowserCompatible()) {
-      firestore = initializeFirestore(firebaseApp, {
+  const usePersistence = shouldEnablePersistence && isBrowserCompatible();
+  const options = usePersistence
+    ? {
         localCache: persistentLocalCache({
           tabManager: persistentMultipleTabManager()
         }),
         experimentalAutoDetectLongPolling: true,
-        experimentalForceLongPolling: process.env.NEXT_PUBLIC_FIREBASE_FORCE_LONG_POLLING === 'true'
-      });
-      console.info('Firestore: Multi-tab persistence enabled (modern API)');
-    } else {
-      firestore = initializeFirestore(firebaseApp, {
+        experimentalForceLongPolling: forceLongPolling
+      }
+    : {
         localCache: memoryLocalCache(),
         experimentalAutoDetectLongPolling: true,
-        experimentalForceLongPolling: process.env.NEXT_PUBLIC_FIREBASE_FORCE_LONG_POLLING === 'true'
-      });
-      console.info('Firestore: Memory-only cache enabled');
-    }
+        experimentalForceLongPolling: forceLongPolling
+      };
+
+  try {
+    firestore = initializeFirestore(firebaseApp, options);
+    console.info(
+      usePersistence
+        ? 'Firestore: Multi-tab persistence enabled (modern API)'
+        : 'Firestore: Memory-only cache enabled'
+    );
+  } catch (e) {
+    // If already initialized elsewhere, fall back to the existing instance
+    firestore = getFirestore(firebaseApp);
   }
 
   // Initialize monitoring services asynchronously (non-blocking)

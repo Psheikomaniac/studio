@@ -114,12 +114,11 @@ export function useCollection<T = any>(
             if (linkMatch) {
               console.warn(`[useCollection] Missing Firestore index for "${path}". Create it here: ${linkMatch[0]}`);
             } else {
-              console.warn(`[useCollection] Missing Firestore index for "${path}". Query will return empty array in dev.`);
+              console.warn(`[useCollection] Missing Firestore index for "${path}". Query may be incomplete without the index. Preserving existing data.`);
             }
             warnedPaths.add(path);
           }
-          setData([]);
-          setError(null);
+          // Preserve existing data so the UI doesn't flash empty when cache had results
           setIsLoading(false);
           return;
         }
@@ -127,12 +126,25 @@ export function useCollection<T = any>(
         // 2) Permission denied in development → warn and return empty data
         if (error.code === 'permission-denied' || /permission/i.test(error.message)) {
           if (DEBUG_LOGS && !warnedPaths.has('perm:'+path)) {
-            console.warn('[useCollection] ⚠️ Permission denied - returning empty array for development mode');
+            console.warn('[useCollection] ⚠️ Permission denied - preserving existing data');
             console.warn('[useCollection] Query path:', path);
             warnedPaths.add('perm:'+path);
           }
-          setData([]);
-          setError(null);
+          // Preserve existing data so UI continues to show cached results
+          setIsLoading(false);
+          return;
+        }
+
+        // 2b) Network/CORS transport issues (e.g., Safari WebChannel CORS) → preserve existing data
+        const isNetworkOrCors =
+          error.code === 'unavailable' ||
+          /network|failed[\s-]?fetch|cors|access control/i.test(error.message);
+        if (isNetworkOrCors) {
+          if (DEBUG_LOGS && !warnedPaths.has('net:'+path)) {
+            console.warn('[useCollection] Network/CORS issue detected for query. Preserving existing data. Consider enabling long polling.');
+            console.warn('[useCollection] Query path:', path, '| Error:', error.code, error.message);
+            warnedPaths.add('net:'+path);
+          }
           setIsLoading(false);
           return;
         }
