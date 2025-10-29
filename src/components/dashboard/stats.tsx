@@ -3,6 +3,7 @@
 import type { Player, Fine } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, CircleAlert } from "lucide-react";
+import { formatEuro } from "@/lib/csv-utils";
 
 type StatsProps = {
   players: Player[];
@@ -29,7 +30,7 @@ export function Stats({ players, fines }: StatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-positive">
-            €{totalCredit.toFixed(2)}
+            {formatEuro(totalCredit)}
           </div>
           <p className="text-xs text-muted-foreground">
             Total amount owed to players.
@@ -43,7 +44,7 @@ export function Stats({ players, fines }: StatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-destructive">
-            €{Math.abs(totalDebt).toFixed(2)}
+            {formatEuro(Math.abs(totalDebt))}
           </div>
           <p className="text-xs text-muted-foreground">
             Total outstanding fines.

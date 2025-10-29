@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Player } from "@/lib/types";
+import { formatEuro } from "@/lib/csv-utils";
 
 type PlayerCardProps = {
   player: Player;
@@ -29,7 +30,7 @@ export default function PlayerCard({ player }: PlayerCardProps) {
         </CardContent>
         <CardFooter className="p-4 pt-0">
           <div className={cn("text-2xl font-bold", balanceColor)}>
-            €{player.balance.toFixed(2)}
+            {formatEuro(Math.abs(player.balance))}
           </div>
         </CardFooter>
       </Card>

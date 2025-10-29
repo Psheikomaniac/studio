@@ -31,6 +31,7 @@ import {
 import type { Player, Beverage } from "@/lib/types";
 import { useEffect } from "react";
 import { PlayerMultiSelect } from "@/components/dashboard/player-multi-select";
+import { formatEuro } from "@/lib/csv-utils";
 
 const consumptionSchema = z.object({
   playerIds: z.array(z.string()).min(1, "Please select at least one player."),
@@ -110,7 +111,7 @@ export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, o
                     <SelectContent>
                       {beverages.map((bev) => (
                         <SelectItem key={bev.id} value={bev.id}>
-                          {bev.name} (€{bev.price.toFixed(2)})
+                          {bev.name} ({formatEuro(bev.price)})
                         </SelectItem>
                       ))}
                     </SelectContent>

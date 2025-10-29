@@ -41,7 +41,11 @@ export class PlayersService extends BaseFirebaseService<Player> {
     playerData: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>,
     options: CreateOptions = {}
   ): Promise<ServiceResult<Player>> {
-    return this.create(playerData as any, options);
+    const dataWithDefaults = {
+      active: playerData?.hasOwnProperty('active') ? (playerData as any).active : true,
+      ...playerData,
+    } as any;
+    return this.create(dataWithDefaults, options);
   }
 
   /**
@@ -58,6 +62,7 @@ export class PlayersService extends BaseFirebaseService<Player> {
     const now = this.timestamp();
 
     const fullData = {
+      active: (playerData as any)?.hasOwnProperty?.('active') ? (playerData as any).active : true,
       ...playerData,
       id,
       createdAt: now,

@@ -99,11 +99,13 @@ export function EditFineDialog({ isOpen, setOpen, onSave, fine, players }: EditF
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {players.map((player) => (
-                        <SelectItem key={player.id} value={player.id}>
-                          {player.name}
-                        </SelectItem>
-                      ))}
+                      {players
+                        .filter((player) => player.active !== false || player.id === (fine?.userId ?? ""))
+                        .map((player) => (
+                          <SelectItem key={player.id} value={player.id}>
+                            {player.name}{player.active === false ? " (inactive)" : ""}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

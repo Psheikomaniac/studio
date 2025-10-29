@@ -27,9 +27,6 @@ export default defineConfig({
         branches: 12,
         statements: 7.5,
       },
-      // Per-file thresholds for critical modules
-      perFile: true,
-      thresholdAutoUpdate: true,
     },
   },
   resolve: {

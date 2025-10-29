@@ -16,11 +16,11 @@ import { usePlayerFines } from "@/services/fines.service";
 import { usePlayerPayments } from "@/services/payments.service";
 import { usePlayerDuePayments } from "@/services/dues.service";
 import { usePlayerConsumptions } from "@/services/beverages.service";
+import { formatEuro } from "@/lib/csv-utils";
 
 // A small helper to format currency consistently
 function formatCurrency(value: number): string {
-  const sign = value < 0 ? "-" : value > 0 ? "+" : "";
-  return `${sign}€${Math.abs(value).toFixed(2)}`;
+  return formatEuro(Math.abs(value));
 }
 
 type ActivityItem = {
@@ -341,7 +341,7 @@ export default function PlayerDetailsPage() {
                           <TableCell>
                             <SafeLocaleDate dateString={f.date} />
                           </TableCell>
-                          <TableCell className={`text-right font-mono ${f.paid ? 'text-positive' : 'text-destructive'}`}>
+                          <TableCell className={`text-right font-mono text-destructive`}>
                             {formatCurrency(-f.amount)}
                           </TableCell>
                           <TableCell>{f.reason}</TableCell>
@@ -405,7 +405,7 @@ export default function PlayerDetailsPage() {
                     {recentActivity.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell><SafeLocaleDate dateString={item.date} /></TableCell>
-                        <TableCell className={`text-right font-mono ${item.paid ? 'text-positive' : 'text-destructive'}`}>
+                        <TableCell className={`text-right font-mono ${item.amount < 0 ? 'text-destructive' : item.amount > 0 ? 'text-positive' : 'text-muted-foreground'}`}>
                           {formatCurrency(item.amount)}
                         </TableCell>
                         <TableCell>{item.description}</TableCell>

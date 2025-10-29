@@ -15,15 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { MoreHorizontal, PlusCircle, AlertCircle } from 'lucide-react';
+import { PlusCircle, AlertCircle, Pencil, Trash2, UserCheck, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Player } from '@/lib/types';
@@ -31,6 +24,7 @@ import { usePlayers, usePlayersService } from '@/services/players.service';
 import { AddEditPlayerDialog } from '@/components/players/add-edit-player-dialog';
 import { DeletePlayerDialog } from '@/components/players/delete-player-dialog';
 import { useToast } from "@/hooks/use-toast";
+import { formatEuro } from "@/lib/csv-utils";
 
 
 export default function PlayersPage() {
@@ -38,8 +32,6 @@ export default function PlayersPage() {
   const { data: players, isLoading, error } = usePlayers();
   const playersService = usePlayersService();
 
-  // Handle case where Firebase is not available
-  const isFirebaseUnavailable = !playersService;
 
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -118,6 +110,9 @@ export default function PlayersPage() {
     }
   };
 
+  const activePlayers = (players ?? []).filter((p) => p.active !== false);
+  const inactivePlayers = (players ?? []).filter((p) => p.active === false);
+
   // Loading state
   if (isLoading) {
     return (
@@ -176,7 +171,7 @@ export default function PlayersPage() {
           </div>
           <Card>
             <CardHeader>
-              <CardTitle>All Players</CardTitle>
+              <CardTitle>Active Players</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -188,13 +183,13 @@ export default function PlayersPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Nickname</TableHead>
                     <TableHead className="text-right">Balance</TableHead>
-                    <TableHead>
+                    <TableHead className="w-[140px] text-right">
                       <span className="sr-only">Actions</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {players?.map((player) => {
+                  {activePlayers.map((player) => {
                     const balance = player.balance;
                     return (
                       <TableRow key={player.id}>
@@ -220,36 +215,166 @@ export default function PlayersPage() {
                               : 'text-positive'
                           }`}
                         >
-                          €{balance.toFixed(2)}
+                          {formatEuro(Math.abs(balance))}
                         </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => handleEditClick(player)}>Edit</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDeleteClick(player)} className="text-destructive">Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label="Edit player"
+                              title="Edit"
+                              onClick={() => handleEditClick(player)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label="Set inactive"
+                              title="Set inactive"
+                              onClick={async () => {
+                                if (!playersService) return;
+                                const nextActive = false;
+                                try {
+                                  await playersService.updatePlayer(player.id, { active: nextActive } as any);
+                                  toast({
+                                    title: "Player Deactivated",
+                                    description: `${player.name} is now inactive.`,
+                                  });
+                                } catch (err) {
+                                  toast({ variant: 'destructive', title: 'Error', description: err instanceof Error ? err.message : 'Failed to update player status' });
+                                }
+                              }}
+                            >
+                              <UserX className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="text-destructive hover:text-destructive"
+                              aria-label="Delete player"
+                              title="Delete"
+                              onClick={() => handleDeleteClick(player)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
                   })}
                 </TableBody>
               </Table>
-              {players?.length === 0 && (
-                  <div className="text-center p-8 text-muted-foreground">
-                      No players found. You might need to add some.
-                  </div>
+              {activePlayers.length === 0 && (
+                <div className="text-center p-8 text-muted-foreground">
+                  No active players.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Inactive Players</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="hidden w-[100px] sm:table-cell">
+                      <span className="sr-only">Image</span>
+                    </TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Nickname</TableHead>
+                    <TableHead className="text-right">Balance</TableHead>
+                    <TableHead className="w-[140px] text-right">
+                      <span className="sr-only">Actions</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {inactivePlayers.map((player) => {
+                    const balance = player.balance;
+                    return (
+                      <TableRow key={player.id}>
+                        <TableCell className="hidden sm:table-cell">
+                          <a href={`/players/${player.id}`} className="inline-block">
+                            <Image
+                              alt="Player image"
+                              className="aspect-square rounded-full object-cover"
+                              height="40"
+                              src={player.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=40&background=94a3b8&color=fff`}
+                              width="40"
+                            />
+                          </a>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          <a href={`/players/${player.id}`} className="hover:underline">{player.name}</a>
+                        </TableCell>
+                        <TableCell>{player.nickname}</TableCell>
+                        <TableCell
+                          className={`text-right font-semibold ${
+                            balance < 0
+                              ? 'text-destructive'
+                              : 'text-positive'
+                          }`}
+                        >
+                          {formatEuro(Math.abs(balance))}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label="Edit player"
+                              title="Edit"
+                              onClick={() => handleEditClick(player)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label="Set active"
+                              title="Set active"
+                              onClick={async () => {
+                                if (!playersService) return;
+                                const nextActive = true;
+                                try {
+                                  await playersService.updatePlayer(player.id, { active: nextActive } as any);
+                                  toast({
+                                    title: "Player Activated",
+                                    description: `${player.name} is now active.`,
+                                  });
+                                } catch (err) {
+                                  toast({ variant: 'destructive', title: 'Error', description: err instanceof Error ? err.message : 'Failed to update player status' });
+                                }
+                              }}
+                            >
+                              <UserCheck className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="text-destructive hover:text-destructive"
+                              aria-label="Delete player"
+                              title="Delete"
+                              onClick={() => handleDeleteClick(player)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+              {inactivePlayers.length === 0 && (
+                <div className="text-center p-8 text-muted-foreground">
+                  No inactive players.
+                </div>
               )}
             </CardContent>
           </Card>

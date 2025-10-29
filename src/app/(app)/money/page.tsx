@@ -30,6 +30,7 @@ import { AddEditPaymentDialog } from '@/components/payments/add-edit-payment-dia
 import { RecordConsumptionDialog } from '@/components/beverages/record-consumption-dialog';
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 import { updatePlayersWithCalculatedBalances } from '@/lib/utils';
+import { formatEuro } from '@/lib/csv-utils';
 
 type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
 
@@ -42,9 +43,9 @@ interface UnifiedTransaction {
   amount: number;
   type: TransactionType;
   status: 'paid' | 'unpaid' | 'exempt' | 'partially_paid';
-  paidAt?: string;
-  amountPaid?: number;
-  totalAmount?: number;
+  paidAt?: string | null;
+  amountPaid?: number | null;
+  totalAmount?: number | null;
 }
 
 export default function MoneyPage() {
@@ -387,9 +388,9 @@ export default function MoneyPage() {
             variant="outline"
             className={`bg-amber-50 text-amber-700 border-amber-300 ${baseClass}`}
             onClick={handleClick}
-            title={`€${remaining.toFixed(2)} remaining`}
+            title={`${formatEuro(remaining)} remaining`}
           >
-            Partially Paid (€{amountPaid.toFixed(2)} / €{totalAmount.toFixed(2)})
+            Partially Paid ({formatEuro(amountPaid)} / {formatEuro(totalAmount)})
           </Badge>
         );
       case 'unpaid':
@@ -545,7 +546,7 @@ export default function MoneyPage() {
                   <CardTitle className="text-sm font-medium text-muted-foreground">Total Debits</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-destructive">-€{totals.totalDebits.toFixed(2)}</div>
+                  <div className="text-2xl font-bold text-destructive">{formatEuro(totals.totalDebits)}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -553,7 +554,7 @@ export default function MoneyPage() {
                   <CardTitle className="text-sm font-medium text-muted-foreground">Total Credits</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-positive">+€{totals.totalCredits.toFixed(2)}</div>
+                  <div className="text-2xl font-bold text-positive">{formatEuro(totals.totalCredits)}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -562,7 +563,7 @@ export default function MoneyPage() {
                 </CardHeader>
                 <CardContent>
                   <div className={`text-2xl font-bold ${totals.netBalance < 0 ? 'text-destructive' : 'text-positive'}`}>
-                    {totals.netBalance >= 0 ? '+' : ''}€{totals.netBalance.toFixed(2)}
+                    {formatEuro(Math.abs(totals.netBalance))}
                   </div>
                 </CardContent>
               </Card>
@@ -595,7 +596,7 @@ export default function MoneyPage() {
                         <TableCell>{transaction.description}</TableCell>
                         <TableCell>{getTypeBadge(transaction.type)}</TableCell>
                         <TableCell className={`text-right font-mono ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
-                          {transaction.amount >= 0 ? '+' : ''}€{transaction.amount.toFixed(2)}
+                          {formatEuro(Math.abs(transaction.amount))}
                         </TableCell>
                         <TableCell>{getStatusBadge(transaction)}</TableCell>
                       </TableRow>

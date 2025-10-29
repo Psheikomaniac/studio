@@ -32,6 +32,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { Player, Due } from "@/lib/types";
 import { useEffect } from "react";
 import { PlayerMultiSelect } from "@/components/dashboard/player-multi-select";
+import { formatEuro } from "@/lib/csv-utils";
 
 const duePaymentSchema = z.object({
   playerIds: z.array(z.string()).min(1, "Please select at least one player."),
@@ -114,7 +115,7 @@ export function RecordDuePaymentDialog({ isOpen, setOpen, players, dues, onRecor
                     <SelectContent>
                       {dues.filter(due => !due.archived).map((due) => (
                         <SelectItem key={due.id} value={due.id}>
-                          {due.name} (€{due.amount.toFixed(2)})
+                          {due.name} ({formatEuro(due.amount)})
                         </SelectItem>
                       ))}
                     </SelectContent>

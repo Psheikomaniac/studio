@@ -36,6 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Player, PredefinedFine } from "@/lib/types";
 import { PlayerMultiSelect } from "./player-multi-select";
 import { getFineSuggestion } from "@/lib/actions";
+import { formatEuro } from "@/lib/csv-utils";
 
 
 const fineSchema = z.object({
@@ -197,7 +198,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
                             <SelectContent>
                                 {predefinedFines.map((fine, i) => (
                                     <SelectItem key={i} value={fine.reason}>
-                                        {fine.reason} (€{fine.amount.toFixed(2)})
+                                        {fine.reason} ({formatEuro(fine.amount)})
                                     </SelectItem>
                                 ))}
                             </SelectContent>

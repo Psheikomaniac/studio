@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { DuePayment, Due, Player } from "@/lib/types";
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
+import { formatEuro } from "@/lib/csv-utils";
 
 type DuePaymentsTableProps = {
   duePayments: DuePayment[];
@@ -89,7 +90,7 @@ export function DuePaymentsTable({ duePayments, dues, players, onDelete, onToggl
             <TableRow key={payment.id}>
               <TableCell className="font-medium">{payment.userName}</TableCell>
               <TableCell>{getDueName(payment.dueId)}</TableCell>
-              <TableCell className="text-right">€{payment.amountDue.toFixed(2)}</TableCell>
+              <TableCell className="text-right">{formatEuro(payment.amountDue)}</TableCell>
               <TableCell>{getStatusBadge(payment)}</TableCell>
               <TableCell>
                 {payment.paidAt ? (

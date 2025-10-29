@@ -10,6 +10,7 @@ export interface Player {
   phone?: string;
   totalUnpaidPenalties: number;
   totalPaidPenalties: number;
+  active?: boolean; // if false, player is inactive and should be hidden from assignment pickers
 }
 
 export interface Fine {
@@ -19,8 +20,8 @@ export interface Fine {
   amount: number;
   date: string; // ISO string
   paid: boolean;
-  paidAt?: string; // ISO string for when it was paid
-  amountPaid?: number; // Amount already paid (for partial payments)
+  paidAt?: string | null; // ISO string for when it was paid
+  amountPaid?: number | null; // Amount already paid (for partial payments)
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
 }
@@ -38,7 +39,7 @@ export interface Payment {
   amount: number;
   date: string; // ISO string
   paid: boolean;
-  paidAt?: string; // ISO string
+  paidAt?: string | null; // ISO string
 }
 
 export interface Beverage {
@@ -55,8 +56,8 @@ export interface BeverageConsumption {
   amount: number;           // Price of beverage
   date: string;             // ISO string
   paid: boolean;
-  paidAt?: string;          // ISO string
-  amountPaid?: number;      // Amount already paid (for partial payments)
+  paidAt?: string | null;          // ISO string
+  amountPaid?: number | null;      // Amount already paid (for partial payments)
   createdAt: string;        // ISO string
 }
 
@@ -97,8 +98,8 @@ export interface DuePayment {
   userName: string;         // Player display name
   amountDue: number;
   paid: boolean;
-  paidAt?: string;          // ISO string
-  amountPaid?: number;      // Amount already paid (for partial payments)
+  paidAt?: string | null;          // ISO string
+  amountPaid?: number | null;      // Amount already paid (for partial payments)
   exempt: boolean;          // STATUS_EXEMPT from CSV
   createdAt: string;        // ISO string
 }

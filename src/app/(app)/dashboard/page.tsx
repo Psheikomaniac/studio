@@ -27,6 +27,7 @@ import { AddEditPaymentDialog } from '@/components/payments/add-edit-payment-dia
 import { RecordConsumptionDialog } from '@/components/beverages/record-consumption-dialog';
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 import { updatePlayersWithCalculatedBalances } from '@/lib/utils';
+import { formatEuro } from '@/lib/csv-utils';
 
 type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
 
@@ -39,8 +40,8 @@ interface UnifiedTransaction {
   amount: number;
   type: TransactionType;
   status: 'paid' | 'unpaid' | 'exempt' | 'partially_paid';
-  amountPaid?: number;
-  totalAmount?: number;
+  amountPaid?: number | null;
+  totalAmount?: number | null;
 }
 
 export default function DashboardPage() {
@@ -306,7 +307,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="text-right">
                               <p className="font-mono font-bold text-destructive">
-                                €{player.balance.toFixed(2)}
+                                {formatEuro(Math.abs(player.balance))}
                               </p>
                             </div>
                           </div>
@@ -342,7 +343,7 @@ export default function DashboardPage() {
                               <TableCell className="font-medium"><Link href={`/players/${transaction.userId}`} className="hover:underline">{transaction.userName}</Link></TableCell>
                               <TableCell>{getTypeBadge(transaction.type)}</TableCell>
                               <TableCell className={`text-right font-mono ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
-                                {transaction.amount >= 0 ? '+' : ''}€{transaction.amount.toFixed(2)}
+                                {formatEuro(Math.abs(transaction.amount))}
                               </TableCell>
                             </TableRow>
                           ))}

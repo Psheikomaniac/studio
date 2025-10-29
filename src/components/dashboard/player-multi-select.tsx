@@ -26,13 +26,15 @@ export function PlayerMultiSelect({ players, value, onChange, placeholder = "Sel
     console.log("New selection:", selected);
   };
 
-  const filteredPlayers = players.filter((player) => {
-    const searchLower = search.toLowerCase();
-    return (
-      player.name.toLowerCase().includes(searchLower) ||
-      player.nickname.toLowerCase().includes(searchLower)
-    );
-  });
+  const filteredPlayers = players
+    .filter((player) => player.active !== false) // hide inactive players
+    .filter((player) => {
+      const searchLower = search.toLowerCase();
+      return (
+        player.name.toLowerCase().includes(searchLower) ||
+        player.nickname.toLowerCase().includes(searchLower)
+      );
+    });
 
   console.log("PlayerMultiSelect render:", { open, playersCount: players.length, selectedCount: value.length });
 
