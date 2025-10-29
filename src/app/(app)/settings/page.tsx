@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { collection, getDocs, writeBatch } from "firebase/firestore";
+import { collection, collectionGroup, getDocs, query, limit, writeBatch } from "firebase/firestore";
 import { useFirebaseOptional } from "@/firebase/use-firebase-optional";
 import { Progress } from "@/components/ui/progress";
 
@@ -250,6 +250,39 @@ export default function SettingsPage() {
    * Delete all data - removes ALL players and ALL transactions
    * This is a complete reset and cannot be undone
    */
+  // Helper: delete all docs from a collection group in safe batches
+  const deleteCollectionGroupInBatches = async (groupName: string, batchSize = 450) => {
+    if (!firestore) return 0;
+    let deleted = 0;
+    while (true) {
+      const snap = await getDocs(query(collectionGroup(firestore, groupName), limit(batchSize)));
+      if (snap.empty) break;
+      const batch = writeBatch(firestore);
+      snap.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+      deleted += snap.size;
+      // Yield to UI thread between batches
+      await new Promise((r) => setTimeout(r, 0));
+    }
+    return deleted;
+  };
+
+  // Helper: delete all docs from a top-level collection in safe batches
+  const deleteTopLevelCollectionInBatches = async (collectionName: string, batchSize = 450) => {
+    if (!firestore) return 0;
+    let deleted = 0;
+    while (true) {
+      const snap = await getDocs(query(collection(firestore, collectionName), limit(batchSize)));
+      if (snap.empty) break;
+      const batch = writeBatch(firestore);
+      snap.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+      deleted += snap.size;
+      await new Promise((r) => setTimeout(r, 0));
+    }
+    return deleted;
+  };
+
   const handleDeleteAllData = async () => {
     if (!firestore) {
       toast({
@@ -262,53 +295,24 @@ export default function SettingsPage() {
 
     setIsDeleting(true);
     try {
-      // Get all users
-      const usersSnapshot = await getDocs(collection(firestore, 'users'));
-      const batch = writeBatch(firestore);
-      let deleteCount = 0;
+      let totalDeleted = 0;
 
-      // For each user, delete all subcollections first, then the user
-      for (const userDoc of usersSnapshot.docs) {
-        const userId = userDoc.id;
+      // 1) Delete ALL subcollection docs via collection groups
+      const deletedFines = await deleteCollectionGroupInBatches('fines');
+      const deletedPayments = await deleteCollectionGroupInBatches('payments');
+      const deletedDuePayments = await deleteCollectionGroupInBatches('duePayments');
+      const deletedConsumptions = await deleteCollectionGroupInBatches('beverageConsumptions');
+      totalDeleted += deletedFines + deletedPayments + deletedDuePayments + deletedConsumptions;
 
-        // Delete all fines
-        const finesSnapshot = await getDocs(collection(firestore, `users/${userId}/fines`));
-        finesSnapshot.docs.forEach((fineDoc) => {
-          batch.delete(fineDoc.ref);
-          deleteCount++;
-        });
-
-        // Delete all payments
-        const paymentsSnapshot = await getDocs(collection(firestore, `users/${userId}/payments`));
-        paymentsSnapshot.docs.forEach((paymentDoc) => {
-          batch.delete(paymentDoc.ref);
-          deleteCount++;
-        });
-
-        // Delete all dues
-        const duesSnapshot = await getDocs(collection(firestore, `users/${userId}/duePayments`));
-        duesSnapshot.docs.forEach((dueDoc) => {
-          batch.delete(dueDoc.ref);
-          deleteCount++;
-        });
-
-        // Delete all beverages
-        const beveragesSnapshot = await getDocs(collection(firestore, `users/${userId}/beverageConsumptions`));
-        beveragesSnapshot.docs.forEach((bevDoc) => {
-          batch.delete(bevDoc.ref);
-          deleteCount++;
-        });
-
-        // Delete the user document
-        batch.delete(userDoc.ref);
-        deleteCount++;
-      }
-
-      await batch.commit();
+      // 2) Delete top-level collections
+      const deletedDues = await deleteTopLevelCollectionInBatches('dues');
+      const deletedBeverages = await deleteTopLevelCollectionInBatches('beverages');
+      const deletedUsers = await deleteTopLevelCollectionInBatches('users');
+      totalDeleted += deletedDues + deletedBeverages + deletedUsers;
 
       toast({
         title: "Alle Daten gelöscht",
-        description: `${deleteCount} Dokumente wurden erfolgreich gelöscht. Die Datenbank ist jetzt leer.`,
+        description: `Insgesamt ${totalDeleted} Dokumente gelöscht. Details: Fines ${deletedFines}, Payments ${deletedPayments}, DuePayments ${deletedDuePayments}, BeverageConsumptions ${deletedConsumptions}, Dues ${deletedDues}, Beverages ${deletedBeverages}, Users ${deletedUsers}.`,
       });
 
       setShowDeleteDialog(false);

@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "check:db": "npx -y tsx scripts/check-firestore-data.ts",
+    "wipe:db": "npx -y tsx scripts/delete-firestore-data.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
