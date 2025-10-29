@@ -105,6 +105,13 @@ function classifyPunishment(reason: string): 'DRINK' | 'FINE' {
   return 'FINE';
 }
 
+// Helper to validate player names; skip rows with missing or 'Unknown' player names
+function isInvalidPlayerName(name?: string | null): boolean {
+  const normalized = (name ?? '').trim().toLowerCase();
+  if (!normalized) return true;
+  return normalized === 'unknown' || normalized === 'player unknown';
+}
+
 /**
  * Find or create player in Firestore
  */
@@ -285,6 +292,12 @@ export async function importDuesCSVToFirestore(
           duesMap.set(dueName, due);
         }
 
+        // Skip invalid or unknown player names
+        if (isInvalidPlayerName(row.username)) {
+          result.warnings.push(`Row ${i + 1}: Skipped due to missing or unknown player name`);
+          continue;
+        }
+
         // Find or create player
         const player = await findOrCreatePlayer(firestore, row.username, row.user_id, existingPlayers);
 
@@ -443,6 +456,12 @@ export async function importPunishmentsCSVToFirestore(
         // Skip zero-amount penalties
         if (amountEUR === 0) {
           result.warnings.push(`Row ${i + 1}: Skipped zero-amount penalty`);
+          continue;
+        }
+
+        // Skip invalid or unknown player names
+        if (isInvalidPlayerName(row.penatly_user)) {
+          result.warnings.push(`Row ${i + 1}: Skipped due to missing or unknown player name`);
           continue;
         }
 
@@ -659,6 +678,12 @@ export async function importTransactionsCSVToFirestore(
 
         if (!playerName) {
           result.warnings.push(`Row ${i + 1}: Could not extract player name from subject: ${subject}`);
+          continue;
+        }
+
+        // Skip invalid or unknown player names derived from subject
+        if (isInvalidPlayerName(playerName)) {
+          result.warnings.push(`Row ${i + 1}: Skipped due to missing or unknown player name in subject`);
           continue;
         }
 

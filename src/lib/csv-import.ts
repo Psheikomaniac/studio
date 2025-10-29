@@ -63,6 +63,14 @@ function centsToEUR(cents: string | number): number {
   return amount / 100;
 }
 
+// Helper to validate player names; skip rows with missing or 'Unknown' player names
+function isInvalidPlayerName(name?: string | null): boolean {
+  const normalized = (name ?? '').trim().toLowerCase();
+  if (!normalized) return true;
+  // Treat explicit unknown placeholders as invalid
+  return normalized === 'unknown' || normalized === 'player unknown';
+}
+
 // Helper function to find or create player by name and/or ID
 function findOrCreatePlayer(name: string, id?: string): Player {
   // First try to find by ID if provided
@@ -198,6 +206,11 @@ export async function importDuesCSV(text: string): Promise<ImportResult> {
         // Validate required fields
         if (!row.due_name || !row.due_amount || !row.username) {
           result.warnings.push(`Row ${i + 1}: Missing required fields`);
+          continue;
+        }
+        // Skip rows without a valid player name or with placeholder 'Unknown'
+        if (isInvalidPlayerName(row.username)) {
+          result.warnings.push(`Row ${i + 1}: Skipped due to missing or unknown player name`);
           continue;
         }
 
@@ -347,6 +360,12 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
           continue;
         }
 
+        // Skip invalid or unknown player names
+        if (isInvalidPlayerName(row.penatly_user)) {
+          result.warnings.push(`Row ${i + 1}: Skipped due to missing or unknown player name`);
+          continue;
+        }
+
         // Find or create player
         const player = findOrCreatePlayer(row.penatly_user);
 
@@ -491,6 +510,12 @@ export async function importTransactionsCSV(text: string): Promise<ImportResult>
 
         if (!playerName) {
           result.warnings.push(`Row ${i + 1}: Could not extract player name from subject: ${subject}`);
+          continue;
+        }
+
+        // Skip invalid or unknown player names derived from subject
+        if (isInvalidPlayerName(playerName)) {
+          result.warnings.push(`Row ${i + 1}: Skipped due to missing or unknown player name in subject`);
           continue;
         }
 
