@@ -25,6 +25,10 @@ import {
 import { collection, collectionGroup, getDocs, query, limit, writeBatch } from "firebase/firestore";
 import { useFirebaseOptional } from "@/firebase/use-firebase-optional";
 import { Progress } from "@/components/ui/progress";
+import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
+import { maxDateFromCollections } from '@/lib/stats';
+import { dues as staticDues, beverages as staticBeverages } from '@/lib/static-data';
+import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -39,6 +43,17 @@ export default function SettingsPage() {
   }, [firebase]);
 
   const firestore = firebase?.firestore ?? null;
+
+  // Collection-group data for data quality & freshness
+  const { data: finesData } = useAllFines();
+  const { data: paymentsData } = useAllPayments();
+  const { data: duePaymentsData } = useAllDuePayments();
+  const { data: consumptionsData } = useAllBeverageConsumptions();
+
+  const fines = finesData || [];
+  const payments = paymentsData || [];
+  const duePayments = duePaymentsData || [];
+  const beverageConsumptions = consumptionsData || [];
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -389,6 +404,148 @@ export default function SettingsPage() {
                 {uploadResult}
               </p>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Data Quality & Freshness */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Data Quality & Freshness</CardTitle>
+            <CardDescription>Run-time checks on imported legacy data</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4 text-xs text-muted-foreground">
+              Last data update: {(() => {
+                const d = maxDateFromCollections([payments, fines, duePayments, beverageConsumptions]);
+                return d ? <SafeLocaleDate dateString={d} /> : 'Unknown';
+              })()}
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {(() => {
+                const negFines = fines.filter(f => !f || Number(f.amount) <= 0).length;
+                const orphanPayments = payments.filter(p => !p?.userId).length;
+                const missingBevId = beverageConsumptions.filter(c => !c?.beverageId).length;
+                const item = (label: string, count: number, help: string) => (
+                  <div className="rounded border p-3">
+                    <div className="text-sm text-muted-foreground">{label}</div>
+                    <div className={`text-2xl font-bold ${count > 0 ? 'text-destructive' : 'text-positive'}`}>{count}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{help}</div>
+                  </div>
+                );
+                return (
+                  <>
+                    {item('Negative/Zero Fines', negFines, 'Fines with amount <= 0')}
+                    {item('Orphan Payments', orphanPayments, 'Payments without userId')}
+                    {item('Consumptions missing beverageId', missingBevId, 'Katalog-Verknüpfung fehlt')}
+                  </>
+                );
+              })()}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Catalog Overviews */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Catalogs</CardTitle>
+            <CardDescription>Dues and Beverages overview</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <div className="mb-2 text-sm font-medium">Dues</div>
+                {staticDues.length > 0 ? (
+                  <ul className="space-y-2">
+                    {staticDues.map(d => (
+                      <li key={d.id} className="flex items-center justify-between rounded border p-2">
+                        <span className="truncate">{d.name}</span>
+                        <span className="font-mono">€{Number(d.amount).toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No dues configured.</p>
+                )}
+              </div>
+              <div>
+                <div className="mb-2 text-sm font-medium">Beverages</div>
+                {staticBeverages.length > 0 ? (
+                  <ul className="space-y-2">
+                    {staticBeverages.map(b => (
+                      <li key={b.id} className="flex items-center justify-between rounded border p-2">
+                        <span className="truncate">{b.name}</span>
+                        <span className="font-mono">€{Number(b.price).toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No beverages configured.</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Price Consistency Check */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Price Consistency</CardTitle>
+            <CardDescription>Average consumed price per beverage vs. catalog price</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              // Build averages from beverageConsumptions
+              const sumById = new Map<string, { sum: number; count: number }>();
+              for (const c of beverageConsumptions) {
+                if (!c?.beverageId || typeof c.amount !== 'number') continue;
+                const cur = sumById.get(c.beverageId) || { sum: 0, count: 0 };
+                cur.sum += Number(c.amount) || 0;
+                cur.count += 1;
+                sumById.set(c.beverageId, cur);
+              }
+              const byIdAvg = new Map<string, number>();
+              sumById.forEach((v, k) => {
+                if (v.count > 0) byIdAvg.set(k, v.sum / v.count);
+              });
+
+              // Compare to catalog
+              const catalogById = new Map(staticBeverages.map(b => [b.id, b] as const));
+              type Dev = { id: string; name: string; avg: number; catalog: number; pct: number };
+              const deviations: Dev[] = [];
+              byIdAvg.forEach((avg, id) => {
+                const cat = catalogById.get(id);
+                if (!cat || typeof cat.price !== 'number') return;
+                const catalogPrice = Number(cat.price) || 0;
+                if (catalogPrice <= 0) return;
+                const pct = (avg - catalogPrice) / catalogPrice;
+                // flag if >5% difference and at least €0.05
+                if (Math.abs(pct) >= 0.05 && Math.abs(avg - catalogPrice) >= 0.05) {
+                  deviations.push({ id, name: cat.name, avg, catalog: catalogPrice, pct });
+                }
+              });
+
+              deviations.sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct));
+              const top = deviations.slice(0, 5);
+
+              return (
+                <div className="space-y-3">
+                  <div className={`text-2xl font-bold ${deviations.length > 0 ? 'text-amber-700' : 'text-positive'}`}>{deviations.length} mismatch{deviations.length === 1 ? '' : 'es'}</div>
+                  {top.length > 0 && (
+                    <ul className="space-y-2">
+                      {top.map(d => (
+                        <li key={d.id} className="flex items-center justify-between rounded border p-2 text-sm">
+                          <span className="truncate mr-2">{d.name}</span>
+                          <span className="font-mono">avg {d.avg.toFixed(2)} € vs. {d.catalog.toFixed(2)} € ({(d.pct*100).toFixed(1)}%)</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {byIdAvg.size === 0 && (
+                    <p className="text-sm text-muted-foreground">No beverage consumptions to analyze.</p>
+                  )}
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
 

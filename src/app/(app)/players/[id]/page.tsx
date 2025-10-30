@@ -17,6 +17,8 @@ import { usePlayerPayments } from "@/services/payments.service";
 import { usePlayerDuePayments } from "@/services/dues.service";
 import { usePlayerConsumptions } from "@/services/beverages.service";
 import { formatEuro } from "@/lib/csv-utils";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { groupPaymentsByDay } from "@/lib/stats";
 
 // A small helper to format currency consistently
 function formatCurrency(value: number): string {
@@ -152,6 +154,34 @@ export default function PlayerDetailsPage() {
       .slice(0, 10);
   }, [fines, payments, duePayments, consumptions]);
 
+  // Build timeline series for last 90 days
+  const end90 = useMemo(() => new Date(), []);
+  const start90 = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 89);
+    return d;
+  }, []);
+
+  type DayPoint = { date: string; value: number };
+
+  function groupByDay<T>(items: T[], getDate: (it: T) => string | undefined, getAmount: (it: T) => number): DayPoint[] {
+    const map = new Map<string, number>();
+    for (const it of items) {
+      const ds = getDate(it);
+      if (!ds) continue;
+      const d = new Date(ds);
+      if (isNaN(d.getTime())) continue;
+      if (d < start90 || d > end90) continue;
+      const key = d.toISOString().slice(0, 10);
+      map.set(key, (map.get(key) ?? 0) + getAmount(it));
+    }
+    return Array.from(map.entries()).sort((a,b) => a[0].localeCompare(b[0])).map(([date, value]) => ({ date, value }));
+  }
+
+  const paymentsSeries = useMemo(() => groupPaymentsByDay((payments || []), start90, end90), [payments, start90, end90]);
+  const finesSeries = useMemo(() => groupByDay((fines || []), f => f.date, f => Math.max(0, Number(f.amount) || 0)), [fines, start90, end90]);
+  const beveragesSeries = useMemo(() => groupByDay((consumptions || []), c => c.date, c => Math.max(0, Number(c.amount) || 0)), [consumptions, start90, end90]);
+
   if (anyError) {
     return (
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -223,6 +253,76 @@ export default function PlayerDetailsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-positive">{formatCurrency(stats.paymentsTotal)}</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Timelines */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Zahlungen je Tag (90d)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {paymentsSeries.length > 0 ? (
+                  <div className="w-full h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={paymentsSeries} margin={{ left: 12, right: 12 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
+                        <YAxis tickFormatter={(v) => `€${v}`} />
+                        <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
+                        <Line type="monotone" dataKey="value" name="Revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Keine Zahlungen vorhanden.</p>
+                )}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Strafen je Tag (90d)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {finesSeries.length > 0 ? (
+                  <div className="w-full h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={finesSeries} margin={{ left: 12, right: 12 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
+                        <YAxis tickFormatter={(v) => `€${v}`} />
+                        <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
+                        <Bar dataKey="value" name="Fines" fill="hsl(var(--destructive))" radius={[4,4,0,0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Keine Strafen vorhanden.</p>
+                )}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Getränke je Tag (90d)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {beveragesSeries.length > 0 ? (
+                  <div className="w-full h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={beveragesSeries} margin={{ left: 12, right: 12 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
+                        <YAxis tickFormatter={(v) => `€${v}`} />
+                        <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
+                        <Bar dataKey="value" name="Beverages" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Keine Getränke-Buchungen vorhanden.</p>
+                )}
               </CardContent>
             </Card>
           </div>

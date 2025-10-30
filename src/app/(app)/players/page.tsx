@@ -16,6 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { PlusCircle, AlertCircle, Pencil, Trash2, UserCheck, UserX } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,6 +25,7 @@ import { updatePlayersWithCalculatedBalances } from '@/lib/utils';
 import { usePlayers, usePlayersService } from '@/services/players.service';
 import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis } from 'recharts';
 import { AddEditPlayerDialog } from '@/components/players/add-edit-player-dialog';
 import { DeletePlayerDialog } from '@/components/players/delete-player-dialog';
 import { useToast } from "@/hooks/use-toast";
@@ -81,6 +83,38 @@ export default function PlayersPage() {
     }
     return m;
   }, [beverageConsumptions]);
+
+  // Build last 6 months keys and labels
+  const last6Months = useMemo(() => {
+    const arr: { key: string; label: string }[] = [];
+    const d = new Date();
+    d.setDate(1); // normalize to first of month
+    for (let i = 5; i >= 0; i--) {
+      const dt = new Date(d.getFullYear(), d.getMonth() - i, 1);
+      const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+      const label = dt.toLocaleString(undefined, { month: 'short' });
+      arr.push({ key, label });
+    }
+    return arr;
+  }, []);
+
+  // Payments per user per month (last 6 months)
+  const paymentSparklineByUser = useMemo(() => {
+    const map = new Map<string, number[]>();
+    const indexByMonth = new Map(last6Months.map((m, idx) => [m.key, idx] as const));
+    for (const p of payments) {
+      if (!p?.userId || !p?.date || typeof p.amount !== 'number') continue;
+      const d = new Date(p.date);
+      if (isNaN(d.getTime())) continue;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const idx = indexByMonth.get(key);
+      if (idx == null) continue; // outside 6m window
+      const arr = map.get(p.userId) || Array(6).fill(0);
+      arr[idx] += Number(p.amount) || 0;
+      map.set(p.userId, arr);
+    }
+    return map;
+  }, [payments, last6Months]);
 
 
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
@@ -234,6 +268,7 @@ export default function PlayersPage() {
                     <TableHead>Nickname</TableHead>
                     <TableHead>Last Activity</TableHead>
                     <TableHead>Beverages</TableHead>
+                    <TableHead>Payments (6m)</TableHead>
                     <TableHead className="text-right">Balance</TableHead>
                     <TableHead className="w-[140px] text-right">
                       <span className="sr-only">Actions</span>
@@ -257,7 +292,19 @@ export default function PlayersPage() {
                           </a>
                         </TableCell>
                         <TableCell className="font-medium">
-                          <a href={`/players/${player.id}`} className="hover:underline">{player.name}</a>
+                          <div className="flex items-center gap-2">
+                            <a href={`/players/${player.id}`} className="hover:underline">{player.name}</a>
+                            {(() => {
+                              const last = lastActivityByUser.get(player.id);
+                              const tooOld = last ? ((Date.now() - new Date(last).getTime()) / (1000*60*60*24) > 90) : false;
+                              return tooOld ? (
+                                <Badge variant="outline" className="bg-zinc-100 text-zinc-700 border-zinc-300">Inaktiv</Badge>
+                              ) : null;
+                            })()}
+                            {balance < -50 && (
+                              <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300">Risiko</Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>{player.nickname}</TableCell>
                         <TableCell>
@@ -267,6 +314,24 @@ export default function PlayersPage() {
                           })()}
                         </TableCell>
                         <TableCell>{beverageCountByUser.get(player.id) ?? 0}</TableCell>
+                        <TableCell className="w-[120px]">
+                          {(() => {
+                            const arr = paymentSparklineByUser.get(player.id) || Array(6).fill(0);
+                            const data = arr.map((v, i) => ({ i, v }));
+                            const max = Math.max(1, ...arr);
+                            return (
+                              <div className="h-8 w-[110px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <LineChart data={data} margin={{ left: 0, right: 0, top: 4, bottom: 0 }}>
+                                    <XAxis dataKey="i" hide />
+                                    <YAxis domain={[0, max]} hide />
+                                    <Line type="monotone" dataKey="v" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                                  </LineChart>
+                                </ResponsiveContainer>
+                              </div>
+                            );
+                          })()}
+                        </TableCell>
                         <TableCell
                           className={`text-right font-semibold ${
                             balance < 0
@@ -348,6 +413,7 @@ export default function PlayersPage() {
                     <TableHead>Nickname</TableHead>
                     <TableHead>Last Activity</TableHead>
                     <TableHead>Beverages</TableHead>
+                    <TableHead>Payments (6m)</TableHead>
                     <TableHead className="text-right">Balance</TableHead>
                     <TableHead className="w-[140px] text-right">
                       <span className="sr-only">Actions</span>
@@ -371,7 +437,13 @@ export default function PlayersPage() {
                           </a>
                         </TableCell>
                         <TableCell className="font-medium">
-                          <a href={`/players/${player.id}`} className="hover:underline">{player.name}</a>
+                          <div className="flex items-center gap-2">
+                            <a href={`/players/${player.id}`} className="hover:underline">{player.name}</a>
+                            <Badge variant="outline" className="bg-zinc-100 text-zinc-700 border-zinc-300">Inaktiv</Badge>
+                            {balance < -50 && (
+                              <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300">Risiko</Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>{player.nickname}</TableCell>
                         <TableCell>
@@ -381,6 +453,24 @@ export default function PlayersPage() {
                           })()}
                         </TableCell>
                         <TableCell>{beverageCountByUser.get(player.id) ?? 0}</TableCell>
+                        <TableCell className="w-[120px]">
+                          {(() => {
+                            const arr = paymentSparklineByUser.get(player.id) || Array(6).fill(0);
+                            const data = arr.map((v, i) => ({ i, v }));
+                            const max = Math.max(1, ...arr);
+                            return (
+                              <div className="h-8 w-[110px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <LineChart data={data} margin={{ left: 0, right: 0, top: 4, bottom: 0 }}>
+                                    <XAxis dataKey="i" hide />
+                                    <YAxis domain={[0, max]} hide />
+                                    <Line type="monotone" dataKey="v" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                                  </LineChart>
+                                </ResponsiveContainer>
+                              </div>
+                            );
+                          })()}
+                        </TableCell>
                         <TableCell
                           className={`text-right font-semibold ${
                             balance < 0

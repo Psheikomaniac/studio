@@ -263,6 +263,25 @@ export default function MoneyPage() {
   const arppu28d = useMemo(() => computeARPPU(payments, 28), [payments]);
   const openFinesTotal = useMemo(() => computeOpenFinesTotal(fines), [fines]);
 
+  const duesTotals = useMemo(() => {
+    let paid = 0;
+    let outstanding = 0;
+    for (const d of duePayments) {
+      if (!d) continue;
+      if (d.exempt) continue; // ignore exempt items for both KPIs
+      const due = Number(d.amountDue) || 0;
+      const paidAmt = Number(d.amountPaid || 0);
+      if (d.paid) {
+        paid += paidAmt || due; // treat fully-paid with missing amountPaid as amountDue
+      } else {
+        paid += paidAmt; // partial payments count toward "Paid"
+        const rem = Math.max(0, due - paidAmt);
+        outstanding += rem;
+      }
+    }
+    return { paid, outstanding };
+  }, [duePayments]);
+
   const paymentsSeries28d = useMemo(() => {
     const end = new Date();
     const start = new Date();
@@ -647,6 +666,26 @@ export default function MoneyPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{formatEuro(arppu28d)}</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Dues KPIs */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Dues Paid (Total)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-positive">{formatEuro(duesTotals.paid)}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Dues Outstanding (Total)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-destructive">{formatEuro(duesTotals.outstanding)}</div>
                 </CardContent>
               </Card>
             </div>

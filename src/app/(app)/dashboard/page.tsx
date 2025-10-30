@@ -28,8 +28,8 @@ import { RecordConsumptionDialog } from '@/components/beverages/record-consumpti
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 import { updatePlayersWithCalculatedBalances } from '@/lib/utils';
 import { formatEuro } from '@/lib/csv-utils';
-import { groupPaymentsByDay, maxDateFromCollections, movingAverage } from '@/lib/stats';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { groupPaymentsByDay, maxDateFromCollections, movingAverage, sumPaymentsToday, sumPaymentsInLastDays } from '@/lib/stats';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
 
@@ -273,7 +273,26 @@ export default function DashboardPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Revenue by Day (last 28 days)</CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Revenue by Day (last 28 days)</CardTitle>
+                      {(() => {
+                        const todayRevenue = sumPaymentsToday(payments);
+                        const avg7d = (() => {
+                          const total7 = sumPaymentsInLastDays(payments, 7);
+                          return total7 / 7;
+                        })();
+                        const pct = avg7d > 0 ? ((todayRevenue - avg7d) / avg7d) * 100 : (todayRevenue > 0 ? 100 : 0);
+                        let label = 'Normal';
+                        let badgeClass = 'bg-muted text-muted-foreground';
+                        if (pct >= 50) { label = 'Anomalie: Hoch'; badgeClass = 'bg-green-100 text-green-700 border-green-300'; }
+                        else if (pct <= -50) { label = 'Anomalie: Niedrig'; badgeClass = 'bg-amber-100 text-amber-700 border-amber-300'; }
+                        return (
+                          <Badge variant="outline" className={badgeClass} title={`Heute: ${formatEuro(todayRevenue)} · MA7: ${formatEuro(avg7d)}`}>
+                            {label}
+                          </Badge>
+                        );
+                      })()}
+                    </div>
                   </CardHeader>
                   <CardContent>
                     {(() => {
@@ -334,6 +353,75 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Transactions by Type (stacked, last 28 days) */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Transactions by Type (last 28 days)</CardTitle>
+                  <CardDescription>Fines, Dues, Beverages vs. Payments</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const end = new Date();
+                    const start = new Date();
+                    start.setDate(end.getDate() - 27);
+                    const map = new Map<string, { date: string; payments: number; fines: number; dues: number; beverages: number }>();
+                    const keyOf = (ds?: string) => {
+                      if (!ds) return '';
+                      const d = new Date(ds);
+                      if (isNaN(d.getTime()) || d < start || d > end) return '';
+                      return d.toISOString().slice(0,10);
+                    };
+                    for (const p of payments) {
+                      const k = keyOf(p.date);
+                      if (!k) continue;
+                      const row = map.get(k) || { date: k, payments: 0, fines: 0, dues: 0, beverages: 0 };
+                      row.payments += Number(p.amount) || 0;
+                      map.set(k, row);
+                    }
+                    for (const f of fines) {
+                      const k = keyOf(f.date);
+                      if (!k) continue;
+                      const row = map.get(k) || { date: k, payments: 0, fines: 0, dues: 0, beverages: 0 };
+                      row.fines += Math.max(0, Number(f.amount) || 0);
+                      map.set(k, row);
+                    }
+                    for (const d of duePayments) {
+                      const k = keyOf(d.createdAt);
+                      if (!k) continue;
+                      const row = map.get(k) || { date: k, payments: 0, fines: 0, dues: 0, beverages: 0 };
+                      row.dues += Math.max(0, Number(d.amountDue) || 0);
+                      map.set(k, row);
+                    }
+                    for (const b of beverageConsumptions) {
+                      const k = keyOf(b.date);
+                      if (!k) continue;
+                      const row = map.get(k) || { date: k, payments: 0, fines: 0, dues: 0, beverages: 0 };
+                      row.beverages += Math.max(0, Number(b.amount) || 0);
+                      map.set(k, row);
+                    }
+                    const data = Array.from(map.values()).sort((a,b) => a.date.localeCompare(b.date));
+                    return data.length > 0 ? (
+                      <div className="w-full h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={data} margin={{ left: 12, right: 12 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
+                            <YAxis tickFormatter={(v) => `€${v}`} />
+                            <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
+                            <Area type="monotone" dataKey="fines" name="Fines" stackId="1" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.15} />
+                            <Area type="monotone" dataKey="dues" name="Dues" stackId="1" stroke="hsl(var(--secondary))" fill="hsl(var(--secondary))" fillOpacity={0.15} />
+                            <Area type="monotone" dataKey="beverages" name="Beverages" stackId="1" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} />
+                            <Area type="monotone" dataKey="payments" name="Payments" stackId="1" stroke="hsl(var(--muted-foreground))" fill="hsl(var(--muted-foreground))" fillOpacity={0.2} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No transactions available to chart.</p>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
 
               {/* Quick Actions */}
               <Card>
