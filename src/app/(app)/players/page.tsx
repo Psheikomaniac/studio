@@ -21,7 +21,6 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Player } from '@/lib/types';
-import { updatePlayersWithCalculatedBalances } from '@/lib/utils';
 import { usePlayers, usePlayersService } from '@/services/players.service';
 import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
@@ -48,17 +47,40 @@ export default function PlayersPage() {
   const duePayments = duePaymentsData || [];
   const beverageConsumptions = consumptionsData || [];
 
-  // Recompute balances and derive per-user stats
+  // Recompute balances and derive per-user stats (Players-specific rule)
+  // Balance = Sum of credits (payments with reason 'Guthaben' or 'Guthaben Rest' and paid)
+  //           minus remaining open fines (unpaid or partially paid). Other transaction types are ignored here.
   const enhancedPlayers = useMemo(() => {
     if (!players) return [] as Player[];
-    return updatePlayersWithCalculatedBalances(
-      players,
-      payments,
-      fines,
-      duePayments,
-      beverageConsumptions
-    );
-  }, [players, payments, fines, duePayments, beverageConsumptions]);
+
+    const isCreditReason = (reason?: string) => {
+      if (!reason) return false;
+      const r = reason.trim().toLowerCase();
+      return r === 'guthaben' || r === 'guthaben rest';
+    };
+
+    const calculateBalance = (playerId: string) => {
+      const totalCredits = payments
+        .filter(p => p.userId === playerId && p.paid && isCreditReason(p.reason))
+        .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+      const totalOpenFines = fines
+        .filter(f => f.userId === playerId)
+        .reduce((sum, f) => {
+          const amount = typeof f.amount === 'number' ? f.amount : 0;
+          const paid = typeof f.amountPaid === 'number' ? f.amountPaid! : 0;
+          const remaining = Math.max(0, amount - paid);
+          return sum + remaining;
+        }, 0);
+
+      return totalCredits - totalOpenFines;
+    };
+
+    return players.map(p => ({
+      ...p,
+      balance: calculateBalance(p.id),
+    }));
+  }, [players, payments, fines]);
 
   const lastActivityByUser = useMemo(() => {
     const map = new Map<string, string>();
@@ -334,9 +356,9 @@ export default function PlayersPage() {
                         </TableCell>
                         <TableCell
                           className={`text-right font-semibold ${
-                            balance < 0
-                              ? 'text-destructive'
-                              : 'text-positive'
+                            balance > 0
+                              ? 'text-positive'
+                              : 'text-destructive'
                           }`}
                         >
                           {formatEuro(Math.abs(balance))}
@@ -473,9 +495,9 @@ export default function PlayersPage() {
                         </TableCell>
                         <TableCell
                           className={`text-right font-semibold ${
-                            balance < 0
-                              ? 'text-destructive'
-                              : 'text-positive'
+                            balance > 0
+                              ? 'text-positive'
+                              : 'text-destructive'
                           }`}
                         >
                           {formatEuro(Math.abs(balance))}
