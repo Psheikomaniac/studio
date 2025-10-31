@@ -49,7 +49,7 @@ export default function PlayersPage() {
 
   // Recompute balances and derive per-user stats (Players-specific rule)
   // Balance = Sum of credits (payments with reason 'Guthaben' or 'Guthaben Rest' and paid)
-  //           minus remaining open fines (unpaid or partially paid). Other transaction types are ignored here.
+  //           minus remaining open liabilities: fines + beverages + dues (un/partially paid; dues skip exempt)
   const enhancedPlayers = useMemo(() => {
     if (!players) return [] as Player[];
 
@@ -68,19 +68,46 @@ export default function PlayersPage() {
         .filter(f => f.userId === playerId)
         .reduce((sum, f) => {
           const amount = typeof f.amount === 'number' ? f.amount : 0;
-          const paid = typeof f.amountPaid === 'number' ? f.amountPaid! : 0;
-          const remaining = Math.max(0, amount - paid);
+          const paidAmount =
+            typeof f.amountPaid === 'number'
+              ? f.amountPaid!
+              : (f.paid ? amount : 0);
+          const remaining = Math.max(0, amount - paidAmount);
           return sum + remaining;
         }, 0);
 
-      return totalCredits - totalOpenFines;
+      const totalOpenBeverages = beverageConsumptions
+        .filter(b => b.userId === playerId)
+        .reduce((sum, b) => {
+          const amount = typeof b.amount === 'number' ? b.amount : 0;
+          const paidAmount =
+            typeof b.amountPaid === 'number'
+              ? b.amountPaid!
+              : (b.paid ? amount : 0);
+          const remaining = Math.max(0, amount - paidAmount);
+          return sum + remaining;
+        }, 0);
+
+      const totalOpenDues = duePayments
+        .filter(d => d.userId === playerId && !d.exempt)
+        .reduce((sum, d) => {
+          const amount = typeof d.amountDue === 'number' ? d.amountDue : 0;
+          const paidAmount =
+            typeof d.amountPaid === 'number'
+              ? d.amountPaid!
+              : (d.paid ? amount : 0);
+          const remaining = Math.max(0, amount - paidAmount);
+          return sum + remaining;
+        }, 0);
+
+      return totalCredits - (totalOpenFines + totalOpenBeverages + totalOpenDues);
     };
 
     return players.map(p => ({
       ...p,
       balance: calculateBalance(p.id),
     }));
-  }, [players, payments, fines]);
+  }, [players, payments, fines, duePayments, beverageConsumptions]);
 
   const lastActivityByUser = useMemo(() => {
     const map = new Map<string, string>();
@@ -358,7 +385,9 @@ export default function PlayersPage() {
                           className={`text-right font-semibold ${
                             balance > 0
                               ? 'text-positive'
-                              : 'text-destructive'
+                              : balance < 0
+                                ? 'text-destructive'
+                                : 'text-foreground'
                           }`}
                         >
                           {formatEuro(Math.abs(balance))}
@@ -497,7 +526,9 @@ export default function PlayersPage() {
                           className={`text-right font-semibold ${
                             balance > 0
                               ? 'text-positive'
-                              : 'text-destructive'
+                              : balance < 0
+                                ? 'text-destructive'
+                                : 'text-foreground'
                           }`}
                         >
                           {formatEuro(Math.abs(balance))}
