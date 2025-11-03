@@ -28,6 +28,7 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis } from 'recharts';
 import { AddEditPlayerDialog } from '@/components/players/add-edit-player-dialog';
 import { DeletePlayerDialog } from '@/components/players/delete-player-dialog';
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatEuro } from "@/lib/csv-utils";
 
 
@@ -48,66 +49,82 @@ export default function PlayersPage() {
   const beverageConsumptions = consumptionsData || [];
 
   // Recompute balances and derive per-user stats (Players-specific rule)
-  // Balance = Sum of credits (payments with reason 'Guthaben' or 'Guthaben Rest' and paid)
-  //           minus remaining open liabilities: fines + beverages + dues (un/partially paid; dues skip exempt)
+  // Neue Formel: (Guthaben + Guthaben Rest) - (Fines + Dues + Beverages)
+  // Hinweis: Dues mit Status "exempt" werden nicht gezählt.
+  const balanceBreakdownByUser = useMemo(() => {
+    type Breakdown = {
+      guthaben: number;
+      guthabenRest: number;
+      fines: number;
+      dues: number;
+      beverages: number;
+      totalCredits: number;
+      totalLiabilities: number;
+      balance: number;
+    };
+
+    const m = new Map<string, Breakdown>();
+    const ensure = (userId: string) => {
+      let v = m.get(userId);
+      if (!v) {
+        v = { guthaben: 0, guthabenRest: 0, fines: 0, dues: 0, beverages: 0, totalCredits: 0, totalLiabilities: 0, balance: 0 };
+        m.set(userId, v);
+      }
+      return v;
+    };
+
+    const norm = (s?: string) => (s || '').trim().toLowerCase();
+
+    // Credits: Guthaben + Guthaben Rest (nur bezahlte Payments)
+    for (const p of payments) {
+      if (!p?.userId || !p?.paid || typeof p.amount !== 'number') continue;
+      const r = norm(p.reason);
+      if (r === 'guthaben') {
+        ensure(p.userId).guthaben += Number(p.amount) || 0;
+      } else if (r === 'guthaben rest') {
+        ensure(p.userId).guthabenRest += Number(p.amount) || 0;
+      }
+    }
+
+    // Fines: Summe aller Strafen (voller Betrag)
+    for (const f of fines) {
+      if (!f?.userId || typeof f.amount !== 'number') continue;
+      ensure(f.userId).fines += Number(f.amount) || 0;
+    }
+
+    // Dues: Summe aller Beiträge (exempt ausgeschlossen), voller Betrag
+    for (const d of duePayments) {
+      if (!d?.userId || d.exempt || typeof d.amountDue !== 'number') continue;
+      ensure(d.userId).dues += Number(d.amountDue) || 0;
+    }
+
+    // Beverages: Summe aller Getränke (voller Betrag)
+    for (const b of beverageConsumptions) {
+      if (!b?.userId || typeof b.amount !== 'number') continue;
+      ensure(b.userId).beverages += Number(b.amount) || 0;
+    }
+
+    // Final totals per user
+    for (const [userId, v] of m) {
+      v.totalCredits = (v.guthaben || 0) + (v.guthabenRest || 0);
+      v.totalLiabilities = (v.fines || 0) + (v.dues || 0) + (v.beverages || 0);
+      v.balance = v.totalCredits - v.totalLiabilities;
+      m.set(userId, v);
+    }
+
+    return m;
+  }, [payments, fines, duePayments, beverageConsumptions]);
+
   const enhancedPlayers = useMemo(() => {
     if (!players) return [] as Player[];
-
-    const isCreditReason = (reason?: string) => {
-      if (!reason) return false;
-      const r = reason.trim().toLowerCase();
-      return r === 'guthaben' || r === 'guthaben rest';
-    };
-
-    const calculateBalance = (playerId: string) => {
-      const totalCredits = payments
-        .filter(p => p.userId === playerId && p.paid && isCreditReason(p.reason))
-        .reduce((sum, p) => sum + (p.amount || 0), 0);
-
-      const totalOpenFines = fines
-        .filter(f => f.userId === playerId)
-        .reduce((sum, f) => {
-          const amount = typeof f.amount === 'number' ? f.amount : 0;
-          const paidAmount =
-            typeof f.amountPaid === 'number'
-              ? f.amountPaid!
-              : (f.paid ? amount : 0);
-          const remaining = Math.max(0, amount - paidAmount);
-          return sum + remaining;
-        }, 0);
-
-      const totalOpenBeverages = beverageConsumptions
-        .filter(b => b.userId === playerId)
-        .reduce((sum, b) => {
-          const amount = typeof b.amount === 'number' ? b.amount : 0;
-          const paidAmount =
-            typeof b.amountPaid === 'number'
-              ? b.amountPaid!
-              : (b.paid ? amount : 0);
-          const remaining = Math.max(0, amount - paidAmount);
-          return sum + remaining;
-        }, 0);
-
-      const totalOpenDues = duePayments
-        .filter(d => d.userId === playerId && !d.exempt)
-        .reduce((sum, d) => {
-          const amount = typeof d.amountDue === 'number' ? d.amountDue : 0;
-          const paidAmount =
-            typeof d.amountPaid === 'number'
-              ? d.amountPaid!
-              : (d.paid ? amount : 0);
-          const remaining = Math.max(0, amount - paidAmount);
-          return sum + remaining;
-        }, 0);
-
-      return totalCredits - (totalOpenFines + totalOpenBeverages + totalOpenDues);
-    };
-
-    return players.map(p => ({
-      ...p,
-      balance: calculateBalance(p.id),
-    }));
-  }, [players, payments, fines, duePayments, beverageConsumptions]);
+    return players.map(p => {
+      const bb = balanceBreakdownByUser.get(p.id);
+      return {
+        ...p,
+        balance: bb?.balance ?? 0,
+      };
+    });
+  }, [players, balanceBreakdownByUser]);
 
   const lastActivityByUser = useMemo(() => {
     const map = new Map<string, string>();
@@ -318,7 +335,7 @@ export default function PlayersPage() {
                     <TableHead>Last Activity</TableHead>
                     <TableHead>Beverages</TableHead>
                     <TableHead>Payments (6m)</TableHead>
-                    <TableHead className="text-right">Balance</TableHead>
+                    <TableHead className="text-right" title="(Guthaben + Guthaben Rest) - (Strafen + Beiträge + Getränke)">Balance</TableHead>
                     <TableHead className="w-[140px] text-right">
                       <span className="sr-only">Actions</span>
                     </TableHead>
@@ -390,7 +407,33 @@ export default function PlayersPage() {
                                 : 'text-foreground'
                           }`}
                         >
-                          {formatEuro(Math.abs(balance))}
+                          {(() => {
+                            const bb = balanceBreakdownByUser.get(player.id);
+                            const g = bb?.guthaben ?? 0;
+                            const gr = bb?.guthabenRest ?? 0;
+                            const f = bb?.fines ?? 0;
+                            const d = bb?.dues ?? 0;
+                            const b = bb?.beverages ?? 0;
+                            return (
+                              <TooltipProvider delayDuration={0}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span>{formatEuro(Math.abs(balance))}</span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" align="end">
+                                    <div className="text-xs">
+                                      <div className="font-medium mb-1">Berechnung</div>
+                                      <div className="mb-1">(Guthaben + Guthaben Rest) - (Strafen + Beiträge + Getränke)</div>
+                                      <div className="font-mono">
+                                        Guthaben: {formatEuro(g)} • Guthaben Rest: {formatEuro(gr)}<br />
+                                        Strafen: {formatEuro(f)} • Beiträge: {formatEuro(d)} • Getränke: {formatEuro(b)}
+                                      </div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
@@ -465,7 +508,7 @@ export default function PlayersPage() {
                     <TableHead>Last Activity</TableHead>
                     <TableHead>Beverages</TableHead>
                     <TableHead>Payments (6m)</TableHead>
-                    <TableHead className="text-right">Balance</TableHead>
+                    <TableHead className="text-right" title="(Guthaben + Guthaben Rest) - (Strafen + Beiträge + Getränke)">Balance</TableHead>
                     <TableHead className="w-[140px] text-right">
                       <span className="sr-only">Actions</span>
                     </TableHead>
@@ -531,7 +574,33 @@ export default function PlayersPage() {
                                 : 'text-foreground'
                           }`}
                         >
-                          {formatEuro(Math.abs(balance))}
+                          {(() => {
+                            const bb = balanceBreakdownByUser.get(player.id);
+                            const g = bb?.guthaben ?? 0;
+                            const gr = bb?.guthabenRest ?? 0;
+                            const f = bb?.fines ?? 0;
+                            const d = bb?.dues ?? 0;
+                            const b = bb?.beverages ?? 0;
+                            return (
+                              <TooltipProvider delayDuration={0}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span>{formatEuro(Math.abs(balance))}</span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" align="end">
+                                    <div className="text-xs">
+                                      <div className="font-medium mb-1">Berechnung</div>
+                                      <div className="mb-1">(Guthaben + Guthaben Rest) - (Strafen + Beiträge + Getränke)</div>
+                                      <div className="font-mono">
+                                        Guthaben: {formatEuro(g)} • Guthaben Rest: {formatEuro(gr)}<br />
+                                        Strafen: {formatEuro(f)} • Beiträge: {formatEuro(d)} • Getränke: {formatEuro(b)}
+                                      </div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">

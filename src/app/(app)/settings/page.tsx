@@ -27,7 +27,9 @@ import { useFirebaseOptional } from "@/firebase/use-firebase-optional";
 import { Progress } from "@/components/ui/progress";
 import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
 import { maxDateFromCollections } from '@/lib/stats';
-import { dues as staticDues, beverages as staticBeverages } from '@/lib/static-data';
+// Use live Firestore data instead of static catalogs
+import type { Due, Beverage } from '@/lib/types';
+import { useMemoFirebase, useCollection } from '@/firebase';
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 
 export default function SettingsPage() {
@@ -54,6 +56,20 @@ export default function SettingsPage() {
   const payments = paymentsData || [];
   const duePayments = duePaymentsData || [];
   const beverageConsumptions = consumptionsData || [];
+
+  // Live catalog data from Firestore (top-level collections)
+  const duesCollection = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'dues');
+  }, [firestore]);
+  const beveragesCollection = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'beverages');
+  }, [firestore]);
+  const { data: duesData } = useCollection<Due>(duesCollection);
+  const { data: beveragesData } = useCollection<Beverage>(beveragesCollection);
+  const liveDues = duesData || [];
+  const liveBeverages = beveragesData || [];
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -454,9 +470,9 @@ export default function SettingsPage() {
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <div className="mb-2 text-sm font-medium">Dues</div>
-                {staticDues.length > 0 ? (
+                {liveDues.length > 0 ? (
                   <ul className="space-y-2">
-                    {staticDues.map(d => (
+                    {liveDues.map(d => (
                       <li key={d.id} className="flex items-center justify-between rounded border p-2">
                         <span className="truncate">{d.name}</span>
                         <span className="font-mono">€{Number(d.amount).toFixed(2)}</span>
@@ -469,9 +485,9 @@ export default function SettingsPage() {
               </div>
               <div>
                 <div className="mb-2 text-sm font-medium">Beverages</div>
-                {staticBeverages.length > 0 ? (
+                {liveBeverages.length > 0 ? (
                   <ul className="space-y-2">
-                    {staticBeverages.map(b => (
+                    {liveBeverages.map(b => (
                       <li key={b.id} className="flex items-center justify-between rounded border p-2">
                         <span className="truncate">{b.name}</span>
                         <span className="font-mono">€{Number(b.price).toFixed(2)}</span>
@@ -508,8 +524,8 @@ export default function SettingsPage() {
                 if (v.count > 0) byIdAvg.set(k, v.sum / v.count);
               });
 
-              // Compare to catalog
-              const catalogById = new Map(staticBeverages.map(b => [b.id, b] as const));
+              // Compare to catalog (live Firestore beverages)
+              const catalogById = new Map(liveBeverages.map(b => [b.id, b] as const));
               type Dev = { id: string; name: string; avg: number; catalog: number; pct: number };
               const deviations: Dev[] = [];
               byIdAvg.forEach((avg, id) => {
