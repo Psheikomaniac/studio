@@ -86,22 +86,40 @@ export default function PlayersPage() {
       }
     }
 
-    // Fines: Summe aller Strafen (voller Betrag)
+    // Fines: Nur offene Restbeträge (unbezahlt/teilbezahlt)
     for (const f of fines) {
       if (!f?.userId || typeof f.amount !== 'number') continue;
-      ensure(f.userId).fines += Number(f.amount) || 0;
+      let remaining = 0;
+      if (!f.paid) {
+        const amt = Number(f.amount) || 0;
+        const amtPaid = Number(f.amountPaid || 0);
+        remaining = Math.max(0, amt - amtPaid);
+      }
+      ensure(f.userId).fines += remaining;
     }
 
-    // Dues: Summe aller Beiträge (exempt ausgeschlossen), voller Betrag
+    // Dues: Nur offene Restbeträge (exempt ausgeschlossen)
     for (const d of duePayments) {
       if (!d?.userId || d.exempt || typeof d.amountDue !== 'number') continue;
-      ensure(d.userId).dues += Number(d.amountDue) || 0;
+      let remaining = 0;
+      if (!d.paid) {
+        const amt = Number(d.amountDue) || 0;
+        const amtPaid = Number(d.amountPaid || 0);
+        remaining = Math.max(0, amt - amtPaid);
+      }
+      ensure(d.userId).dues += remaining;
     }
 
-    // Beverages: Summe aller Getränke (voller Betrag)
+    // Beverages: Nur offene Restbeträge (unbezahlt/teilbezahlt)
     for (const b of beverageConsumptions) {
       if (!b?.userId || typeof b.amount !== 'number') continue;
-      ensure(b.userId).beverages += Number(b.amount) || 0;
+      let remaining = 0;
+      if (!b.paid) {
+        const amt = Number(b.amount) || 0;
+        const amtPaid = Number(b.amountPaid || 0);
+        remaining = Math.max(0, amt - amtPaid);
+      }
+      ensure(b.userId).beverages += remaining;
     }
 
     // Final totals per user
@@ -335,7 +353,7 @@ export default function PlayersPage() {
                     <TableHead>Last Activity</TableHead>
                     <TableHead>Beverages</TableHead>
                     <TableHead>Payments (6m)</TableHead>
-                    <TableHead className="text-right" title="(Guthaben + Guthaben Rest) - (Strafen + Beiträge + Getränke)">Balance</TableHead>
+                    <TableHead className="text-right" title="(Guthaben + Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)">Balance</TableHead>
                     <TableHead className="w-[140px] text-right">
                       <span className="sr-only">Actions</span>
                     </TableHead>
@@ -423,10 +441,11 @@ export default function PlayersPage() {
                                   <TooltipContent side="top" align="end">
                                     <div className="text-xs">
                                       <div className="font-medium mb-1">Berechnung</div>
-                                      <div className="mb-1">(Guthaben + Guthaben Rest) - (Strafen + Beiträge + Getränke)</div>
+                                      <div className="mb-1">(Guthaben + Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)</div>
+                                      <div className="text-muted-foreground mb-1">Es werden nur offene Restbeträge berücksichtigt.</div>
                                       <div className="font-mono">
                                         Guthaben: {formatEuro(g)} • Guthaben Rest: {formatEuro(gr)}<br />
-                                        Strafen: {formatEuro(f)} • Beiträge: {formatEuro(d)} • Getränke: {formatEuro(b)}
+                                        Strafen (offen): {formatEuro(f)} • Beiträge (offen): {formatEuro(d)} • Getränke (offen): {formatEuro(b)}
                                       </div>
                                     </div>
                                   </TooltipContent>
@@ -508,7 +527,7 @@ export default function PlayersPage() {
                     <TableHead>Last Activity</TableHead>
                     <TableHead>Beverages</TableHead>
                     <TableHead>Payments (6m)</TableHead>
-                    <TableHead className="text-right" title="(Guthaben + Guthaben Rest) - (Strafen + Beiträge + Getränke)">Balance</TableHead>
+                    <TableHead className="text-right" title="(Guthaben + Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)">Balance</TableHead>
                     <TableHead className="w-[140px] text-right">
                       <span className="sr-only">Actions</span>
                     </TableHead>
@@ -590,10 +609,11 @@ export default function PlayersPage() {
                                   <TooltipContent side="top" align="end">
                                     <div className="text-xs">
                                       <div className="font-medium mb-1">Berechnung</div>
-                                      <div className="mb-1">(Guthaben + Guthaben Rest) - (Strafen + Beiträge + Getränke)</div>
+                                      <div className="mb-1">(Guthaben + Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)</div>
+                                      <div className="text-muted-foreground mb-1">Es werden nur offene Restbeträge berücksichtigt.</div>
                                       <div className="font-mono">
                                         Guthaben: {formatEuro(g)} • Guthaben Rest: {formatEuro(gr)}<br />
-                                        Strafen: {formatEuro(f)} • Beiträge: {formatEuro(d)} • Getränke: {formatEuro(b)}
+                                        Strafen (offen): {formatEuro(f)} • Beiträge (offen): {formatEuro(d)} • Getränke (offen): {formatEuro(b)}
                                       </div>
                                     </div>
                                   </TooltipContent>
