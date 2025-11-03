@@ -343,7 +343,17 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
 
         // Parse dates
         const createdDate = parseGermanDate(row.penatly_created);
-        const paidDate = row.penatly_paid ? parseGermanDate(row.penatly_paid) : undefined;
+        const { paid: isPaidFlag, paidAt: parsedPaidAt } = (function parsePaidStatus(raw: any): { paid: boolean; paidAt: string | null } {
+          const v = (raw ?? '').toString().trim();
+          if (!v) return { paid: false, paidAt: null };
+          const lower = v.toLowerCase();
+          if (['yes', 'y', 'true', 'paid', 'status_paid', 'status-paid'].includes(lower)) return { paid: true, paidAt: null };
+          if (['no', 'n', 'false', 'unpaid', 'status_unpaid', 'status-unpaid'].includes(lower)) return { paid: false, paidAt: null };
+          if (v.includes('-')) {
+            try { return { paid: true, paidAt: parseGermanDate(v) }; } catch {}
+          }
+          return { paid: false, paidAt: null };
+        })(row.penatly_paid);
 
         // Convert amount from cents to EUR
         const amountEUR = centsToEUR(row.penatly_amount);
@@ -369,20 +379,11 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
         // Find or create player
         const player = findOrCreatePlayer(row.penatly_user);
 
-        // Special case: "Guthaben" and "Guthaben Rest" are credits (payments), not fines
+        // Special case: "Guthaben" and "Guthaben Rest" appear in punishments export but are top-ups
+        // We skip them here to avoid duplication — they are imported from the Transactions CSV
         const reasonLower = (row.penatly_reason || '').trim().toLowerCase();
         if (reasonLower === 'guthaben' || reasonLower === 'guthaben rest') {
-          const payment: Payment = {
-            id: generateId('payment'),
-            userId: player.id,
-            reason: row.penatly_reason.trim(),
-            amount: amountEUR,
-            date: createdDate,
-            paid: !!paidDate,
-            paidAt: paidDate || null
-          };
-          payments.push(payment);
-          result.recordsCreated++;
+          result.warnings.push(`Row ${i + 1}: Skipped Guthaben entry in punishments (handled via transactions CSV)`);
           continue;
         }
 
@@ -400,8 +401,8 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
             beverageName: beverage.name,
             amount: amountEUR,
             date: createdDate,
-            paid: !!paidDate,
-            paidAt: paidDate || null,
+            paid: isPaidFlag,
+            paidAt: parsedPaidAt,
             createdAt: createdDate
           };
 
@@ -416,10 +417,10 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
             reason: row.penatly_reason.trim(),
             amount: amountEUR,
             date: createdDate,
-            paid: !!paidDate,
-            paidAt: paidDate || null,
+            paid: isPaidFlag,
+            paidAt: parsedPaidAt,
             createdAt: createdDate,
-            updatedAt: paidDate || createdDate
+            updatedAt: parsedPaidAt || createdDate
           };
 
           fines.push(fine);
@@ -503,6 +504,14 @@ export async function importTransactionsCSV(text: string): Promise<ImportResult>
         let playerName = '';
         let category = '';
 
+        // Skip Beiträge (membership dues) here — those are handled by the Dues CSV importer
+        // We detect this by inspecting the prefix before the colon, e.g. "Beiträge: ..."
+        const subjectPrefix = subject.split(':')[0].trim().toLowerCase();
+        if (subjectPrefix.includes('beitr')) { // matches "beitrag", "beiträge"
+          result.warnings.push(`Row ${i + 1}: Skipped Beiträge transaction (handled via dues CSV): ${subject}`);
+          continue;
+        }
+
         // Try to extract player name from subject
         const colonIndex = subject.indexOf(':');
         if (colonIndex > -1) {
@@ -522,6 +531,15 @@ export async function importTransactionsCSV(text: string): Promise<ImportResult>
         } else {
           // No colon, try to extract name from subject
           result.warnings.push(`Row ${i + 1}: Could not parse player name from subject: ${subject}`);
+          continue;
+        }
+
+        // If this is a Strafen transaction (settling a fine/drink), we don't create a separate Payment
+        // The paid status comes from the punishments CSV. Only keep top-ups like Guthaben here.
+        const categoryLower = (category || '').trim().toLowerCase();
+        const isGuthabenCategory = categoryLower === 'guthaben' || categoryLower === 'guthaben rest';
+        if (subjectPrefix.includes('straf') && !isGuthabenCategory) {
+          result.warnings.push(`Row ${i + 1}: Skipped Strafen settlement transaction (handled via punishments CSV): ${subject}`);
           continue;
         }
 

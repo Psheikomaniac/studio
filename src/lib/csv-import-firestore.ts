@@ -80,6 +80,31 @@ function centsToEUR(cents: string | number): number {
   return amount / 100;
 }
 
+// Helper to interpret paid field that might be a status or a date
+function parsePaidStatus(raw: any): { paid: boolean; paidAt: string | null } {
+  const v = (raw ?? '').toString().trim();
+  if (!v) return { paid: false, paidAt: null };
+  const lower = v.toLowerCase();
+  // Common status markers
+  if (['yes', 'y', 'true', 'paid', 'status_paid', 'status-paid'].includes(lower)) {
+    return { paid: true, paidAt: null };
+  }
+  if (['no', 'n', 'false', 'unpaid', 'status_unpaid', 'status-unpaid'].includes(lower)) {
+    return { paid: false, paidAt: null };
+  }
+  // Heuristic: looks like a date if it contains '-'
+  if (v.includes('-')) {
+    try {
+      const iso = parseGermanDate(v);
+      return { paid: true, paidAt: iso };
+    } catch {
+      // fall through
+    }
+  }
+  // Fallback: unknown content -> treat as unpaid
+  return { paid: false, paidAt: null };
+}
+
 // Remove undefined fields and internal props before writing to Firestore
 function sanitizeFirestoreData<T extends Record<string, any>>(obj: T): T {
   const sanitized: any = {};
@@ -443,7 +468,7 @@ export async function importPunishmentsCSVToFirestore(
 
         // Parse dates
         const createdDate = parseGermanDate(row.penatly_created);
-        const paidDate = row.penatly_paid ? parseGermanDate(row.penatly_paid) : undefined;
+        const { paid: isPaidFlag, paidAt: parsedPaidAt } = parsePaidStatus(row.penatly_paid);
 
         // Convert amount from cents to EUR
         const amountEUR = centsToEUR(row.penatly_amount);
@@ -475,20 +500,11 @@ export async function importPunishmentsCSVToFirestore(
           result.playersCreated++;
         }
 
-        // Special case: "Guthaben" and "Guthaben Rest" are credits (payments), not fines
+        // Special case: Guthaben top-ups appear in punishments export in some datasets
+        // To avoid double counting, we import Guthaben only from the Transactions CSV and skip here
         const reasonLower = (row.penatly_reason || '').trim().toLowerCase();
         if (reasonLower === 'guthaben' || reasonLower === 'guthaben rest') {
-          const payment: Payment = {
-            id: generateId('payment'),
-            userId: player.id,
-            reason: row.penatly_reason.trim(),
-            amount: amountEUR,
-            date: createdDate,
-            paid: !!paidDate,
-            paidAt: paidDate || null
-          };
-          paymentsToCreate.push({ userId: player.id, payment });
-          result.recordsCreated++;
+          result.warnings.push(`Row ${i + 1}: Skipped Guthaben entry in punishments (handled via transactions CSV)`);
           continue;
         }
 
@@ -510,8 +526,8 @@ export async function importPunishmentsCSVToFirestore(
             beverageName: beverage.name,
             amount: amountEUR,
             date: createdDate,
-            paid: !!paidDate,
-            paidAt: paidDate || null,
+            paid: isPaidFlag,
+            paidAt: parsedPaidAt,
             createdAt: createdDate
           };
 
@@ -526,10 +542,10 @@ export async function importPunishmentsCSVToFirestore(
             reason: row.penatly_reason.trim(),
             amount: amountEUR,
             date: createdDate,
-            paid: !!paidDate,
-            paidAt: paidDate || null,
+            paid: isPaidFlag,
+            paidAt: parsedPaidAt,
             createdAt: createdDate,
-            updatedAt: paidDate || createdDate
+            updatedAt: parsedPaidAt || createdDate
           };
 
           finesToCreate.push({ userId: player.id, fine });
@@ -687,6 +703,13 @@ export async function importTransactionsCSVToFirestore(
         const subject = row.transaction_subject.trim();
         let playerName = '';
         let category = '';
+
+        // Skip Beiträge (membership dues) here — handled exclusively by the Dues CSV importer
+        const subjectPrefix = subject.split(':')[0].trim().toLowerCase();
+        if (subjectPrefix.includes('beitr')) { // matches "beitrag", "beiträge"
+          result.warnings.push(`Row ${i + 1}: Skipped Beiträge transaction (handled via dues CSV): ${subject}`);
+          continue;
+        }
 
         const colonIndex = subject.indexOf(':');
         if (colonIndex > -1) {

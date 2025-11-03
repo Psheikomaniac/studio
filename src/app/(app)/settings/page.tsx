@@ -125,15 +125,16 @@ export default function SettingsPage() {
     setImportTotal(0);
 
     try {
-      // Detect CSV type by filename
+      // Detect CSV type by filename (robust: singular/plural)
       const filename = selectedFile.name.toLowerCase();
       let csvType: 'dues' | 'transactions' | 'punishments' | 'unknown';
 
-      if (filename.includes('dues')) {
+      if (filename.includes('due')) {
+        // matches both "due" and "dues"
         csvType = 'dues';
-      } else if (filename.includes('transaction')) {
+      } else if (filename.includes('transactions') || filename.includes('transaction')) {
         csvType = 'transactions';
-      } else if (filename.includes('punishment')) {
+      } else if (filename.includes('punishments') || filename.includes('punishment')) {
         csvType = 'punishments';
       } else {
         csvType = 'unknown';
