@@ -423,6 +423,7 @@ export async function importPunishmentsCSVToFirestore(
     const beveragesToCreate: Beverage[] = [];
     const finesToCreate: { userId: string; fine: Fine }[] = [];
     const consumptionsToCreate: { userId: string; consumption: BeverageConsumption }[] = [];
+    const paymentsToCreate: { userId: string; payment: Payment }[] = [];
 
     // Process all rows first
     for (let i = 0; i < rows.length; i++) {
@@ -472,6 +473,23 @@ export async function importPunishmentsCSVToFirestore(
         if ((player as any).__isNew && !playersToCreate.some(p => p.id === player.id)) {
           playersToCreate.push(player);
           result.playersCreated++;
+        }
+
+        // Special case: "Guthaben" and "Guthaben Rest" are credits (payments), not fines
+        const reasonLower = (row.penatly_reason || '').trim().toLowerCase();
+        if (reasonLower === 'guthaben' || reasonLower === 'guthaben rest') {
+          const payment: Payment = {
+            id: generateId('payment'),
+            userId: player.id,
+            reason: row.penatly_reason.trim(),
+            amount: amountEUR,
+            date: createdDate,
+            paid: !!paidDate,
+            paidAt: paidDate || null
+          };
+          paymentsToCreate.push({ userId: player.id, payment });
+          result.recordsCreated++;
+          continue;
         }
 
         // Classify as DRINK or FINE
@@ -547,6 +565,19 @@ export async function importPunishmentsCSVToFirestore(
       for (const beverage of batchBeverages) {
         const beverageRef = doc(firestore, 'beverages', beverage.id);
         batch.set(beverageRef, sanitizeFirestoreData(beverage as any));
+      }
+
+      await batch.commit();
+    }
+
+    // Write payments (in user subcollections)
+    for (let i = 0; i < paymentsToCreate.length; i += BATCH_SIZE) {
+      const batch = writeBatch(firestore);
+      const batchPayments = paymentsToCreate.slice(i, i + BATCH_SIZE);
+
+      for (const { userId, payment } of batchPayments) {
+        const paymentRef = doc(firestore, `users/${userId}/payments`, payment.id);
+        batch.set(paymentRef, sanitizeFirestoreData(payment as any));
       }
 
       await batch.commit();

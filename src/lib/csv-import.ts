@@ -369,6 +369,23 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
         // Find or create player
         const player = findOrCreatePlayer(row.penatly_user);
 
+        // Special case: "Guthaben" and "Guthaben Rest" are credits (payments), not fines
+        const reasonLower = (row.penatly_reason || '').trim().toLowerCase();
+        if (reasonLower === 'guthaben' || reasonLower === 'guthaben rest') {
+          const payment: Payment = {
+            id: generateId('payment'),
+            userId: player.id,
+            reason: row.penatly_reason.trim(),
+            amount: amountEUR,
+            date: createdDate,
+            paid: !!paidDate,
+            paidAt: paidDate || null
+          };
+          payments.push(payment);
+          result.recordsCreated++;
+          continue;
+        }
+
         // Classify as DRINK or FINE
         const type = classifyPunishment(row.penatly_reason);
 
