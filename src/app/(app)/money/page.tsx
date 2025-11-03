@@ -33,6 +33,7 @@ import { updatePlayersWithCalculatedBalances } from '@/lib/utils';
 import { formatEuro } from '@/lib/csv-utils';
 import { sumPaymentsToday, sumPaymentsInLastDays, computeARPPU, computeOpenFinesTotal, groupPaymentsByDay, maxDateFromCollections, movingAverage, buildFirstPayersAndCumulativeRevenueByMonth } from '@/lib/stats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Bar } from 'recharts';
+import { Tooltip as UiTooltip, TooltipContent as UiTooltipContent, TooltipProvider as UiTooltipProvider, TooltipTrigger as UiTooltipTrigger } from '@/components/ui/tooltip';
 
 type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
 
@@ -254,6 +255,20 @@ export default function MoneyPage() {
       totalCredits: filtered.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0),
       netBalance: filtered.reduce((sum, t) => sum + t.amount, 0),
     };
+  }, [filteredTransactions]);
+
+  // Breakdown of credits by type (Guthaben vs Guthaben Rest) based on current filters
+  const creditsBreakdown = useMemo(() => {
+    let guthaben = 0;
+    let guthabenRest = 0;
+    for (const t of filteredTransactions) {
+      if (t.type !== 'payment') continue;
+      if (t.amount <= 0) continue; // only credits
+      const r = (t.description || '').trim().toLowerCase();
+      if (r === 'guthaben') guthaben += Number(t.amount) || 0;
+      else if (r === 'guthaben rest') guthabenRest += Number(t.amount) || 0;
+    }
+    return { guthaben, guthabenRest, total: guthaben + guthabenRest };
   }, [filteredTransactions]);
 
   // KPIs and chart data (Money page stats)
@@ -798,7 +813,19 @@ export default function MoneyPage() {
                   <CardTitle className="text-sm font-medium text-muted-foreground">Total Credits</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-positive">{formatEuro(totals.totalCredits)}</div>
+                  <UiTooltipProvider delayDuration={0}>
+                    <UiTooltip>
+                      <UiTooltipTrigger asChild>
+                        <div className="text-2xl font-bold text-positive">{formatEuro(totals.totalCredits)}</div>
+                      </UiTooltipTrigger>
+                      <UiTooltipContent side="top" align="end">
+                        <div className="text-xs">
+                          <div className="font-medium mb-1">Credits-Aufschlüsselung</div>
+                          <div className="font-mono">Guthaben: {formatEuro(creditsBreakdown.guthaben)} • Guthaben Rest: {formatEuro(creditsBreakdown.guthabenRest)}</div>
+                        </div>
+                      </UiTooltipContent>
+                    </UiTooltip>
+                  </UiTooltipProvider>
                 </CardContent>
               </Card>
               <Card>
