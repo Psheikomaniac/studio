@@ -79,10 +79,15 @@ export default function PlayersPage() {
     for (const p of payments) {
       if (!p?.userId || !p?.paid || typeof p.amount !== 'number') continue;
       const r = norm(p.reason);
-      if (r === 'guthaben') {
-        ensure(p.userId).guthaben += Number(p.amount) || 0;
-      } else if (r === 'guthaben rest') {
-        ensure(p.userId).guthabenRest += Number(p.amount) || 0;
+      const amt = Number(p.amount) || 0;
+      // Robustere Klassifikation:
+      // - explizit "guthaben rest" oder enthält es → Guthaben Rest
+      // - enthält "guthaben" (z. B. "Strafen: Name (Guthaben)") → Guthaben
+      // - beginnt mit "einzahlung" (z. B. "Einzahlung: Name") → Guthaben
+      if (r === 'guthaben rest' || r.includes('guthaben rest')) {
+        ensure(p.userId).guthabenRest += amt;
+      } else if (r === 'guthaben' || r.includes('guthaben') || r.startsWith('einzahlung')) {
+        ensure(p.userId).guthaben += amt;
       }
     }
 
