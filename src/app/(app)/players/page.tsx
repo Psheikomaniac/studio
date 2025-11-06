@@ -75,9 +75,10 @@ export default function PlayersPage() {
 
     const norm = (s?: string) => (s || '').trim().toLowerCase();
 
-    // Credits: Guthaben + Guthaben Rest (nur bezahlte Payments)
+    // Credits: Guthaben + Guthaben Rest (nur offene/unbezahlte Credits werden berücksichtigt)
     for (const p of payments) {
-      if (!p?.userId || !p?.paid) continue;
+      if (!p?.userId) continue;
+      if (p.paid) continue; // nur unpaid Guthaben/Guthaben Rest zählen
       const r = norm(p.reason);
       const amt = Number(p.amount) || 0;
       // Robustere Klassifikation:
@@ -358,7 +359,7 @@ export default function PlayersPage() {
                     <TableHead>Last Activity</TableHead>
                     <TableHead>Beverages</TableHead>
                     <TableHead>Payments (6m)</TableHead>
-                    <TableHead className="text-right" title="(Guthaben + Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)">Balance</TableHead>
+                    <TableHead className="text-right" title="(offene Guthaben + offener Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)">Balance</TableHead>
                     <TableHead className="w-[140px] text-right">
                       <span className="sr-only">Actions</span>
                     </TableHead>
@@ -446,10 +447,10 @@ export default function PlayersPage() {
                                   <TooltipContent side="top" align="end">
                                     <div className="text-xs">
                                       <div className="font-medium mb-1">Berechnung</div>
-                                      <div className="mb-1">(Guthaben + Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)</div>
-                                      <div className="text-muted-foreground mb-1">Es werden nur offene Restbeträge berücksichtigt.</div>
+                                      <div className="mb-1">(offene Guthaben + offener Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)</div>
+                                      <div className="text-muted-foreground mb-1">Es werden nur offene (unbezahlte) Guthaben/Guthaben Rest sowie offene Restbeträge berücksichtigt.</div>
                                       <div className="font-mono">
-                                        Guthaben: {formatEuro(g)} • Guthaben Rest: {formatEuro(gr)}<br />
+                                        Guthaben (offen): {formatEuro(g)} • Guthaben Rest (offen): {formatEuro(gr)}<br />
                                         Strafen (offen): {formatEuro(f)} • Beiträge (offen): {formatEuro(d)} • Getränke (offen): {formatEuro(b)}
                                       </div>
                                     </div>
@@ -532,7 +533,7 @@ export default function PlayersPage() {
                     <TableHead>Last Activity</TableHead>
                     <TableHead>Beverages</TableHead>
                     <TableHead>Payments (6m)</TableHead>
-                    <TableHead className="text-right" title="(Guthaben + Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)">Balance</TableHead>
+                    <TableHead className="text-right" title="(offene Guthaben + offener Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)">Balance</TableHead>
                     <TableHead className="w-[140px] text-right">
                       <span className="sr-only">Actions</span>
                     </TableHead>
@@ -614,10 +615,10 @@ export default function PlayersPage() {
                                   <TooltipContent side="top" align="end">
                                     <div className="text-xs">
                                       <div className="font-medium mb-1">Berechnung</div>
-                                      <div className="mb-1">(Guthaben + Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)</div>
-                                      <div className="text-muted-foreground mb-1">Es werden nur offene Restbeträge berücksichtigt.</div>
+                                      <div className="mb-1">(offene Guthaben + offener Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)</div>
+                                      <div className="text-muted-foreground mb-1">Es werden nur offene (unbezahlte) Guthaben/Guthaben Rest sowie offene Restbeträge berücksichtigt.</div>
                                       <div className="font-mono">
-                                        Guthaben: {formatEuro(g)} • Guthaben Rest: {formatEuro(gr)}<br />
+                                        Guthaben (offen): {formatEuro(g)} • Guthaben Rest (offen): {formatEuro(gr)}<br />
                                         Strafen (offen): {formatEuro(f)} • Beiträge (offen): {formatEuro(d)} • Getränke (offen): {formatEuro(b)}
                                       </div>
                                     </div>
