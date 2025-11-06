@@ -501,10 +501,23 @@ export async function importPunishmentsCSVToFirestore(
         }
 
         // Special case: Guthaben top-ups appear in punishments export in some datasets
-        // To avoid double counting, we import Guthaben only from the Transactions CSV and skip here
+        // Create them as Payments here so balances/tooltip can reflect credits even if only punishments CSV is imported
         const reasonLower = (row.penatly_reason || '').trim().toLowerCase();
-        if (reasonLower === 'guthaben' || reasonLower === 'guthaben rest') {
-          result.warnings.push(`Row ${i + 1}: Skipped Guthaben entry in punishments (handled via transactions CSV)`);
+        const isCreditGuthabenRest = reasonLower === 'guthaben rest' || reasonLower.includes('guthaben rest');
+        const isCreditGuthaben = reasonLower === 'guthaben' || reasonLower.includes('guthaben') || reasonLower.startsWith('einzahlung');
+        if (isCreditGuthabenRest || isCreditGuthaben) {
+          const payment: Payment = {
+            id: generateId('payment'),
+            userId: player.id,
+            reason: row.penatly_reason.trim(),
+            amount: amountEUR,
+            date: createdDate,
+            // Treat credits imported via punishments as settled top-ups
+            paid: true,
+            paidAt: parsedPaidAt || createdDate
+          };
+          paymentsToCreate.push({ userId: player.id, payment });
+          result.recordsCreated++;
           continue;
         }
 

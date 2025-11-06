@@ -380,10 +380,23 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
         const player = findOrCreatePlayer(row.penatly_user);
 
         // Special case: "Guthaben" and "Guthaben Rest" appear in punishments export but are top-ups
-        // We skip them here to avoid duplication — they are imported from the Transactions CSV
+        // Create them as Payments so balances/tooltip can reflect credits even if only punishments CSV is imported
         const reasonLower = (row.penatly_reason || '').trim().toLowerCase();
-        if (reasonLower === 'guthaben' || reasonLower === 'guthaben rest') {
-          result.warnings.push(`Row ${i + 1}: Skipped Guthaben entry in punishments (handled via transactions CSV)`);
+        const isCreditGuthabenRest = reasonLower === 'guthaben rest' || reasonLower.includes('guthaben rest');
+        const isCreditGuthaben = reasonLower === 'guthaben' || reasonLower.includes('guthaben') || reasonLower.startsWith('einzahlung');
+        if (isCreditGuthabenRest || isCreditGuthaben) {
+          const payment: Payment = {
+            id: generateId('payment'),
+            userId: player.id,
+            reason: row.penatly_reason.trim(),
+            amount: amountEUR,
+            date: createdDate,
+            // Treat credits imported via punishments as settled top-ups
+            paid: true,
+            paidAt: parsedPaidAt || createdDate
+          };
+          payments.push(payment);
+          result.recordsCreated++;
           continue;
         }
 

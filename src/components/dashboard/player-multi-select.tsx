@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 export type PlayerMultiSelectProps = {
   players: Player[];
   value: string[];
-  onChange: (ids: string[]) => void;
+    onChange: (ids: string[]) => void;
   placeholder?: string;
   className?: string;
 };
