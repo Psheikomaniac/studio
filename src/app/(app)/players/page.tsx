@@ -77,7 +77,7 @@ export default function PlayersPage() {
 
     // Credits: Guthaben + Guthaben Rest (nur bezahlte Payments)
     for (const p of payments) {
-      if (!p?.userId || !p?.paid || typeof p.amount !== 'number') continue;
+      if (!p?.userId || !p?.paid) continue;
       const r = norm(p.reason);
       const amt = Number(p.amount) || 0;
       // Robustere Klassifikation:
@@ -93,7 +93,7 @@ export default function PlayersPage() {
 
     // Fines: Nur offene Restbeträge (unbezahlt/teilbezahlt)
     for (const f of fines) {
-      if (!f?.userId || typeof f.amount !== 'number') continue;
+      if (!f?.userId) continue;
       let remaining = 0;
       if (!f.paid) {
         const amt = Number(f.amount) || 0;
@@ -105,7 +105,7 @@ export default function PlayersPage() {
 
     // Dues: Nur offene Restbeträge (exempt ausgeschlossen)
     for (const d of duePayments) {
-      if (!d?.userId || d.exempt || typeof d.amountDue !== 'number') continue;
+      if (!d?.userId || d.exempt) continue;
       let remaining = 0;
       if (!d.paid) {
         const amt = Number(d.amountDue) || 0;
@@ -192,7 +192,7 @@ export default function PlayersPage() {
     const map = new Map<string, number[]>();
     const indexByMonth = new Map(last6Months.map((m, idx) => [m.key, idx] as const));
     for (const p of payments) {
-      if (!p?.userId || !p?.date || typeof p.amount !== 'number') continue;
+      if (!p?.userId || !p?.date) continue;
       const d = new Date(p.date);
       if (isNaN(d.getTime())) continue;
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
