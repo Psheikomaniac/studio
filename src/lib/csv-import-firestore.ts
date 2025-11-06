@@ -334,7 +334,21 @@ export async function importDuesCSVToFirestore(
 
         // Determine payment status
         const isPaid = row.user_paid === 'STATUS_PAID';
-        const isExempt = row.user_paid === 'STATUS_EXEMPT';
+        let isExempt = row.user_paid === 'STATUS_EXEMPT';
+
+        // Option B: Guard against counting old dues for newly joined players
+        // If the player is being created by this import (new to our system),
+        // and the due is clearly from a past season (archived) or significantly old,
+        // and the player hasn't paid it, then auto-mark this due as exempt.
+        const isPlayerNew = (player as any).__isNew === true;
+        const isArchivedDue = !!due.archived;
+        const dueCreatedTs = new Date(dueCreated).getTime();
+        const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+
+        if (isPlayerNew && !isPaid && !isExempt && (isArchivedDue || (!isNaN(dueCreatedTs) && (Date.now() - dueCreatedTs) > ONE_YEAR_MS))) {
+          isExempt = true;
+          result.warnings.push(`Auto-exempted old due for new player "${player.name}" on "${due.name}" (${new Date(dueCreatedTs).toISOString()})`);
+        }
 
         // Create DuePayment record
         const duePayment: DuePayment = {
