@@ -391,9 +391,9 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
             reason: row.penatly_reason.trim(),
             amount: amountEUR,
             date: createdDate,
-            // Treat credits imported via punishments as settled top-ups
-            paid: true,
-            paidAt: parsedPaidAt || createdDate
+            // Preserve original paid status from CSV for credits
+            paid: isPaidFlag,
+            paidAt: parsedPaidAt
           };
           payments.push(payment);
           result.recordsCreated++;

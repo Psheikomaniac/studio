@@ -512,9 +512,9 @@ export async function importPunishmentsCSVToFirestore(
             reason: row.penatly_reason.trim(),
             amount: amountEUR,
             date: createdDate,
-            // Treat credits imported via punishments as settled top-ups
-            paid: true,
-            paidAt: parsedPaidAt || createdDate
+            // Preserve original paid status from CSV for credits
+            paid: isPaidFlag,
+            paidAt: parsedPaidAt
           };
           paymentsToCreate.push({ userId: player.id, payment });
           result.recordsCreated++;
