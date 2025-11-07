@@ -20,7 +20,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Player } from '@/lib/types';
+import { Player, Due } from '@/lib/types';
+import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
+import { useMemoFirebase, useCollection } from '@/firebase';
+import { collection } from 'firebase/firestore';
 import { usePlayers, usePlayersService } from '@/services/players.service';
 import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
@@ -47,6 +50,19 @@ export default function PlayersPage() {
   const payments = paymentsData || [];
   const duePayments = duePaymentsData || [];
   const beverageConsumptions = consumptionsData || [];
+
+  // Load dues metadata to filter out archived dues from balance calculations
+  const firebase = useFirebaseOptional();
+  const duesQuery = useMemoFirebase(() => {
+    if (!firebase?.firestore) return null;
+    return collection(firebase.firestore, 'dues');
+  }, [firebase?.firestore]);
+  const { data: dues } = useCollection<Due>(duesQuery);
+  const dueById = useMemo(() => {
+    const m = new Map<string, Due>();
+    (dues || []).forEach(d => m.set(d.id, d));
+    return m;
+  }, [dues]);
 
   // Recompute balances and derive per-user stats (Players-specific rule)
   // Neue Formel: (Guthaben + Guthaben Rest) - (Fines + Dues + Beverages)
@@ -104,9 +120,12 @@ export default function PlayersPage() {
       ensure(f.userId).fines += remaining;
     }
 
-    // Dues: Nur offene Restbeträge (exempt ausgeschlossen)
+    // Dues: Nur offene Restbeträge (exempt ausgeschlossen) und nur für nicht archivierte Dues
     for (const d of duePayments) {
       if (!d?.userId || d.exempt) continue;
+      const meta = dueById.get(d.dueId);
+      // Wenn Metadaten vorhanden sind, nur aktive und nicht archivierte Dues zählen
+      if (meta && (meta.archived || meta.active === false)) continue;
       let remaining = 0;
       if (!d.paid) {
         const amt = Number(d.amountDue) || 0;
@@ -137,7 +156,7 @@ export default function PlayersPage() {
     }
 
     return m;
-  }, [payments, fines, duePayments, beverageConsumptions]);
+  }, [payments, fines, duePayments, beverageConsumptions, dueById]);
 
   const enhancedPlayers = useMemo(() => {
     if (!players) return [] as Player[];

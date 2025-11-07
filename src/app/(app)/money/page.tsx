@@ -12,6 +12,8 @@ import { PlusCircle, Receipt, Wallet, Beer, Search, X, AlertCircle } from "lucid
 import { useToast } from "@/hooks/use-toast";
 import type { Player, Fine, Payment, Due, DuePayment, BeverageConsumption, PredefinedFine, Beverage } from "@/lib/types";
 import { usePlayers } from '@/services/players.service';
+import { useMemoFirebase, useCollection } from '@/firebase';
+import { collection } from 'firebase/firestore';
 import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 import { FinesService } from '@/services/fines.service';
@@ -78,6 +80,27 @@ export default function MoneyPage() {
   const duePayments = duePaymentsData || [];
   const beverageConsumptions = consumptionsData || [];
 
+  // Load dues metadata to filter archived/inactive dues
+  const duesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'dues');
+  }, [firestore]);
+  const { data: duesMeta } = useCollection<Due>(duesQuery);
+  const dueById = useMemo(() => {
+    const m = new Map<string, Due>();
+    (duesMeta || []).forEach(d => m.set(d.id, d));
+    return m;
+  }, [duesMeta]);
+
+  // Filter due payments to only include non-archived and active dues
+  const filteredDuePayments = useMemo(() => {
+    if (!dueById.size) return duePayments; // if not loaded yet, fallback to all
+    return (duePayments || []).filter(dp => {
+      const meta = dueById.get(dp.dueId);
+      return meta ? (!meta.archived && meta.active !== false) : false;
+    });
+  }, [duePayments, dueById]);
+
   // Calculate player balances dynamically based on all transactions
   const players = useMemo(() => {
     if (!playersData) return [];
@@ -86,10 +109,10 @@ export default function MoneyPage() {
       playersData,
       payments,
       fines,
-      duePayments,
+      filteredDuePayments,
       beverageConsumptions
     );
-  }, [playersData, payments, fines, duePayments, beverageConsumptions]);
+  }, [playersData, payments, fines, filteredDuePayments, beverageConsumptions]);
 
   // Determine overall loading state
   const isLoading = playersLoading || finesLoading || paymentsLoading ||
