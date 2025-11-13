@@ -2,9 +2,8 @@
  * @file Firebase Security Rules for balanceUp handball club app
  * @updated 2025-10-27 - PRD-01 Firebase Infrastructure Setup
  *
- * ⚠️  DEVELOPMENT MODE - TEMPORARY RELAXED RULES ⚠️
- * These rules allow unauthenticated access for CSV import testing.
- * DO NOT USE IN PRODUCTION! Revert to strict rules before deploying.
+ * 🔒 PRODUCTION MODE - Secure Authentication & Authorization 🔒
+ * These rules enforce proper authentication and role-based access control.
  *
  * Core Philosophy:
  * - Team-wide read access for transparency (handball club team roster)
@@ -47,18 +46,9 @@ service cloud.firestore {
              exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // ⚠️  DEVELOPMENT ONLY - Allow unauthenticated access
+    // Production mode - Enforce proper authentication and authorization
     function isDevelopment() {
-      return true; // SET TO FALSE IN PRODUCTION!
-    }
-
-    // ============================================
-    // DEVELOPMENT: WIDE OPEN - Allow ALL operations
-    // ============================================
-    // This allows EVERYTHING unconditionally in development
-    // TODO: Remove before production deployment!
-    match /{document=**} {
-      allow read, write: if true;  // Wide open for development
+      return false;
     }
 
     // ============================================
