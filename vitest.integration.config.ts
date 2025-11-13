@@ -7,15 +7,17 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
-    setupFiles: ['./tests/setup.ts'],
-    exclude: [
-      'tests/integration/**',
-      'e2e/**',
-      'playwright-report/**',
-      'test-results/**',
-      '**/node_modules/**',
-      '**/.git/**',
-    ],
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        singleThread: true,
+        maxThreads: 1,
+        minThreads: 1,
+      },
+    },
+    // Use integration setup to connect to Firebase Emulator
+    setupFiles: ['./tests/integration/setup.ts'],
+    include: ['tests/integration/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],

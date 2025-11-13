@@ -1,0 +1,195 @@
+{
+  "config": {
+    "configFile": "/Users/private/projects/studio/playwright.config.ts",
+    "rootDir": "/Users/private/projects/studio/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "open": "never"
+        }
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "test-results/junit.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/private/projects/studio/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/private/projects/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/private/projects/studio/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/private/projects/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/private/projects/studio/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/private/projects/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/private/projects/studio/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/Users/private/projects/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/private/projects/studio/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "/Users/private/projects/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 8,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:9002",
+      "reuseExistingServer": true,
+      "timeout": 120000,
+      "stdout": "ignore",
+      "stderr": "pipe"
+    }
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
+      "location": {
+        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
+        "line": 18,
+        "column": 10
+      },
+      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:18\n\n  16 | test.describe('Feature: Responsive Design', () => {\n  17 |   test.describe('Mobile - Portrait', () => {\n> 18 |     test.use({ ...devices['iPhone 12'] });\n     |          ^\n  19 |\n  20 |     test('should display mobile navigation correctly', async ({ page }) => {\n  21 |       const dashboardPage = new DashboardPage(page);"
+    },
+    {
+      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
+      "location": {
+        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
+        "line": 18,
+        "column": 10
+      },
+      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:18\n\n  16 | test.describe('Feature: Responsive Design', () => {\n  17 |   test.describe('Mobile - Portrait', () => {\n> 18 |     test.use({ ...devices['iPhone 12'] });\n     |          ^\n  19 |\n  20 |     test('should display mobile navigation correctly', async ({ page }) => {\n  21 |       const dashboardPage = new DashboardPage(page);"
+    },
+    {
+      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
+      "location": {
+        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
+        "line": 18,
+        "column": 10
+      },
+      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:18\n\n  16 | test.describe('Feature: Responsive Design', () => {\n  17 |   test.describe('Mobile - Portrait', () => {\n> 18 |     test.use({ ...devices['iPhone 12'] });\n     |          ^\n  19 |\n  20 |     test('should display mobile navigation correctly', async ({ page }) => {\n  21 |       const dashboardPage = new DashboardPage(page);"
+    },
+    {
+      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
+      "location": {
+        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
+        "line": 18,
+        "column": 10
+      },
+      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:18\n\n  16 | test.describe('Feature: Responsive Design', () => {\n  17 |   test.describe('Mobile - Portrait', () => {\n> 18 |     test.use({ ...devices['iPhone 12'] });\n     |          ^\n  19 |\n  20 |     test('should display mobile navigation correctly', async ({ page }) => {\n  21 |       const dashboardPage = new DashboardPage(page);"
+    },
+    {
+      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
+      "location": {
+        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
+        "line": 219,
+        "column": 10
+      },
+      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:219\n\n  217 |\n  218 |   test.describe('Touch Interactions', () => {\n> 219 |     test.use({ ...devices['iPhone 12'], hasTouch: true });\n      |          ^\n  220 |\n  221 |     test('should support touch interactions on mobile', async ({ page }) => {\n  222 |       const dashboardPage = new DashboardPage(page);"
+    },
+    {
+      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
+      "location": {
+        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
+        "line": 219,
+        "column": 10
+      },
+      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:219\n\n  217 |\n  218 |   test.describe('Touch Interactions', () => {\n> 219 |     test.use({ ...devices['iPhone 12'], hasTouch: true });\n      |          ^\n  220 |\n  221 |     test('should support touch interactions on mobile', async ({ page }) => {\n  222 |       const dashboardPage = new DashboardPage(page);"
+    }
+  ],
+  "stats": {
+    "startTime": "2025-11-13T10:02:48.439Z",
+    "duration": 36857.704,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

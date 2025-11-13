@@ -21,8 +21,11 @@ import {
   mockFirestoreFunctions,
 } from '../../mocks/firestore-mock';
 
-// Mock Firebase Firestore module
-vi.mock('firebase/firestore', () => mockFirestoreFunctions);
+// Mock Firebase Firestore module (use dynamic import inside factory to avoid hoist issues)
+vi.mock('firebase/firestore', async () => {
+  const mocks = await import('../../mocks/firestore-mock');
+  return mocks.mockFirestoreFunctions as any;
+});
 
 describe('PlayersService', () => {
   let mockFirestore: Firestore;

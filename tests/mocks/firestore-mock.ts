@@ -16,21 +16,136 @@ import type {
 /**
  * Mock document data storage
  */
+// Store documents by their full path (e.g., 'users/123', 'users/123/payments/abc')
 const mockDocuments = new Map<string, any>();
+
+// Basic pub/sub for realtime listeners
+type Listener = (snapshot: any) => void;
+interface QueryDescriptor {
+  type: 'query';
+  collectionPath: string;
+  constraints?: any[];
+}
+// Maintain listeners per collection path; each entry stores the original query/ref and callback
+interface ListenerEntry { qOrRef: any; cb: Listener }
+const listenersByCollection = new Map<string, Set<ListenerEntry>>();
+
+function getCollectionPathFromQueryOrRef(qOrRef: any): string {
+  if (qOrRef?.type === 'query') return qOrRef.collectionPath;
+  if (qOrRef?.type === 'collection') return qOrRef.path;
+  return '';
+}
+
+function emitToCollectionPath(collectionPath: string) {
+  const set = listenersByCollection.get(collectionPath);
+  if (!set || set.size === 0) return;
+  // For each listener on this collection, rebuild the snapshot for its specific query
+  set.forEach(({ qOrRef, cb }) => {
+    try {
+      cb(buildQuerySnapshot(qOrRef));
+    } catch {}
+  });
+}
+
+function buildQuerySnapshot(qOrRef: any) {
+  // Reuse getDocs filtering logic to create a consistent snapshot
+  const { snapshots } = collectDocs(qOrRef);
+  return createMockQuerySnapshot(snapshots);
+}
+
+function collectDocs(qOrRef: any) {
+  let collectionPath: string | null = null;
+  let constraints: any[] = [];
+
+  if (qOrRef && qOrRef.type === 'collection' && qOrRef.path) {
+    collectionPath = qOrRef.path;
+  } else if (qOrRef && qOrRef.type === 'query' && qOrRef.collectionPath) {
+    collectionPath = qOrRef.collectionPath;
+    constraints = qOrRef.constraints || [];
+  }
+
+  const snapshots: DocumentSnapshot[] = [];
+
+  mockDocuments.forEach((data, fullPath) => {
+    if (!collectionPath) return;
+    if (!fullPath.startsWith(collectionPath + '/')) return;
+    // Ensure this is a direct child document (one extra segment)
+    const relative = fullPath.slice(collectionPath.length + 1);
+    if (relative.includes('/')) return; // nested deeper
+
+    const id = relative;
+    const docRef = createMockDocumentReference(collectionPath!, id);
+    // Apply where constraints (support '==' only)
+    let passes = true;
+    for (const c of constraints) {
+      if (c?.type === 'where') {
+        const { field, operator, value } = c;
+        if (operator === '==') {
+          if ((data ?? {})[field] !== value) {
+            passes = false;
+            break;
+          }
+        }
+      }
+    }
+    if (!passes) return;
+
+    snapshots.push(createMockDocumentSnapshot(docRef, data));
+  });
+
+  // Apply orderBy (single field support) and limit
+  const order = constraints.find(c => c?.type === 'orderBy');
+  if (order) {
+    const { field, direction } = order;
+    snapshots.sort((a: any, b: any) => {
+      const av = a.data()?.[field];
+      const bv = b.data()?.[field];
+      if (av === bv) return 0;
+      const cmp = av > bv ? 1 : -1;
+      return direction === 'desc' ? -cmp : cmp;
+    });
+  }
+
+  const limitConstraint = constraints.find(c => c?.type === 'limit');
+  const finalSnapshots = limitConstraint ? snapshots.slice(0, limitConstraint.count) : snapshots;
+
+  return { snapshots: finalSnapshots };
+}
+
+/**
+ * Configuration for mock behavior
+ */
+type MockConfig = {
+  /** When true, updateDoc behaves as upsert; when false, it throws if doc missing */
+  upsertOnUpdate: boolean;
+  /** When true, deleteDoc throws if doc missing */
+  requireExistForDelete: boolean;
+};
+
+let mockConfig: MockConfig = {
+  upsertOnUpdate: true,
+  requireExistForDelete: false,
+};
+
+export function setMockConfig(config: Partial<MockConfig>) {
+  mockConfig = { ...mockConfig, ...config };
+}
 
 /**
  * Creates a mock DocumentSnapshot
  */
 export function createMockDocumentSnapshot<T = DocumentData>(
-  id: string,
-  data: T | null,
-  exists = true
+  refOrId: DocumentReference | string,
+  data: T | null
 ): DocumentSnapshot {
+  const ref = typeof refOrId === 'string'
+    ? createMockDocumentReference('unknown', refOrId)
+    : refOrId;
   return {
-    id,
-    exists: () => exists,
+    id: (ref as any).id,
+    ref: ref as any,
+    exists: () => data !== null && data !== undefined,
     data: () => data,
-    ref: {} as DocumentReference,
     metadata: {
       hasPendingWrites: false,
       fromCache: false,
@@ -43,25 +158,31 @@ export function createMockDocumentSnapshot<T = DocumentData>(
  * Creates a mock QuerySnapshot
  */
 export function createMockQuerySnapshot<T = DocumentData>(
-  docs: Array<{ id: string; data: T }>
-): QuerySnapshot {
-  const mockDocs = docs.map(({ id, data }) =>
-    createMockDocumentSnapshot(id, data, true)
-  );
+  items: Array<DocumentSnapshot<T> | (T & { id?: string })>
+): QuerySnapshot<T> {
+  const docs: DocumentSnapshot<T>[] = items.map((item: any, idx) => {
+    // If it already looks like a DocumentSnapshot (has exists/data/id functions), keep it
+    if (item && typeof item.exists === 'function' && typeof item.data === 'function') {
+      return item as DocumentSnapshot<T>;
+    }
+    // Otherwise, wrap plain data into a DocumentSnapshot with an id
+    const id = item?.id || `doc_${idx}`;
+    return createMockDocumentSnapshot(id, item as T);
+  });
 
   return {
-    docs: mockDocs,
-    empty: mockDocs.length === 0,
-    size: mockDocs.length,
-    forEach: (callback: (doc: DocumentSnapshot) => void) => {
-      mockDocs.forEach(callback);
+    docs,
+    empty: docs.length === 0,
+    size: docs.length,
+    forEach: (callback: (doc: DocumentSnapshot<T>) => void) => {
+      docs.forEach(callback);
     },
     metadata: {
       hasPendingWrites: false,
       fromCache: false,
       isEqual: vi.fn(),
     },
-  } as unknown as QuerySnapshot;
+  } as unknown as QuerySnapshot<T>;
 }
 
 /**
@@ -112,50 +233,93 @@ export function createMockDocumentReference(
  * Mock Firestore functions
  */
 export const mockFirestoreFunctions = {
-  collection: vi.fn((firestore: Firestore, path: string) =>
-    createMockCollectionReference(path)
-  ),
+  collection: vi.fn((arg1: any, arg2?: any) => {
+    // Overloads:
+    // 1) collection(firestore, path)
+    // 2) collection(docRef, subcollection)
+    if (arg1 && typeof arg1 === 'object' && arg1.type === 'document') {
+      const docRef = arg1 as ReturnType<typeof createMockDocumentReference>;
+      const sub = String(arg2 || '');
+      return createMockCollectionReference(`${docRef.path}/${sub}`);
+    }
+    // default: (firestore, path)
+    return createMockCollectionReference(String(arg2 || arg1));
+  }),
 
-  doc: vi.fn((firestore: Firestore, path: string, ...pathSegments: string[]) => {
-    const fullPath = [path, ...pathSegments].join('/');
+  doc: vi.fn((arg1: any, arg2?: any, ...pathSegments: string[]) => {
+    // Overloads:
+    // 1) doc(firestore, path, ...segments)
+    // 2) doc(collectionRef)
+    // 3) doc(collectionRef, customId)
+
+    // If first arg is a CollectionReference from our mock
+    if (arg1 && typeof arg1 === 'object' && arg1.type === 'collection') {
+      const collectionRef = arg1 as ReturnType<typeof createMockCollectionReference>;
+      const id = (typeof arg2 === 'string' && arg2) || `mock_${Math.random().toString(36).slice(2, 10)}`;
+      return createMockDocumentReference(collectionRef.path, id);
+    }
+
+    // Fallback: treat as (firestore, path, ...segments)
+    const path: string = String(arg2 || '');
+    const fullPath = [path, ...pathSegments].filter(Boolean).join('/');
     const id = pathSegments[pathSegments.length - 1] || 'mock-id';
-    return createMockDocumentReference(fullPath, id);
+    const collectionPath = fullPath.substring(0, fullPath.length - id.length - 1) || path;
+    return createMockDocumentReference(collectionPath, id);
   }),
 
   getDoc: vi.fn(async (docRef: DocumentReference) => {
-    const data = mockDocuments.get(docRef.id);
-    return createMockDocumentSnapshot(docRef.id, data, !!data);
+    const data = mockDocuments.get(docRef.path) ?? null;
+    return createMockDocumentSnapshot(docRef, data);
   }),
 
-  getDocs: vi.fn(async (query: any) => {
-    const docs: Array<{ id: string; data: any }> = [];
-    mockDocuments.forEach((data, id) => {
-      docs.push({ id, data });
-    });
-    return createMockQuerySnapshot(docs);
+  getDocs: vi.fn(async (qOrRef: any) => {
+    const { snapshots } = collectDocs(qOrRef);
+    return createMockQuerySnapshot(snapshots);
   }),
 
   setDoc: vi.fn(async (docRef: DocumentReference, data: any) => {
-    mockDocuments.set(docRef.id, data);
+    mockDocuments.set(docRef.path, data);
+    // Emit to listeners on parent collection
+    emitToCollectionPath(docRef.path.split('/').slice(0, -1).join('/'));
     return Promise.resolve();
   }),
 
   updateDoc: vi.fn(async (docRef: DocumentReference, data: any) => {
-    const existing = mockDocuments.get(docRef.id) || {};
-    mockDocuments.set(docRef.id, { ...existing, ...data });
+    // Conditional behavior based on config
+    const exists = mockDocuments.has(docRef.path);
+    if (!exists && !mockConfig.upsertOnUpdate) {
+      throw new Error('Document not found');
+    }
+    const existing = exists ? mockDocuments.get(docRef.path) : {};
+    mockDocuments.set(docRef.path, { ...existing, ...data });
+    emitToCollectionPath(docRef.path.split('/').slice(0, -1).join('/'));
     return Promise.resolve();
   }),
 
   deleteDoc: vi.fn(async (docRef: DocumentReference) => {
-    mockDocuments.delete(docRef.id);
+    const exists = mockDocuments.has(docRef.path);
+    if (!exists && mockConfig.requireExistForDelete) {
+      throw new Error('Document not found');
+    }
+    const deleted = mockDocuments.delete(docRef.path);
+    if (deleted) {
+      emitToCollectionPath(docRef.path.split('/').slice(0, -1).join('/'));
+    }
     return Promise.resolve();
   }),
 
-  query: vi.fn((...args: any[]) => {
+  query: vi.fn((refOrQuery: any, ...args: any[]) => {
+    // Determine base collection path
+    const collectionPath = refOrQuery?.type === 'query'
+      ? refOrQuery.collectionPath
+      : refOrQuery?.path;
+    const constraints = args.filter(Boolean);
     return {
       type: 'query',
       firestore: createMockFirestore(),
       converter: null,
+      collectionPath,
+      constraints,
     };
   }),
 
@@ -176,37 +340,128 @@ export const mockFirestoreFunctions = {
   }),
 
   runTransaction: vi.fn(async (firestore: Firestore, updateFunction: any) => {
+    // Buffer operations to simulate atomicity
+    const ops: Array<() => void> = [];
+    const affectedCollections = new Set<string>();
     const transaction = {
       get: vi.fn(async (docRef: DocumentReference) => {
-        const data = mockDocuments.get(docRef.id);
-        return createMockDocumentSnapshot(docRef.id, data, !!data);
+        const data = mockDocuments.get(docRef.path) ?? null;
+        return createMockDocumentSnapshot(docRef, data);
       }),
       set: vi.fn((docRef: DocumentReference, data: any) => {
-        mockDocuments.set(docRef.id, data);
+        ops.push(() => {
+          mockDocuments.set(docRef.path, data);
+          affectedCollections.add(docRef.path.split('/').slice(0, -1).join('/'));
+        });
       }),
       update: vi.fn((docRef: DocumentReference, data: any) => {
-        const existing = mockDocuments.get(docRef.id) || {};
-        mockDocuments.set(docRef.id, { ...existing, ...data });
+        // In strict mode, require document to exist
+        const exists = mockDocuments.has(docRef.path);
+        if (!exists && !mockConfig.upsertOnUpdate) {
+          throw new Error('Document not found');
+        }
+        ops.push(() => {
+          const existing = exists ? mockDocuments.get(docRef.path) : {};
+          mockDocuments.set(docRef.path, { ...existing, ...data });
+          affectedCollections.add(docRef.path.split('/').slice(0, -1).join('/'));
+        });
       }),
       delete: vi.fn((docRef: DocumentReference) => {
-        mockDocuments.delete(docRef.id);
+        const exists = mockDocuments.has(docRef.path);
+        if (!exists && mockConfig.requireExistForDelete) {
+          throw new Error('Document not found');
+        }
+        ops.push(() => {
+          mockDocuments.delete(docRef.path);
+          affectedCollections.add(docRef.path.split('/').slice(0, -1).join('/'));
+        });
       }),
     };
-    return updateFunction(transaction);
+    try {
+      const result = await updateFunction(transaction);
+      // Commit ops
+      ops.forEach(fn => fn());
+      // Emit snapshots
+      affectedCollections.forEach(col => emitToCollectionPath(col));
+      return result;
+    } catch (e) {
+      // Rollback: do nothing
+      throw e;
+    }
   }),
 
   writeBatch: vi.fn((firestore: Firestore) => {
+    const ops: Array<() => void> = [];
+    const affectedCollections = new Set<string>();
     return {
-      set: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      commit: vi.fn(async () => Promise.resolve()),
+      set: vi.fn((docRef: DocumentReference, data: any) => {
+        ops.push(() => {
+          mockDocuments.set(docRef.path, data);
+          affectedCollections.add(docRef.path.split('/').slice(0, -1).join('/'));
+        });
+      }),
+      update: vi.fn((docRef: DocumentReference, data: any) => {
+        const exists = mockDocuments.has(docRef.path);
+        if (!exists && !mockConfig.upsertOnUpdate) {
+          throw new Error('Document not found');
+        }
+        ops.push(() => {
+          const existing = exists ? mockDocuments.get(docRef.path) : {};
+          mockDocuments.set(docRef.path, { ...existing, ...data });
+          affectedCollections.add(docRef.path.split('/').slice(0, -1).join('/'));
+        });
+      }),
+      delete: vi.fn((docRef: DocumentReference) => {
+        const exists = mockDocuments.has(docRef.path);
+        if (!exists && mockConfig.requireExistForDelete) {
+          throw new Error('Document not found');
+        }
+        ops.push(() => {
+          mockDocuments.delete(docRef.path);
+          affectedCollections.add(docRef.path.split('/').slice(0, -1).join('/'));
+        });
+      }),
+      commit: vi.fn(async () => {
+        ops.forEach(fn => fn());
+        affectedCollections.forEach(col => emitToCollectionPath(col));
+        return Promise.resolve();
+      }),
     };
   }),
 
-  onSnapshot: vi.fn((query: any, callback: any, errorCallback?: any) => {
-    // Return unsubscribe function
-    return vi.fn();
+  onSnapshot: vi.fn((qOrRef: any, callback: any, errorCallback?: any) => {
+    // Validate simple orderBy on non-existent field to trigger error
+    const constraints = qOrRef?.constraints || [];
+    const invalidOrder = constraints.find((c: any) => c?.type === 'orderBy' && typeof c.field === 'string' && c.field === 'nonExistentField');
+    if (invalidOrder && typeof errorCallback === 'function') {
+      setTimeout(() => errorCallback(new Error('Invalid orderBy field')), 0);
+      return vi.fn();
+    }
+
+    const collectionPath = getCollectionPathFromQueryOrRef(qOrRef);
+    if (!listenersByCollection.has(collectionPath)) listenersByCollection.set(collectionPath, new Set());
+    const set = listenersByCollection.get(collectionPath)!;
+    const entry: ListenerEntry = { qOrRef, cb: callback };
+    set.add(entry);
+
+    // Fire initial snapshot asynchronously
+    setTimeout(() => {
+      try {
+        callback(buildQuerySnapshot(qOrRef));
+      } catch {}
+    }, 0);
+
+    // Return unsubscribe
+    return vi.fn(() => {
+      const s = listenersByCollection.get(collectionPath);
+      if (s) {
+        // Find and remove matching entry
+        [...s].forEach(item => {
+          if (item.cb === callback) s.delete(item);
+        });
+        if (s.size === 0) listenersByCollection.delete(collectionPath);
+      }
+    });
   }),
 
   serverTimestamp: vi.fn(() => new Date().toISOString()),

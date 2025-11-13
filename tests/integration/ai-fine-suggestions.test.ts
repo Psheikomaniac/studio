@@ -111,9 +111,7 @@ describe('Integration: AI Fine Suggestions', () => {
 
   describe('Error Handling', () => {
     it('should handle AI API failures gracefully', async () => {
-      // Mock API failure
-      const originalImpl = vi.mocked((await import('@/ai/flows/suggest-fines-from-description')).suggestFinesFromDescription);
-
+      // Mock API failure for one call
       vi.mocked((await import('@/ai/flows/suggest-fines-from-description')).suggestFinesFromDescription)
         .mockRejectedValueOnce(new Error('API Error'));
 
@@ -127,9 +125,7 @@ describe('Integration: AI Fine Suggestions', () => {
       expect(result.error).toBe('Failed to get AI suggestion. Please try again.');
       expect(result.suggestedReason).toBeUndefined();
 
-      // Restore original implementation
-      vi.mocked((await import('@/ai/flows/suggest-fines-from-description')).suggestFinesFromDescription)
-        .mockImplementation(originalImpl);
+      // No restore needed: mockRejectedValueOnce only affects a single invocation
     });
   });
 
@@ -154,8 +150,6 @@ describe('Integration: AI Fine Suggestions', () => {
 
     it('should filter out non-matching player names', async () => {
       // Given: AI suggests a player not in static data
-      const originalImpl = vi.mocked((await import('@/ai/flows/suggest-fines-from-description')).suggestFinesFromDescription);
-
       vi.mocked((await import('@/ai/flows/suggest-fines-from-description')).suggestFinesFromDescription)
         .mockResolvedValueOnce({
           suggestedReason: 'Test',
@@ -169,9 +163,7 @@ describe('Integration: AI Fine Suggestions', () => {
       expect(result.error).toBeUndefined();
       expect(result.suggestedPlayers).toHaveLength(0);
 
-      // Restore
-      vi.mocked((await import('@/ai/flows/suggest-fines-from-description')).suggestFinesFromDescription)
-        .mockImplementation(originalImpl);
+      // No restore needed: mockResolvedValueOnce only affects a single invocation
     });
   });
 

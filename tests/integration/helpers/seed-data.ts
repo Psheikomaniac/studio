@@ -213,6 +213,26 @@ export async function clearCollection(firestore: Firestore, collectionPath: stri
 
   if (snapshot.empty) return;
 
+  // Known subcollections under users documents that need cleanup between tests
+  const userSubcollections = ['fines', 'payments', 'duePayments', 'beverageConsumptions'];
+
+  // Delete nested subcollections first (to avoid orphaned subcollection docs between tests)
+  if (collectionPath === 'users') {
+    for (const docSnap of snapshot.docs) {
+      const userId = docSnap.id;
+      for (const sub of userSubcollections) {
+        const subColRef = collection(firestore, `users/${userId}/${sub}`);
+        const subSnap = await getDocs(subColRef);
+        if (!subSnap.empty) {
+          const subBatch = writeBatch(firestore);
+          subSnap.docs.forEach(subDoc => subBatch.delete(subDoc.ref));
+          await subBatch.commit();
+        }
+      }
+    }
+  }
+
+  // Now delete the documents in the root collection
   const batch = writeBatch(firestore);
   snapshot.docs.forEach(doc => {
     batch.delete(doc.ref);

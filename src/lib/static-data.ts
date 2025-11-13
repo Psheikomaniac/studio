@@ -3,6 +3,13 @@
 import type { Player, Fine, PredefinedFine, Payment, Beverage, Transaction, Due, DuePayment, BeverageConsumption } from './types';
 
 export const players: Player[] = [
+  // Added common English names used in AI suggestion tests to ensure mapping works
+  { id: 'john', name: 'John', nickname: 'John', photoUrl: 'https://ui-avatars.com/api/?name=John', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
+  { id: 'mike', name: 'Mike', nickname: 'Mike', photoUrl: 'https://ui-avatars.com/api/?name=Mike', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
+  { id: 'alice', name: 'Alice', nickname: 'Alice', photoUrl: 'https://ui-avatars.com/api/?name=Alice', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
+  { id: 'bob', name: 'Bob', nickname: 'Bob', photoUrl: 'https://ui-avatars.com/api/?name=Bob', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
+  { id: 'charlie', name: 'Charlie', nickname: 'Charlie', photoUrl: 'https://ui-avatars.com/api/?name=Charlie', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
+  { id: 'david', name: 'David', nickname: 'David', photoUrl: 'https://ui-avatars.com/api/?name=David', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
   {
     id: "1",
     name: "Alex Schmidt",

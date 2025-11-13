@@ -160,6 +160,13 @@ export abstract class BaseFirebaseService<T> {
       const snapshot = await getDoc(docRef);
       const data = this.snapshotToData(snapshot);
       
+      if (!data) {
+        return {
+          success: false,
+          error: new Error('Document not found'),
+        };
+      }
+
       return {
         success: true,
         data: data as T,
@@ -279,19 +286,19 @@ export abstract class BaseFirebaseService<T> {
     try {
       const docRef = this.getDocRef(id);
       const now = this.timestamp();
-      
+
       const updateData = {
         ...data,
         updatedAt: now,
         ...(options.userId && { updatedBy: options.userId }),
       };
-      
+
       await updateDoc(docRef, updateData);
-      
+
       // Fetch updated document
       const snapshot = await getDoc(docRef);
       const updatedDoc = this.snapshotToData(snapshot);
-      
+
       return {
         success: true,
         data: updatedDoc as T,

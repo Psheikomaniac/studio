@@ -21,8 +21,19 @@ export async function getFineSuggestion(description: string) {
 
     // Match suggested player names with actual player objects from static data
     const suggestedPlayersData = result.suggestedPlayers
-      .map(name => players.find(p => p.name === name || p.nickname === name))
-      .filter(p => p !== undefined) as { id: string; name: string }[];
+      .map(rawName => {
+        const name = String(rawName || '').trim();
+        const lname = name.toLowerCase();
+        // Match by exact or substring on name or nickname, case-insensitive
+        return (
+          players.find(p => p.name === name || p.nickname === name) ||
+          players.find(p =>
+            (p.name?.toLowerCase?.().includes(lname)) ||
+            (p.nickname?.toLowerCase?.().includes(lname))
+          )
+        );
+      })
+      .filter((p): p is { id: string; name: string } => !!p);
     
     return {
       suggestedReason: result.suggestedReason,
