@@ -1,4 +1,4 @@
-import { test, expect, devices } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { DashboardPage } from './page-objects/DashboardPage';
 import { PlayersPage } from './page-objects/PlayersPage';
 import { MoneyPage } from './page-objects/MoneyPage';
@@ -15,9 +15,8 @@ import { MoneyPage } from './page-objects/MoneyPage';
  */
 test.describe('Feature: Responsive Design', () => {
   test.describe('Mobile - Portrait', () => {
-    test.use({ ...devices['iPhone 12'] });
-
     test('should display mobile navigation correctly', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 }); // iPhone 12 portrait
       const dashboardPage = new DashboardPage(page);
       await dashboardPage.navigate();
 
@@ -29,6 +28,7 @@ test.describe('Feature: Responsive Design', () => {
     });
 
     test('should adapt dashboard layout for mobile', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
       const dashboardPage = new DashboardPage(page);
       await dashboardPage.navigate();
 
@@ -41,6 +41,7 @@ test.describe('Feature: Responsive Design', () => {
     });
 
     test('should make action buttons accessible on mobile', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
       const dashboardPage = new DashboardPage(page);
       await dashboardPage.navigate();
 
@@ -50,6 +51,7 @@ test.describe('Feature: Responsive Design', () => {
     });
 
     test('should handle table scrolling on mobile', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
       const moneyPage = new MoneyPage(page);
       await moneyPage.navigate();
 
@@ -65,11 +67,8 @@ test.describe('Feature: Responsive Design', () => {
   });
 
   test.describe('Mobile - Landscape', () => {
-    test.use({
-      viewport: { width: 844, height: 390 }, // iPhone 12 landscape
-    });
-
     test('should adapt to landscape orientation', async ({ page }) => {
+      await page.setViewportSize({ width: 844, height: 390 }); // iPhone 12 landscape
       const dashboardPage = new DashboardPage(page);
       await dashboardPage.navigate();
 
@@ -81,9 +80,8 @@ test.describe('Feature: Responsive Design', () => {
   });
 
   test.describe('Tablet', () => {
-    test.use({ ...devices['iPad Pro'] });
-
     test('should display tablet layout correctly', async ({ page }) => {
+      await page.setViewportSize({ width: 1024, height: 1366 }); // iPad Pro portrait
       const dashboardPage = new DashboardPage(page);
       await dashboardPage.navigate();
 
@@ -96,6 +94,7 @@ test.describe('Feature: Responsive Design', () => {
     });
 
     test('should show grid layouts on tablet', async ({ page }) => {
+      await page.setViewportSize({ width: 1024, height: 1366 });
       const dashboardPage = new DashboardPage(page);
       await dashboardPage.navigate();
 
@@ -107,9 +106,8 @@ test.describe('Feature: Responsive Design', () => {
   });
 
   test.describe('Desktop', () => {
-    test.use({ viewport: { width: 1920, height: 1080 } });
-
     test('should display full desktop layout', async ({ page }) => {
+      await page.setViewportSize({ width: 1920, height: 1080 });
       const dashboardPage = new DashboardPage(page);
       await dashboardPage.navigate();
 
@@ -121,6 +119,7 @@ test.describe('Feature: Responsive Design', () => {
     });
 
     test('should show sidebar navigation on desktop', async ({ page }) => {
+      await page.setViewportSize({ width: 1920, height: 1080 });
       const dashboardPage = new DashboardPage(page);
       await dashboardPage.navigate();
 
@@ -134,6 +133,7 @@ test.describe('Feature: Responsive Design', () => {
     });
 
     test('should display charts at full width on desktop', async ({ page }) => {
+      await page.setViewportSize({ width: 1920, height: 1080 });
       const dashboardPage = new DashboardPage(page);
       await dashboardPage.navigate();
 
@@ -143,6 +143,7 @@ test.describe('Feature: Responsive Design', () => {
     });
 
     test('should show hover effects on desktop', async ({ page }) => {
+      await page.setViewportSize({ width: 1920, height: 1080 });
       const playersPage = new PlayersPage(page);
       await playersPage.navigate();
 
@@ -216,9 +217,8 @@ test.describe('Feature: Responsive Design', () => {
   });
 
   test.describe('Touch Interactions', () => {
-    test.use({ ...devices['iPhone 12'], hasTouch: true });
-
     test('should support touch interactions on mobile', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
       const dashboardPage = new DashboardPage(page);
       await dashboardPage.navigate();
 
@@ -231,6 +231,7 @@ test.describe('Feature: Responsive Design', () => {
     });
 
     test('should support swipe gestures for scrolling', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
       const moneyPage = new MoneyPage(page);
       await moneyPage.navigate();
 

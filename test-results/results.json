@@ -10,7 +10,9 @@
     "grep": {},
     "grepInvert": null,
     "maxFailures": 0,
-    "metadata": {},
+    "metadata": {
+      "actualWorkers": 1
+    },
     "preserveOutput": "always",
     "reporter": [
       [
@@ -46,7 +48,9 @@
         "outputDir": "/Users/private/projects/studio/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "chromium",
         "name": "chromium",
         "testDir": "/Users/private/projects/studio/e2e",
@@ -60,7 +64,9 @@
         "outputDir": "/Users/private/projects/studio/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "firefox",
         "name": "firefox",
         "testDir": "/Users/private/projects/studio/e2e",
@@ -74,7 +80,9 @@
         "outputDir": "/Users/private/projects/studio/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "webkit",
         "name": "webkit",
         "testDir": "/Users/private/projects/studio/e2e",
@@ -88,7 +96,9 @@
         "outputDir": "/Users/private/projects/studio/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "Mobile Chrome",
         "name": "Mobile Chrome",
         "testDir": "/Users/private/projects/studio/e2e",
@@ -102,7 +112,9 @@
         "outputDir": "/Users/private/projects/studio/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "Mobile Safari",
         "name": "Mobile Safari",
         "testDir": "/Users/private/projects/studio/e2e",
@@ -127,69 +139,948 @@
       "stderr": "pipe"
     }
   },
-  "suites": [],
-  "errors": [
+  "suites": [
     {
-      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
-      "location": {
-        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
-        "line": 18,
-        "column": 10
-      },
-      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:18\n\n  16 | test.describe('Feature: Responsive Design', () => {\n  17 |   test.describe('Mobile - Portrait', () => {\n> 18 |     test.use({ ...devices['iPhone 12'] });\n     |          ^\n  19 |\n  20 |     test('should display mobile navigation correctly', async ({ page }) => {\n  21 |       const dashboardPage = new DashboardPage(page);"
-    },
-    {
-      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
-      "location": {
-        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
-        "line": 18,
-        "column": 10
-      },
-      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:18\n\n  16 | test.describe('Feature: Responsive Design', () => {\n  17 |   test.describe('Mobile - Portrait', () => {\n> 18 |     test.use({ ...devices['iPhone 12'] });\n     |          ^\n  19 |\n  20 |     test('should display mobile navigation correctly', async ({ page }) => {\n  21 |       const dashboardPage = new DashboardPage(page);"
-    },
-    {
-      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
-      "location": {
-        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
-        "line": 18,
-        "column": 10
-      },
-      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:18\n\n  16 | test.describe('Feature: Responsive Design', () => {\n  17 |   test.describe('Mobile - Portrait', () => {\n> 18 |     test.use({ ...devices['iPhone 12'] });\n     |          ^\n  19 |\n  20 |     test('should display mobile navigation correctly', async ({ page }) => {\n  21 |       const dashboardPage = new DashboardPage(page);"
-    },
-    {
-      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
-      "location": {
-        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
-        "line": 18,
-        "column": 10
-      },
-      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:18\n\n  16 | test.describe('Feature: Responsive Design', () => {\n  17 |   test.describe('Mobile - Portrait', () => {\n> 18 |     test.use({ ...devices['iPhone 12'] });\n     |          ^\n  19 |\n  20 |     test('should display mobile navigation correctly', async ({ page }) => {\n  21 |       const dashboardPage = new DashboardPage(page);"
-    },
-    {
-      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
-      "location": {
-        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
-        "line": 219,
-        "column": 10
-      },
-      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:219\n\n  217 |\n  218 |   test.describe('Touch Interactions', () => {\n> 219 |     test.use({ ...devices['iPhone 12'], hasTouch: true });\n      |          ^\n  220 |\n  221 |     test('should support touch interactions on mobile', async ({ page }) => {\n  222 |       const dashboardPage = new DashboardPage(page);"
-    },
-    {
-      "message": "Cannot use({ defaultBrowserType }) in a describe group, because it forces a new worker.\nMake it top-level in the test file or put in the configuration file.",
-      "location": {
-        "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
-        "line": 219,
-        "column": 10
-      },
-      "snippet": "\u001b[90m   at \u001b[39mresponsive-design.spec.ts:219\n\n  217 |\n  218 |   test.describe('Touch Interactions', () => {\n> 219 |     test.use({ ...devices['iPhone 12'], hasTouch: true });\n      |          ^\n  220 |\n  221 |     test('should support touch interactions on mobile', async ({ page }) => {\n  222 |       const dashboardPage = new DashboardPage(page);"
+      "title": "responsive-design.spec.ts",
+      "file": "responsive-design.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Feature: Responsive Design",
+          "file": "responsive-design.spec.ts",
+          "line": 16,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Mobile - Portrait",
+              "file": "responsive-design.spec.ts",
+              "line": 17,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should display mobile navigation correctly",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "timedOut",
+                          "duration": 61624,
+                          "error": {
+                            "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                          },
+                          "errors": [
+                            {
+                              "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                            },
+                            {
+                              "location": {
+                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                                "column": 21,
+                                "line": 33
+                              },
+                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:21:7\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-14T20:45:07.950Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--2f87f-mobile-navigation-correctly-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--2f87f-mobile-navigation-correctly-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--2f87f-mobile-navigation-correctly-chromium/error-context.md"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-e1a58de5032817bb7ca1",
+                  "file": "responsive-design.spec.ts",
+                  "line": 18,
+                  "column": 9
+                },
+                {
+                  "title": "should adapt dashboard layout for mobile",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 0,
+                          "status": "timedOut",
+                          "duration": 61979,
+                          "error": {
+                            "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                          },
+                          "errors": [
+                            {
+                              "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                            },
+                            {
+                              "location": {
+                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                                "column": 21,
+                                "line": 33
+                              },
+                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:33:7\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-14T20:46:10.649Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--3667c-dashboard-layout-for-mobile-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--3667c-dashboard-layout-for-mobile-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--3667c-dashboard-layout-for-mobile-chromium/error-context.md"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-e6d65672a3d180cdd5f3",
+                  "file": "responsive-design.spec.ts",
+                  "line": 30,
+                  "column": 9
+                },
+                {
+                  "title": "should make action buttons accessible on mobile",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 0,
+                          "status": "timedOut",
+                          "duration": 62023,
+                          "error": {
+                            "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                          },
+                          "errors": [
+                            {
+                              "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                            },
+                            {
+                              "location": {
+                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                                "column": 21,
+                                "line": 33
+                              },
+                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:46:7\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-14T20:47:13.494Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/error-context.md"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-15544814a432062663fc",
+                  "file": "responsive-design.spec.ts",
+                  "line": 43,
+                  "column": 9
+                },
+                {
+                  "title": "should handle table scrolling on mobile",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 3,
+                          "parallelIndex": 0,
+                          "status": "timedOut",
+                          "duration": 61817,
+                          "error": {
+                            "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                          },
+                          "errors": [
+                            {
+                              "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                            },
+                            {
+                              "location": {
+                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                                "column": 21,
+                                "line": 33
+                              },
+                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at MoneyPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at MoneyPage.navigate (/Users/private/projects/studio/e2e/page-objects/MoneyPage.ts:71:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:56:7\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-14T20:48:16.390Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/error-context.md"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-912565694dcf02bb8a8b",
+                  "file": "responsive-design.spec.ts",
+                  "line": 53,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Mobile - Landscape",
+              "file": "responsive-design.spec.ts",
+              "line": 69,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should adapt to landscape orientation",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "timedOut",
+                          "duration": 62037,
+                          "error": {
+                            "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                          },
+                          "errors": [
+                            {
+                              "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                            },
+                            {
+                              "location": {
+                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                                "column": 21,
+                                "line": 33
+                              },
+                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:73:7\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-14T20:49:19.067Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--cf34b-pt-to-landscape-orientation-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--cf34b-pt-to-landscape-orientation-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--cf34b-pt-to-landscape-orientation-chromium/error-context.md"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-7e2a8465cd13aefd451a",
+                  "file": "responsive-design.spec.ts",
+                  "line": 70,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Tablet",
+              "file": "responsive-design.spec.ts",
+              "line": 82,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should display tablet layout correctly",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 0,
+                          "status": "timedOut",
+                          "duration": 62010,
+                          "error": {
+                            "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                          },
+                          "errors": [
+                            {
+                              "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                            },
+                            {
+                              "location": {
+                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                                "column": 21,
+                                "line": 33
+                              },
+                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:86:7\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-14T20:50:22.001Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--d04cd-lay-tablet-layout-correctly-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--d04cd-lay-tablet-layout-correctly-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--d04cd-lay-tablet-layout-correctly-chromium/error-context.md"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-e5b6e2d27ee71461e8f9",
+                  "file": "responsive-design.spec.ts",
+                  "line": 83,
+                  "column": 9
+                },
+                {
+                  "title": "should show grid layouts on tablet",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 0,
+                          "status": "timedOut",
+                          "duration": 62656,
+                          "error": {
+                            "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                          },
+                          "errors": [
+                            {
+                              "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                            },
+                            {
+                              "location": {
+                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                                "column": 21,
+                                "line": 33
+                              },
+                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:99:7\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-14T20:51:24.908Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--7c4a9-show-grid-layouts-on-tablet-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--7c4a9-show-grid-layouts-on-tablet-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--7c4a9-show-grid-layouts-on-tablet-chromium/error-context.md"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-b419d36ad88514c46596",
+                  "file": "responsive-design.spec.ts",
+                  "line": 96,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Desktop",
+              "file": "responsive-design.spec.ts",
+              "line": 108,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should display full desktop layout",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 7,
+                          "parallelIndex": 0,
+                          "status": "timedOut",
+                          "duration": 62603,
+                          "error": {
+                            "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                          },
+                          "errors": [
+                            {
+                              "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                            },
+                            {
+                              "location": {
+                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                                "column": 21,
+                                "line": 33
+                              },
+                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:112:7\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-14T20:52:28.785Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--b93ab-display-full-desktop-layout-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--b93ab-display-full-desktop-layout-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--b93ab-display-full-desktop-layout-chromium/error-context.md"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-3cbbed87631e7ddb55f3",
+                  "file": "responsive-design.spec.ts",
+                  "line": 109,
+                  "column": 9
+                },
+                {
+                  "title": "should show sidebar navigation on desktop",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 8,
+                          "parallelIndex": 0,
+                          "status": "timedOut",
+                          "duration": 62067,
+                          "error": {
+                            "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                          },
+                          "errors": [
+                            {
+                              "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                            },
+                            {
+                              "location": {
+                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                                "column": 21,
+                                "line": 33
+                              },
+                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:124:7\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-14T20:53:32.444Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--71ce7-debar-navigation-on-desktop-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--71ce7-debar-navigation-on-desktop-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--71ce7-debar-navigation-on-desktop-chromium/error-context.md"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-f4f2adb2be4e208af76b",
+                  "file": "responsive-design.spec.ts",
+                  "line": 121,
+                  "column": 9
+                },
+                {
+                  "title": "should display charts at full width on desktop",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 9,
+                          "parallelIndex": 0,
+                          "status": "interrupted",
+                          "duration": 30674,
+                          "error": {
+                            "message": "Error: page.waitForLoadState: Test ended.",
+                            "stack": "Error: page.waitForLoadState: Test ended.\n    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\n    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\n    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:138:7",
+                            "location": {
+                              "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                              "column": 21,
+                              "line": 33
+                            },
+                            "snippet": "\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                                "column": 21,
+                                "line": 33
+                              },
+                              "message": "Error: page.waitForLoadState: Test ended.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:138:7\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-14T20:54:35.511Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--dab03-ts-at-full-width-on-desktop-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--dab03-ts-at-full-width-on-desktop-chromium/video.webm"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                            "column": 21,
+                            "line": 33
+                          }
+                        }
+                      ],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-d9b801ca9198f915e16d",
+                  "file": "responsive-design.spec.ts",
+                  "line": 135,
+                  "column": 9
+                },
+                {
+                  "title": "should show hover effects on desktop",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-608eb01c72a89236265a",
+                  "file": "responsive-design.spec.ts",
+                  "line": 145,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Cross-Device Consistency",
+              "file": "responsive-design.spec.ts",
+              "line": 160,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should maintain data consistency across viewports",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-df2f625f5741db3a7bfd",
+                  "file": "responsive-design.spec.ts",
+                  "line": 161,
+                  "column": 9
+                },
+                {
+                  "title": "should maintain functionality across devices",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-186c10adb6f13e69ba59",
+                  "file": "responsive-design.spec.ts",
+                  "line": 180,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Orientation Changes",
+              "file": "responsive-design.spec.ts",
+              "line": 200,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should handle orientation change gracefully",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-6eb5d2a99f8699452e56",
+                  "file": "responsive-design.spec.ts",
+                  "line": 201,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Touch Interactions",
+              "file": "responsive-design.spec.ts",
+              "line": 219,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should support touch interactions on mobile",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-e83be301e8a9dbf4cf97",
+                  "file": "responsive-design.spec.ts",
+                  "line": 220,
+                  "column": 9
+                },
+                {
+                  "title": "should support swipe gestures for scrolling",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-493508762c3dd56c77f2",
+                  "file": "responsive-design.spec.ts",
+                  "line": 233,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Text Readability",
+              "file": "responsive-design.spec.ts",
+              "line": 248,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should maintain readable text on small screens",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-010301e0714e292181f6",
+                  "file": "responsive-design.spec.ts",
+                  "line": 249,
+                  "column": 9
+                },
+                {
+                  "title": "should not cause horizontal scrolling on mobile",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-f8079234a48a98ff4603",
+                  "file": "responsive-design.spec.ts",
+                  "line": 269,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Performance on Different Devices",
+              "file": "responsive-design.spec.ts",
+              "line": 284,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should load quickly on mobile networks",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-31730306dc3fb03c9e99",
+                  "file": "responsive-design.spec.ts",
+                  "line": 285,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
+  "errors": [],
   "stats": {
-    "startTime": "2025-11-13T10:02:48.439Z",
-    "duration": 36857.704,
+    "startTime": "2025-11-14T20:45:06.914Z",
+    "duration": 599548.512,
     "expected": 0,
-    "skipped": 0,
-    "unexpected": 0,
+    "skipped": 10,
+    "unexpected": 9,
     "flaky": 0
   }
 }
