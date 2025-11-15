@@ -93,6 +93,17 @@ npm run lint
 - **Hooks**: camelCase with `use` prefix (e.g., `useAllTransactions`, `useToast`)
 - **Utilities**: camelCase (e.g., `csvUtils`, `calculateBalance`)
 
+### Responsive Design Guidelines
+- Always include meta viewport in `src/app/layout.tsx` with `width=device-width, initial-scale=1, viewport-fit=cover`.
+- Tables must be horizontally scrollable on small screens:
+  - Use the shared `Table` component from `src/components/ui/table.tsx` which wraps tables in `overflow-x-auto` with iOS momentum scrolling enabled.
+  - For wide content tables, add a `min-w-[720px]` (or appropriate) class on the `<Table>` to force overflow on mobile.
+  - Use `whitespace-nowrap` only for critical columns (date, amount, status) to reduce wrapping issues while allowing descriptions to wrap.
+- Toolbars with multiple buttons must wrap on mobile:
+  - Prefer `flex flex-wrap gap-2` and stack header sections with `flex-col` on small screens, then switch to rows with `sm:flex-row`.
+- Grid layouts should collapse to one column on mobile and expand at `md:` or `lg:` breakpoints (e.g., `grid gap-4 md:grid-cols-2`).
+- Use sticky headers sparingly and ensure sufficient z-index and backdrop blur for readability (`bg-background/80 backdrop-blur-sm`).
+
 ### File Organization
 ```
 src/

@@ -1,5 +1,51 @@
-# Firebase Studio
+# balanceUp – Club Finance Studio
 
-This is a NextJS starter in Firebase Studio.
+balanceUp ist eine Next.js‑App für Vereinsverwaltung mit Fokus auf Geldflüsse: Spieler, Strafen, Beiträge, Zahlungen und Getränke. Die App nutzt Firebase (Firestore), Tailwind CSS und shadcn/ui.
 
-To get started, take a look at src/app/page.tsx.
+## Quick Start
+
+1. Abhängigkeiten installieren
+
+   npm install
+
+2. Dev‑Server starten (Port 9002)
+
+   npm run dev
+
+3. Tests
+
+   - Alle Tests: npm test
+   - E2E (Playwright): npm run test:e2e
+   - Coverage: npm run test:coverage
+
+## Tech‑Stack
+
+- Next.js 16 (App Router), React 19, TypeScript
+- Firebase Firestore
+- Tailwind CSS, shadcn/ui
+- Playwright, Vitest
+
+## Codepfade
+
+- Seiten: src/app
+- Komponenten: src/components
+- Services (Firestore): src/services
+- Typen & Utils: src/lib
+
+## Responsives Design
+
+- Global: Meta‑Viewport ist gesetzt, Basis‑Typografie in src/app/layout.tsx und globals.css.
+- Tabellen: Einheitliche horizontale Scrollbarkeit via Komponenten‑Wrapper (overflow‑x‑auto, Touch‑Scrolling); Spalten ohne Umbruch für Datum/Betrag/Status.
+- Toolbars/Buttons: Auf kleinen Screens flex‑wrap/Stacking; Finger‑Zielgrößen >= 44px.
+- Grids: 1 Spalte mobil, ab md 2–3 Spalten (Tailwind Breakpoints).
+
+Siehe test-results/ für automatische Responsive‑Snapshots.
+
+## Hinweise
+
+- Standard‑Landing leitet auf /dashboard um.
+- Umgebungsvariablen: .env.local (siehe vorhandene Beispiel‑Keys).
+
+## Lizenz
+
+Interne Projektressource. 

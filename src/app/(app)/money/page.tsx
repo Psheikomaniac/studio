@@ -573,9 +573,9 @@ export default function MoneyPage() {
           </div>
         ) : (
           <div className="grid gap-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
               <h1 className="font-headline text-3xl font-bold">Money</h1>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button onClick={() => setAddFineOpen(true)} variant="outline" size="sm">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Add Fine
@@ -869,34 +869,36 @@ export default function MoneyPage() {
                 <CardTitle>All Transactions</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
+                <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
+                <Table className="min-w-[720px]">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Player</TableHead>
+                      <TableHead className="whitespace-nowrap">Date</TableHead>
+                      <TableHead className="whitespace-nowrap">Player</TableHead>
                       <TableHead>Description</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead className="whitespace-nowrap">Type</TableHead>
+                      <TableHead className="text-right whitespace-nowrap">Amount</TableHead>
+                      <TableHead className="whitespace-nowrap">Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {paginatedTransactions.map((transaction) => (
                       <TableRow key={transaction.id}>
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">
                           <SafeLocaleDate dateString={transaction.date} />
                         </TableCell>
-                        <TableCell className="font-medium"><Link href={`/players/${transaction.userId}`} className="hover:underline">{transaction.userName}</Link></TableCell>
+                        <TableCell className="font-medium whitespace-nowrap"><Link href={`/players/${transaction.userId}`} className="hover:underline">{transaction.userName}</Link></TableCell>
                         <TableCell>{transaction.description}</TableCell>
-                        <TableCell>{getTypeBadge(transaction.type)}</TableCell>
-                        <TableCell className={`text-right font-mono ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
+                        <TableCell className="whitespace-nowrap">{getTypeBadge(transaction.type)}</TableCell>
+                        <TableCell className={`text-right font-mono whitespace-nowrap ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
                           {formatEuro(Math.abs(transaction.amount))}
                         </TableCell>
-                        <TableCell>{getStatusBadge(transaction)}</TableCell>
+                        <TableCell className="whitespace-nowrap">{getStatusBadge(transaction)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
+                </div>
                 {filteredTransactions.length === 0 && (
                   <div className="text-center p-8 text-muted-foreground">
                     {hasActiveFilters ? 'No transactions match your filters.' : 'No transactions found.'}
