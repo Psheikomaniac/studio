@@ -8,13 +8,15 @@ export default defineConfig({
     environment: 'happy-dom',
     globals: true,
     pool: 'threads',
+    // Run integration tests in a single worker to avoid cross-worker emulator/mock issues
     poolOptions: {
       threads: {
         singleThread: true,
-        maxThreads: 1,
-        minThreads: 1,
       },
     },
+    // Avoid indefinite hangs by setting explicit timeouts
+    testTimeout: 30000,
+    hookTimeout: 30000,
     // Use integration setup to connect to Firebase Emulator
     setupFiles: ['./tests/integration/setup.ts'],
     include: ['tests/integration/**/*.test.ts'],

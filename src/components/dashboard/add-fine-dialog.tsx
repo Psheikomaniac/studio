@@ -108,8 +108,8 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     } else if (result.suggestedReason && result.suggestedPlayers) {
       form.setValue("reason", result.suggestedReason, { shouldValidate: true });
       
-      const matchedIds = result.suggestedPlayers
-        .map((sp: { id: string }) => players.find(p => p.id === sp.id)?.id)
+      const matchedIds = (result.suggestedPlayers as (Player | undefined)[])
+        .map((sp) => players.find(p => p.id === sp?.id)?.id)
         .filter((id: string | undefined): id is string => !!id);
       if (matchedIds.length > 0) {
         form.setValue("playerIds", matchedIds, { shouldValidate: true });

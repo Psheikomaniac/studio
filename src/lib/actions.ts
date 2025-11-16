@@ -33,7 +33,7 @@ export async function getFineSuggestion(description: string) {
           )
         );
       })
-      .filter((p): p is { id: string; name: string } => !!p);
+      .filter((p): p is import("@/lib/types").Player => !!p);
     
     return {
       suggestedReason: result.suggestedReason,
