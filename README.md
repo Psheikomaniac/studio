@@ -46,6 +46,14 @@ Siehe test-results/ für automatische Responsive‑Snapshots.
 - Standard‑Landing leitet auf /dashboard um.
 - Umgebungsvariablen: .env.local (siehe vorhandene Beispiel‑Keys).
 
+## Darkmode & Theme
+
+- Drei Modi: light, dark, system (Standard ist system).
+- FOUC‑frei dank Inline‑Theme‑Script im <head>.
+- Persistenz via localStorage (Key: `theme`).
+- Umschalten über den Theme‑Toggle im Sidebar‑Footer neben dem User‑Menü.
+- Systemmodus folgt automatisch der OS‑Einstellung (Änderungen werden live übernommen).
+
 ## Lizenz
 
 Interne Projektressource. 

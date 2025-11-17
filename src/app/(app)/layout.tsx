@@ -12,6 +12,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Icons } from "@/components/icons";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -29,7 +30,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <MainNav />
         </SidebarContent>
         <SidebarFooter className="p-4">
-          <UserNav />
+          <div className="flex flex-col gap-2">
+            <UserNav />
+            <ThemeToggle />
+          </div>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>{children}</SidebarInset>

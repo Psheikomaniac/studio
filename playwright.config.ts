@@ -82,9 +82,9 @@ export default defineConfig({
     // },
   ],
 
-  /* Run your local dev server before starting the tests */
+  /* Run a production server before starting the tests for stability in CI */
   webServer: {
-    command: 'npm run dev',
+    command: 'npm run build && npm run start:prod',
     url: 'http://localhost:9002',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
