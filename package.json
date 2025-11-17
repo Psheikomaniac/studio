@@ -33,7 +33,13 @@
     "test:e2e:report": "playwright show-report",
     "test:e2e:install": "playwright install --with-deps",
     "check:db": "npx -y tsx scripts/check-firestore-data.ts",
-    "wipe:db": "npx -y tsx scripts/delete-firestore-data.ts"
+    "wipe:db": "npx -y tsx scripts/delete-firestore-data.ts",
+    "build:webpack": "NODE_ENV=production next build --webpack",
+    "analyze": "ANALYZE=true npm run build:webpack",
+    "lhci:collect": "lhci collect",
+    "lhci:assert": "lhci assert",
+    "lhci:autorun": "lhci autorun",
+    "perf:baseline": "npm run analyze && npm run lhci:autorun"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
@@ -79,7 +85,8 @@
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "web-vitals": "^4.2.4"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
@@ -101,6 +108,8 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
-    "vitest": "^4.0.4"
+    "vitest": "^4.0.4",
+    "@next/bundle-analyzer": "^14.2.15",
+    "@lhci/cli": "^0.13.0"
   }
 }

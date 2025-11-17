@@ -1,5 +1,20 @@
 import type { NextConfig } from 'next';
 
+// Lazily enable bundle analyzer only when requested and available.
+let withBundleAnalyzer: (config: NextConfig) => NextConfig = (config) => config;
+if (process.env.ANALYZE === 'true') {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const analyzerFactory = require('@next/bundle-analyzer');
+    const analyzer = analyzerFactory({ enabled: true });
+    withBundleAnalyzer = analyzer;
+  } catch (err) {
+    // Do not crash builds if the dependency is missing; just warn.
+    // eslint-disable-next-line no-console
+    console.warn('[PRD-10] @next/bundle-analyzer not installed. Run: npm i -D @next/bundle-analyzer');
+  }
+}
+
 const nextConfig = {
   /* config options here */
   typescript: {
@@ -41,4 +56,4 @@ const nextConfig = {
   },
 } satisfies NextConfig;
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);
