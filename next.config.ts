@@ -1,14 +1,10 @@
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   /* config options here */
   typescript: {
     // Enforce TypeScript errors to fail the build as required by PRD-08
     ignoreBuildErrors: false,
-  },
-  eslint: {
-    // Ensure ESLint errors fail the build in CI as per PRD-08
-    ignoreDuringBuilds: false,
   },
   images: {
     remotePatterns: [
@@ -43,6 +39,6 @@ const nextConfig: NextConfig = {
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
-};
+} satisfies NextConfig;
 
 export default nextConfig;

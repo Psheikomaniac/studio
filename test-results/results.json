@@ -176,7 +176,7 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "timedOut",
-                          "duration": 62827,
+                          "duration": 64432,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -197,7 +197,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:21:44.489Z",
+                          "startTime": "2025-11-17T21:22:58.399Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -239,10 +239,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 12,
+                          "workerIndex": 15,
                           "parallelIndex": 0,
                           "status": "timedOut",
-                          "duration": 63238,
+                          "duration": 62348,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -263,7 +263,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:22:49.157Z",
+                          "startTime": "2025-11-17T21:24:04.800Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -308,7 +308,7 @@
                           "workerIndex": 21,
                           "parallelIndex": 0,
                           "status": "timedOut",
-                          "duration": 63245,
+                          "duration": 63701,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -329,7 +329,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:23:53.532Z",
+                          "startTime": "2025-11-17T21:25:08.343Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -374,7 +374,7 @@
                           "workerIndex": 6,
                           "parallelIndex": 6,
                           "status": "failed",
-                          "duration": 13518,
+                          "duration": 16186,
                           "error": {
                             "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -   1\u001b[39m\n\u001b[31m+ Received  + 342\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds\",\u001b[39m\n\u001b[31m+     \"help\": \"Elements must meet minimum color contrast ratio thresholds\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"color-contrast\",\u001b[39m\n\u001b[31m+     \"impact\": \"serious\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"bgColor\": \"#ffffff\",\u001b[39m\n\u001b[31m+               \"contrastRatio\": 2.54,\u001b[39m\n\u001b[31m+               \"expectedContrastRatio\": \"4.5:1\",\u001b[39m\n\u001b[31m+               \"fgColor\": \"#25aee4\",\u001b[39m\n\u001b[31m+               \"fontSize\": \"15.0pt (20px)\",\u001b[39m\n\u001b[31m+               \"fontWeight\": \"normal\",\u001b[39m\n\u001b[31m+               \"messageKey\": null,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"color-contrast\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element has insufficient color contrast of 2.54 (foreground color: #25aee4, background color: #ffffff, font size: 15.0pt (20px), font weight: normal). Expected contrast ratio of 4.5:1\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [\u001b[39m\n\u001b[31m+               Object {\u001b[39m\n\u001b[31m+                 \"html\": \"<div data-sidebar=\\\"sidebar\\\" class=\\\"flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow\\\">\",\u001b[39m\n\u001b[31m+                 \"target\": Array [\u001b[39m\n\u001b[31m+                   \".bg-sidebar\",\u001b[39m\n\u001b[31m+                 ],\u001b[39m\n\u001b[31m+               },\u001b[39m\n\u001b[31m+             ],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Element has insufficient color contrast of 2.54 (foreground color: #25aee4, background color: #ffffff, font size: 15.0pt (20px), font weight: normal). Expected contrast ratio of 4.5:1\",\u001b[39m\n\u001b[31m+         \"html\": \"<h1 class=\\\"text-xl font-headline font-semibold text-primary\\\">balanceUp</h1>\",\u001b[39m\n\u001b[31m+         \"impact\": \"serious\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".items-center.gap-2.flex > h1\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.color\",\u001b[39m\n\u001b[31m+       \"wcag2aa\",\u001b[39m\n\u001b[31m+       \"wcag143\",\u001b[39m\n\u001b[31m+       \"TTv5\",\u001b[39m\n\u001b[31m+       \"TT13.c\",\u001b[39m\n\u001b[31m+       \"EN-301-549\",\u001b[39m\n\u001b[31m+       \"EN-9.1.4.3\",\u001b[39m\n\u001b[31m+       \"ACT\",\u001b[39m\n\u001b[31m+       \"RGAAv4\",\u001b[39m\n\u001b[31m+       \"RGAA-3.2.1\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure each HTML document contains a non-empty <title> element\",\u001b[39m\n\u001b[31m+     \"help\": \"Documents must have <title> element to aid in navigation\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/document-title?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"document-title\",\u001b[39m\n\u001b[31m+     \"impact\": \"serious\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"doc-has-title\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Document does not have a non-empty <title> element\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Document does not have a non-empty <title> element\",\u001b[39m\n\u001b[31m+         \"html\": \"<html lang=\\\"en\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"serious\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \"html\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.text-alternatives\",\u001b[39m\n\u001b[31m+       \"wcag2a\",\u001b[39m\n\u001b[31m+       \"wcag242\",\u001b[39m\n\u001b[31m+       \"TTv5\",\u001b[39m\n\u001b[31m+       \"TT12.a\",\u001b[39m\n\u001b[31m+       \"EN-301-549\",\u001b[39m\n\u001b[31m+       \"EN-9.2.4.2\",\u001b[39m\n\u001b[31m+       \"ACT\",\u001b[39m\n\u001b[31m+       \"RGAAv4\",\u001b[39m\n\u001b[31m+       \"RGAA-8.5.1\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure the main landmark is at top level\",\u001b[39m\n\u001b[31m+     \"help\": \"Main landmark should not be contained in another landmark\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/landmark-main-is-top-level?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"landmark-main-is-top-level\",\u001b[39m\n\u001b[31m+     \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"role\": \"main\",\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"landmark-is-top-level\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"The main landmark is contained in another landmark.\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   The main landmark is contained in another landmark.\",\u001b[39m\n\u001b[31m+         \"html\": \"<main class=\\\"flex flex-1 flex-col\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".peer-data-\\\\[variant\\\\=inset\\\\]\\\\:min-h-\\\\[calc\\\\(100svh-theme\\\\(spacing\\\\.4\\\\)\\\\)\\\\] > main\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.semantics\",\u001b[39m\n\u001b[31m+       \"best-practice\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure the document has at most one main landmark\",\u001b[39m\n\u001b[31m+     \"help\": \"Document should not have more than one main landmark\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/landmark-no-duplicate-main?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"landmark-no-duplicate-main\",\u001b[39m\n\u001b[31m+     \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"page-no-duplicate-main\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Document has more than one main landmark\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [\u001b[39m\n\u001b[31m+               Object {\u001b[39m\n\u001b[31m+                 \"html\": \"<main class=\\\"flex flex-1 flex-col\\\">\",\u001b[39m\n\u001b[31m+                 \"target\": Array [\u001b[39m\n\u001b[31m+                   \".peer-data-\\\\[variant\\\\=inset\\\\]\\\\:min-h-\\\\[calc\\\\(100svh-theme\\\\(spacing\\\\.4\\\\)\\\\)\\\\] > main\",\u001b[39m\n\u001b[31m+                 ],\u001b[39m\n\u001b[31m+               },\u001b[39m\n\u001b[31m+             ],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Document has more than one main landmark\",\u001b[39m\n\u001b[31m+         \"html\": \"<main class=\\\"relative flex min-h-...\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".peer-data-\\\\[variant\\\\=inset\\\\]\\\\:min-h-\\\\[calc\\\\(100svh-theme\\\\(spacing\\\\.4\\\\)\\\\)\\\\]\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.semantics\",\u001b[39m\n\u001b[31m+       \"best-practice\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure landmarks are unique\",\u001b[39m\n\u001b[31m+     \"help\": \"Landmarks should have a unique role or role/label/title (i.e. accessible name) combination\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/landmark-unique?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"landmark-unique\",\u001b[39m\n\u001b[31m+     \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"accessibleText\": null,\u001b[39m\n\u001b[31m+               \"role\": \"main\",\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"landmark-is-unique\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [\u001b[39m\n\u001b[31m+               Object {\u001b[39m\n\u001b[31m+                 \"html\": \"<main class=\\\"flex flex-1 flex-col\\\">\",\u001b[39m\n\u001b[31m+                 \"target\": Array [\u001b[39m\n\u001b[31m+                   \".peer-data-\\\\[variant\\\\=inset\\\\]\\\\:min-h-\\\\[calc\\\\(100svh-theme\\\\(spacing\\\\.4\\\\)\\\\)\\\\] > main\",\u001b[39m\n\u001b[31m+                 ],\u001b[39m\n\u001b[31m+               },\u001b[39m\n\u001b[31m+             ],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable\",\u001b[39m\n\u001b[31m+         \"html\": \"<main class=\\\"relative flex min-h-...\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".peer-data-\\\\[variant\\\\=inset\\\\]\\\\:min-h-\\\\[calc\\\\(100svh-theme\\\\(spacing\\\\.4\\\\)\\\\)\\\\]\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.semantics\",\u001b[39m\n\u001b[31m+       \"best-practice\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure all page content is contained by landmarks\",\u001b[39m\n\u001b[31m+     \"help\": \"All page content should be contained by landmarks\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/region?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"region\",\u001b[39m\n\u001b[31m+     \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"isIframe\": false,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"region\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+         \"html\": \"<h1 class=\\\"text-xl font-headline font-semibold text-primary\\\">balanceUp</h1>\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".items-center.gap-2.flex > h1\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"isIframe\": false,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"region\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+         \"html\": \"<span>Dashboard</span>\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \"a[data-active=\\\"true\\\"] > span\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"isIframe\": false,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"region\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+         \"html\": \"<span>Players</span>\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \"a[href$=\\\"players\\\"] > span\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"isIframe\": false,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"region\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+         \"html\": \"<span>Money</span>\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \"a[href$=\\\"money\\\"] > span\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"isIframe\": false,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"region\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+         \"html\": \"<span>Settings</span>\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \"a[href$=\\\"settings\\\"] > span\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.keyboard\",\u001b[39m\n\u001b[31m+       \"best-practice\",\u001b[39m\n\u001b[31m+       \"RGAAv4\",\u001b[39m\n\u001b[31m+       \"RGAA-9.2.1\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m",
                             "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -   1\u001b[39m\n\u001b[31m+ Received  + 342\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds\",\u001b[39m\n\u001b[31m+     \"help\": \"Elements must meet minimum color contrast ratio thresholds\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"color-contrast\",\u001b[39m\n\u001b[31m+     \"impact\": \"serious\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"bgColor\": \"#ffffff\",\u001b[39m\n\u001b[31m+               \"contrastRatio\": 2.54,\u001b[39m\n\u001b[31m+               \"expectedContrastRatio\": \"4.5:1\",\u001b[39m\n\u001b[31m+               \"fgColor\": \"#25aee4\",\u001b[39m\n\u001b[31m+               \"fontSize\": \"15.0pt (20px)\",\u001b[39m\n\u001b[31m+               \"fontWeight\": \"normal\",\u001b[39m\n\u001b[31m+               \"messageKey\": null,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"color-contrast\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element has insufficient color contrast of 2.54 (foreground color: #25aee4, background color: #ffffff, font size: 15.0pt (20px), font weight: normal). Expected contrast ratio of 4.5:1\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [\u001b[39m\n\u001b[31m+               Object {\u001b[39m\n\u001b[31m+                 \"html\": \"<div data-sidebar=\\\"sidebar\\\" class=\\\"flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow\\\">\",\u001b[39m\n\u001b[31m+                 \"target\": Array [\u001b[39m\n\u001b[31m+                   \".bg-sidebar\",\u001b[39m\n\u001b[31m+                 ],\u001b[39m\n\u001b[31m+               },\u001b[39m\n\u001b[31m+             ],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Element has insufficient color contrast of 2.54 (foreground color: #25aee4, background color: #ffffff, font size: 15.0pt (20px), font weight: normal). Expected contrast ratio of 4.5:1\",\u001b[39m\n\u001b[31m+         \"html\": \"<h1 class=\\\"text-xl font-headline font-semibold text-primary\\\">balanceUp</h1>\",\u001b[39m\n\u001b[31m+         \"impact\": \"serious\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".items-center.gap-2.flex > h1\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.color\",\u001b[39m\n\u001b[31m+       \"wcag2aa\",\u001b[39m\n\u001b[31m+       \"wcag143\",\u001b[39m\n\u001b[31m+       \"TTv5\",\u001b[39m\n\u001b[31m+       \"TT13.c\",\u001b[39m\n\u001b[31m+       \"EN-301-549\",\u001b[39m\n\u001b[31m+       \"EN-9.1.4.3\",\u001b[39m\n\u001b[31m+       \"ACT\",\u001b[39m\n\u001b[31m+       \"RGAAv4\",\u001b[39m\n\u001b[31m+       \"RGAA-3.2.1\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure each HTML document contains a non-empty <title> element\",\u001b[39m\n\u001b[31m+     \"help\": \"Documents must have <title> element to aid in navigation\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/document-title?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"document-title\",\u001b[39m\n\u001b[31m+     \"impact\": \"serious\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"doc-has-title\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Document does not have a non-empty <title> element\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Document does not have a non-empty <title> element\",\u001b[39m\n\u001b[31m+         \"html\": \"<html lang=\\\"en\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"serious\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \"html\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.text-alternatives\",\u001b[39m\n\u001b[31m+       \"wcag2a\",\u001b[39m\n\u001b[31m+       \"wcag242\",\u001b[39m\n\u001b[31m+       \"TTv5\",\u001b[39m\n\u001b[31m+       \"TT12.a\",\u001b[39m\n\u001b[31m+       \"EN-301-549\",\u001b[39m\n\u001b[31m+       \"EN-9.2.4.2\",\u001b[39m\n\u001b[31m+       \"ACT\",\u001b[39m\n\u001b[31m+       \"RGAAv4\",\u001b[39m\n\u001b[31m+       \"RGAA-8.5.1\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure the main landmark is at top level\",\u001b[39m\n\u001b[31m+     \"help\": \"Main landmark should not be contained in another landmark\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/landmark-main-is-top-level?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"landmark-main-is-top-level\",\u001b[39m\n\u001b[31m+     \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"role\": \"main\",\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"landmark-is-top-level\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"The main landmark is contained in another landmark.\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   The main landmark is contained in another landmark.\",\u001b[39m\n\u001b[31m+         \"html\": \"<main class=\\\"flex flex-1 flex-col\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".peer-data-\\\\[variant\\\\=inset\\\\]\\\\:min-h-\\\\[calc\\\\(100svh-theme\\\\(spacing\\\\.4\\\\)\\\\)\\\\] > main\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.semantics\",\u001b[39m\n\u001b[31m+       \"best-practice\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure the document has at most one main landmark\",\u001b[39m\n\u001b[31m+     \"help\": \"Document should not have more than one main landmark\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/landmark-no-duplicate-main?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"landmark-no-duplicate-main\",\u001b[39m\n\u001b[31m+     \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"page-no-duplicate-main\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Document has more than one main landmark\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [\u001b[39m\n\u001b[31m+               Object {\u001b[39m\n\u001b[31m+                 \"html\": \"<main class=\\\"flex flex-1 flex-col\\\">\",\u001b[39m\n\u001b[31m+                 \"target\": Array [\u001b[39m\n\u001b[31m+                   \".peer-data-\\\\[variant\\\\=inset\\\\]\\\\:min-h-\\\\[calc\\\\(100svh-theme\\\\(spacing\\\\.4\\\\)\\\\)\\\\] > main\",\u001b[39m\n\u001b[31m+                 ],\u001b[39m\n\u001b[31m+               },\u001b[39m\n\u001b[31m+             ],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Document has more than one main landmark\",\u001b[39m\n\u001b[31m+         \"html\": \"<main class=\\\"relative flex min-h-...\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".peer-data-\\\\[variant\\\\=inset\\\\]\\\\:min-h-\\\\[calc\\\\(100svh-theme\\\\(spacing\\\\.4\\\\)\\\\)\\\\]\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.semantics\",\u001b[39m\n\u001b[31m+       \"best-practice\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure landmarks are unique\",\u001b[39m\n\u001b[31m+     \"help\": \"Landmarks should have a unique role or role/label/title (i.e. accessible name) combination\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/landmark-unique?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"landmark-unique\",\u001b[39m\n\u001b[31m+     \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"accessibleText\": null,\u001b[39m\n\u001b[31m+               \"role\": \"main\",\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"landmark-is-unique\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [\u001b[39m\n\u001b[31m+               Object {\u001b[39m\n\u001b[31m+                 \"html\": \"<main class=\\\"flex flex-1 flex-col\\\">\",\u001b[39m\n\u001b[31m+                 \"target\": Array [\u001b[39m\n\u001b[31m+                   \".peer-data-\\\\[variant\\\\=inset\\\\]\\\\:min-h-\\\\[calc\\\\(100svh-theme\\\\(spacing\\\\.4\\\\)\\\\)\\\\] > main\",\u001b[39m\n\u001b[31m+                 ],\u001b[39m\n\u001b[31m+               },\u001b[39m\n\u001b[31m+             ],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable\",\u001b[39m\n\u001b[31m+         \"html\": \"<main class=\\\"relative flex min-h-...\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".peer-data-\\\\[variant\\\\=inset\\\\]\\\\:min-h-\\\\[calc\\\\(100svh-theme\\\\(spacing\\\\.4\\\\)\\\\)\\\\]\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.semantics\",\u001b[39m\n\u001b[31m+       \"best-practice\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure all page content is contained by landmarks\",\u001b[39m\n\u001b[31m+     \"help\": \"All page content should be contained by landmarks\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.11/region?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"region\",\u001b[39m\n\u001b[31m+     \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"isIframe\": false,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"region\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+         \"html\": \"<h1 class=\\\"text-xl font-headline font-semibold text-primary\\\">balanceUp</h1>\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".items-center.gap-2.flex > h1\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"isIframe\": false,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"region\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+         \"html\": \"<span>Dashboard</span>\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \"a[data-active=\\\"true\\\"] > span\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"isIframe\": false,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"region\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+         \"html\": \"<span>Players</span>\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \"a[href$=\\\"players\\\"] > span\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"isIframe\": false,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"region\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+         \"html\": \"<span>Money</span>\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \"a[href$=\\\"money\\\"] > span\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": Object {\u001b[39m\n\u001b[31m+               \"isIframe\": false,\u001b[39m\n\u001b[31m+             },\u001b[39m\n\u001b[31m+             \"id\": \"region\",\u001b[39m\n\u001b[31m+             \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+             \"message\": \"Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Some page content is not contained by landmarks\",\u001b[39m\n\u001b[31m+         \"html\": \"<span>Settings</span>\",\u001b[39m\n\u001b[31m+         \"impact\": \"moderate\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \"a[href$=\\\"settings\\\"] > span\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.keyboard\",\u001b[39m\n\u001b[31m+       \"best-practice\",\u001b[39m\n\u001b[31m+       \"RGAAv4\",\u001b[39m\n\u001b[31m+       \"RGAA-9.2.1\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at /Users/private/projects/studio/e2e/accessibility.spec.ts:25:51",
@@ -398,7 +398,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:21:44.515Z",
+                          "startTime": "2025-11-17T21:22:58.400Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -450,10 +450,10 @@
                       "projectName": "firefox",
                       "results": [
                         {
-                          "workerIndex": 9,
+                          "workerIndex": 8,
                           "parallelIndex": 6,
                           "status": "timedOut",
-                          "duration": 60945,
+                          "duration": 60925,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -474,7 +474,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:22:04.929Z",
+                          "startTime": "2025-11-17T21:23:18.474Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -516,10 +516,10 @@
                       "projectName": "firefox",
                       "results": [
                         {
-                          "workerIndex": 17,
+                          "workerIndex": 16,
                           "parallelIndex": 6,
                           "status": "timedOut",
-                          "duration": 60395,
+                          "duration": 60366,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -540,7 +540,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:23:08.374Z",
+                          "startTime": "2025-11-17T21:24:21.782Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -773,7 +773,7 @@
                           "workerIndex": 29,
                           "parallelIndex": 0,
                           "status": "timedOut",
-                          "duration": 63609,
+                          "duration": 63705,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -794,7 +794,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:24:57.812Z",
+                          "startTime": "2025-11-17T21:26:13.102Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -839,7 +839,7 @@
                           "workerIndex": 34,
                           "parallelIndex": 0,
                           "status": "timedOut",
-                          "duration": 62963,
+                          "duration": 63580,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -860,7 +860,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:26:02.646Z",
+                          "startTime": "2025-11-17T21:27:17.959Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -905,7 +905,7 @@
                           "workerIndex": 43,
                           "parallelIndex": 0,
                           "status": "timedOut",
-                          "duration": 63103,
+                          "duration": 63348,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -926,7 +926,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:27:06.726Z",
+                          "startTime": "2025-11-17T21:28:22.716Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -971,7 +971,7 @@
                           "workerIndex": 51,
                           "parallelIndex": 0,
                           "status": "timedOut",
-                          "duration": 63079,
+                          "duration": 63649,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -992,7 +992,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:28:11.219Z",
+                          "startTime": "2025-11-17T21:29:27.308Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -1034,10 +1034,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 58,
+                          "workerIndex": 59,
                           "parallelIndex": 0,
                           "status": "timedOut",
-                          "duration": 63079,
+                          "duration": 63533,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -1058,7 +1058,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:29:15.603Z",
+                          "startTime": "2025-11-17T21:30:32.214Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -1100,10 +1100,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 66,
+                          "workerIndex": 68,
                           "parallelIndex": 0,
                           "status": "timedOut",
-                          "duration": 63077,
+                          "duration": 63555,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -1124,7 +1124,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:30:19.721Z",
+                          "startTime": "2025-11-17T21:31:36.866Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -1166,10 +1166,10 @@
                       "projectName": "firefox",
                       "results": [
                         {
-                          "workerIndex": 25,
+                          "workerIndex": 24,
                           "parallelIndex": 6,
                           "status": "timedOut",
-                          "duration": 60328,
+                          "duration": 60514,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -1190,7 +1190,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:24:11.038Z",
+                          "startTime": "2025-11-17T21:25:24.247Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -1232,10 +1232,10 @@
                       "projectName": "firefox",
                       "results": [
                         {
-                          "workerIndex": 33,
+                          "workerIndex": 32,
                           "parallelIndex": 6,
                           "status": "timedOut",
-                          "duration": 60378,
+                          "duration": 60511,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -1256,7 +1256,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:25:13.743Z",
+                          "startTime": "2025-11-17T21:26:27.083Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -1298,10 +1298,10 @@
                       "projectName": "firefox",
                       "results": [
                         {
-                          "workerIndex": 41,
+                          "workerIndex": 40,
                           "parallelIndex": 6,
                           "status": "timedOut",
-                          "duration": 60461,
+                          "duration": 60475,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -1322,7 +1322,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:26:16.869Z",
+                          "startTime": "2025-11-17T21:27:30.231Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -1364,10 +1364,10 @@
                       "projectName": "firefox",
                       "results": [
                         {
-                          "workerIndex": 49,
+                          "workerIndex": 48,
                           "parallelIndex": 6,
                           "status": "timedOut",
-                          "duration": 60312,
+                          "duration": 60470,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -1388,7 +1388,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:27:20.558Z",
+                          "startTime": "2025-11-17T21:28:33.094Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -1430,10 +1430,10 @@
                       "projectName": "firefox",
                       "results": [
                         {
-                          "workerIndex": 57,
+                          "workerIndex": 55,
                           "parallelIndex": 6,
                           "status": "timedOut",
-                          "duration": 61273,
+                          "duration": 61783,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -1454,7 +1454,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:28:23.949Z",
+                          "startTime": "2025-11-17T21:29:35.956Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -1496,10 +1496,10 @@
                       "projectName": "firefox",
                       "results": [
                         {
-                          "workerIndex": 65,
+                          "workerIndex": 62,
                           "parallelIndex": 6,
                           "status": "timedOut",
-                          "duration": 61118,
+                          "duration": 61848,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -1520,7 +1520,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:29:27.949Z",
+                          "startTime": "2025-11-17T21:30:40.225Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -1930,10 +1930,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 74,
+                          "workerIndex": 76,
                           "parallelIndex": 0,
                           "status": "interrupted",
-                          "duration": 17006,
+                          "duration": 14473,
                           "error": {
                             "message": "Error: page.waitForLoadState: Test ended.",
                             "stack": "Error: page.waitForLoadState: Test ended.\n    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\n    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\n    at /Users/private/projects/studio/e2e/accessibility.spec.ts:145:7",
@@ -1957,7 +1957,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:31:23.996Z",
+                          "startTime": "2025-11-17T21:32:41.648Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -2079,10 +2079,10 @@
                       "projectName": "firefox",
                       "results": [
                         {
-                          "workerIndex": 73,
+                          "workerIndex": 70,
                           "parallelIndex": 6,
                           "status": "timedOut",
-                          "duration": 60638,
+                          "duration": 60536,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -2103,7 +2103,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:30:31.797Z",
+                          "startTime": "2025-11-17T21:31:44.972Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -2145,10 +2145,10 @@
                       "projectName": "firefox",
                       "results": [
                         {
-                          "workerIndex": 81,
+                          "workerIndex": 78,
                           "parallelIndex": 6,
                           "status": "interrupted",
-                          "duration": 3056,
+                          "duration": 7978,
                           "error": {
                             "message": "Error: page.waitForLoadState: Test ended.",
                             "stack": "Error: page.waitForLoadState: Test ended.\n    at PlayersPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\n    at PlayersPage.navigate (/Users/private/projects/studio/e2e/page-objects/PlayersPage.ts:49:16)\n    at /Users/private/projects/studio/e2e/accessibility.spec.ts:163:7",
@@ -2172,7 +2172,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:31:35.546Z",
+                          "startTime": "2025-11-17T21:32:48.265Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -3514,40 +3514,6 @@
           "specs": [
             {
               "title": "should display dashboard with all key components",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 11696,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-11-17T16:21:44.417Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "fae4ff2cad1ff7e83439-4383c7365acb2663da9b",
-              "file": "dashboard-analytics.spec.ts",
-              "line": 27,
-              "column": 7
-            },
-            {
-              "title": "should display stat cards correctly",
               "ok": false,
               "tags": [],
               "tests": [
@@ -3562,7 +3528,7 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "timedOut",
-                      "duration": 61934,
+                      "duration": 64280,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -3594,7 +3560,89 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:21:57.217Z",
+                      "startTime": "2025-11-17T21:22:58.305Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
+                        "column": 8,
+                        "line": 20
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "fae4ff2cad1ff7e83439-4383c7365acb2663da9b",
+              "file": "dashboard-analytics.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "should display stat cards correctly",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 1,
+                      "status": "timedOut",
+                      "duration": 62406,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
+                        "location": {
+                          "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
+                          "column": 8,
+                          "line": 20
+                        },
+                        "snippet": "  18 |   let playersPage: PlayersPage;\n  19 |\n> 20 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  21 |     dashboardPage = new DashboardPage(page);\n  22 |     playersPage = new PlayersPage(page);\n  23 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
+                            "column": 8,
+                            "line": 20
+                          },
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n  18 |   let playersPage: PlayersPage;\n  19 |\n> 20 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  21 |     dashboardPage = new DashboardPage(page);\n  22 |     playersPage = new PlayersPage(page);\n  23 |\n\u001b[2m    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8\u001b[22m"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                            "column": 21,
+                            "line": 33
+                          },
+                          "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:24:5\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-17T21:24:04.549Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3641,10 +3689,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 17,
                       "parallelIndex": 1,
                       "status": "timedOut",
-                      "duration": 62056,
+                      "duration": 63643,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -3676,7 +3724,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:22:59.850Z",
+                      "startTime": "2025-11-17T21:25:08.224Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3723,10 +3771,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 22,
+                      "workerIndex": 28,
                       "parallelIndex": 1,
                       "status": "timedOut",
-                      "duration": 62075,
+                      "duration": 63783,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -3758,7 +3806,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:24:02.733Z",
+                      "startTime": "2025-11-17T21:26:12.999Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3805,10 +3853,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 30,
+                      "workerIndex": 35,
                       "parallelIndex": 1,
                       "status": "timedOut",
-                      "duration": 64787,
+                      "duration": 63617,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -3840,7 +3888,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:25:05.697Z",
+                      "startTime": "2025-11-17T21:27:17.950Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3887,10 +3935,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 38,
+                      "workerIndex": 44,
                       "parallelIndex": 1,
                       "status": "timedOut",
-                      "duration": 62624,
+                      "duration": 63494,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -3922,7 +3970,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:26:12.107Z",
+                      "startTime": "2025-11-17T21:28:22.680Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3969,10 +4017,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 46,
+                      "workerIndex": 53,
                       "parallelIndex": 1,
                       "status": "timedOut",
-                      "duration": 62800,
+                      "duration": 63520,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -4004,7 +4052,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:27:15.860Z",
+                      "startTime": "2025-11-17T21:29:27.372Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4051,10 +4099,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 54,
+                      "workerIndex": 61,
                       "parallelIndex": 1,
                       "status": "timedOut",
-                      "duration": 62470,
+                      "duration": 63487,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -4086,7 +4134,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:28:19.647Z",
+                      "startTime": "2025-11-17T21:30:32.150Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4133,10 +4181,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 63,
+                      "workerIndex": 67,
                       "parallelIndex": 1,
                       "status": "timedOut",
-                      "duration": 63537,
+                      "duration": 63643,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -4168,7 +4216,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:29:23.127Z",
+                      "startTime": "2025-11-17T21:31:36.756Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4204,162 +4252,6 @@
             },
             {
               "title": "should update dashboard in real-time after adding transaction",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 71,
-                      "parallelIndex": 1,
-                      "status": "timedOut",
-                      "duration": 63063,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
-                        "location": {
-                          "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
-                          "column": 8,
-                          "line": 20
-                        },
-                        "snippet": "  18 |   let playersPage: PlayersPage;\n  19 |\n> 20 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  21 |     dashboardPage = new DashboardPage(page);\n  22 |     playersPage = new PlayersPage(page);\n  23 |"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
-                            "column": 8,
-                            "line": 20
-                          },
-                          "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n  18 |   let playersPage: PlayersPage;\n  19 |\n> 20 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  21 |     dashboardPage = new DashboardPage(page);\n  22 |     playersPage = new PlayersPage(page);\n  23 |\n\u001b[2m    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8\u001b[22m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
-                            "column": 21,
-                            "line": 33
-                          },
-                          "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:24:5\u001b[22m"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-11-17T16:30:27.604Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-6f143-me-after-adding-transaction-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-6f143-me-after-adding-transaction-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-6f143-me-after-adding-transaction-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
-                        "column": 8,
-                        "line": 20
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "fae4ff2cad1ff7e83439-f9002024399e55f0d1ca",
-              "file": "dashboard-analytics.spec.ts",
-              "line": 139,
-              "column": 7
-            },
-            {
-              "title": "should handle empty state gracefully",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 79,
-                      "parallelIndex": 1,
-                      "status": "failed",
-                      "duration": 1673,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:190:78",
-                        "location": {
-                          "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
-                          "column": 78,
-                          "line": 190
-                        },
-                        "snippet": "  188 |\n  189 |     // Either has data or shows empty state\n> 190 |     expect(hasEmptyState || await dashboardPage.getRecentTransactions() > 0).toBe(true);\n      |                                                                              ^\n  191 |   });\n  192 |\n  193 |   test('should display transaction types correctly', async ({ page }) => {"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
-                            "column": 78,
-                            "line": 190
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  188 |\n  189 |     // Either has data or shows empty state\n> 190 |     expect(hasEmptyState || await dashboardPage.getRecentTransactions() > 0).toBe(true);\n      |                                                                              ^\n  191 |   });\n  192 |\n  193 |   test('should display transaction types correctly', async ({ page }) => {\n\u001b[2m    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:190:78\u001b[22m"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-11-17T16:31:31.870Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-c2339-ndle-empty-state-gracefully-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-c2339-ndle-empty-state-gracefully-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-c2339-ndle-empty-state-gracefully-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
-                        "column": 78,
-                        "line": 190
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "fae4ff2cad1ff7e83439-9f1151f5269298a13423",
-              "file": "dashboard-analytics.spec.ts",
-              "line": 168,
-              "column": 7
-            },
-            {
-              "title": "should display transaction types correctly",
               "ok": true,
               "tags": [],
               "tests": [
@@ -4371,10 +4263,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 80,
+                      "workerIndex": 75,
                       "parallelIndex": 1,
                       "status": "interrupted",
-                      "duration": 5096,
+                      "duration": 14595,
                       "error": {
                         "message": "Error: page.waitForLoadState: Test ended.",
                         "stack": "Error: page.waitForLoadState: Test ended.\n    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\n    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:24:5",
@@ -4398,18 +4290,18 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:31:34.985Z",
+                      "startTime": "2025-11-17T21:32:41.490Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-6ec83-transaction-types-correctly-chromium/test-failed-1.png"
+                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-6f143-me-after-adding-transaction-chromium/test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-6ec83-transaction-types-correctly-chromium/video.webm"
+                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-6f143-me-after-adding-transaction-chromium/video.webm"
                         }
                       ],
                       "errorLocation": {
@@ -4419,6 +4311,46 @@
                       }
                     }
                   ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fae4ff2cad1ff7e83439-f9002024399e55f0d1ca",
+              "file": "dashboard-analytics.spec.ts",
+              "line": 139,
+              "column": 7
+            },
+            {
+              "title": "should handle empty state gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fae4ff2cad1ff7e83439-9f1151f5269298a13423",
+              "file": "dashboard-analytics.spec.ts",
+              "line": 168,
+              "column": 7
+            },
+            {
+              "title": "should display transaction types correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
                   "status": "skipped"
                 }
               ],
@@ -4449,40 +4381,6 @@
             },
             {
               "title": "should display dashboard with all key components",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
-                  "results": [
-                    {
-                      "workerIndex": 7,
-                      "parallelIndex": 7,
-                      "status": "passed",
-                      "duration": 13220,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-11-17T16:21:44.412Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "fae4ff2cad1ff7e83439-ff661bfaa2a111cca3d1",
-              "file": "dashboard-analytics.spec.ts",
-              "line": 27,
-              "column": 7
-            },
-            {
-              "title": "should display stat cards correctly",
               "ok": false,
               "tags": [],
               "tests": [
@@ -4497,7 +4395,7 @@
                       "workerIndex": 7,
                       "parallelIndex": 7,
                       "status": "timedOut",
-                      "duration": 60216,
+                      "duration": 60563,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -4529,7 +4427,89 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:22:03.536Z",
+                      "startTime": "2025-11-17T21:22:58.317Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-firefox/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-firefox/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-firefox/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
+                        "column": 8,
+                        "line": 20
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "fae4ff2cad1ff7e83439-ff661bfaa2a111cca3d1",
+              "file": "dashboard-analytics.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "should display stat cards correctly",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 7,
+                      "status": "timedOut",
+                      "duration": 60317,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
+                        "location": {
+                          "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
+                          "column": 8,
+                          "line": 20
+                        },
+                        "snippet": "  18 |   let playersPage: PlayersPage;\n  19 |\n> 20 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  21 |     dashboardPage = new DashboardPage(page);\n  22 |     playersPage = new PlayersPage(page);\n  23 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
+                            "column": 8,
+                            "line": 20
+                          },
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n  18 |   let playersPage: PlayersPage;\n  19 |\n> 20 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  21 |     dashboardPage = new DashboardPage(page);\n  22 |     playersPage = new PlayersPage(page);\n  23 |\n\u001b[2m    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8\u001b[22m"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                            "column": 21,
+                            "line": 33
+                          },
+                          "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:24:5\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-17T21:24:04.576Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4576,10 +4556,10 @@
                   "projectName": "firefox",
                   "results": [
                     {
-                      "workerIndex": 16,
+                      "workerIndex": 22,
                       "parallelIndex": 7,
                       "status": "timedOut",
-                      "duration": 60247,
+                      "duration": 60610,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -4611,7 +4591,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:23:05.188Z",
+                      "startTime": "2025-11-17T21:25:12.391Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4658,10 +4638,10 @@
                   "projectName": "firefox",
                   "results": [
                     {
-                      "workerIndex": 24,
+                      "workerIndex": 30,
                       "parallelIndex": 7,
                       "status": "timedOut",
-                      "duration": 60284,
+                      "duration": 60618,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -4693,7 +4673,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:24:07.737Z",
+                      "startTime": "2025-11-17T21:26:19.133Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4740,10 +4720,10 @@
                   "projectName": "firefox",
                   "results": [
                     {
-                      "workerIndex": 32,
+                      "workerIndex": 38,
                       "parallelIndex": 7,
                       "status": "timedOut",
-                      "duration": 60438,
+                      "duration": 60506,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -4775,7 +4755,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:25:10.269Z",
+                      "startTime": "2025-11-17T21:27:24.142Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4811,7 +4791,7 @@
             },
             {
               "title": "should navigate to players page from dashboard",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -4822,68 +4802,20 @@
                   "projectName": "firefox",
                   "results": [
                     {
-                      "workerIndex": 39,
+                      "workerIndex": 46,
                       "parallelIndex": 7,
-                      "status": "timedOut",
-                      "duration": 60329,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
-                        "location": {
-                          "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
-                          "column": 8,
-                          "line": 20
-                        },
-                        "snippet": "  18 |   let playersPage: PlayersPage;\n  19 |\n> 20 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  21 |     dashboardPage = new DashboardPage(page);\n  22 |     playersPage = new PlayersPage(page);\n  23 |"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
-                            "column": 8,
-                            "line": 20
-                          },
-                          "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n  18 |   let playersPage: PlayersPage;\n  19 |\n> 20 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  21 |     dashboardPage = new DashboardPage(page);\n  22 |     playersPage = new PlayersPage(page);\n  23 |\n\u001b[2m    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8\u001b[22m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
-                            "column": 21,
-                            "line": 33
-                          },
-                          "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:24:5\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 18207,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:26:13.550Z",
+                      "startTime": "2025-11-17T21:28:28.785Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-ade69-players-page-from-dashboard-firefox/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-ade69-players-page-from-dashboard-firefox/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-ade69-players-page-from-dashboard-firefox/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/private/projects/studio/e2e/dashboard-analytics.spec.ts",
-                        "column": 8,
-                        "line": 20
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "fae4ff2cad1ff7e83439-08fe6a65ed0751604e35",
@@ -4904,10 +4836,10 @@
                   "projectName": "firefox",
                   "results": [
                     {
-                      "workerIndex": 47,
+                      "workerIndex": 46,
                       "parallelIndex": 7,
                       "status": "timedOut",
-                      "duration": 60324,
+                      "duration": 60210,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -4939,7 +4871,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:27:16.720Z",
+                      "startTime": "2025-11-17T21:28:48.052Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4986,10 +4918,10 @@
                   "projectName": "firefox",
                   "results": [
                     {
-                      "workerIndex": 55,
+                      "workerIndex": 56,
                       "parallelIndex": 7,
                       "status": "timedOut",
-                      "duration": 60336,
+                      "duration": 60245,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -5021,7 +4953,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:28:19.796Z",
+                      "startTime": "2025-11-17T21:29:49.373Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -5068,10 +5000,10 @@
                   "projectName": "firefox",
                   "results": [
                     {
-                      "workerIndex": 62,
+                      "workerIndex": 64,
                       "parallelIndex": 7,
                       "status": "timedOut",
-                      "duration": 60513,
+                      "duration": 60267,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -5103,7 +5035,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:29:22.761Z",
+                      "startTime": "2025-11-17T21:30:51.565Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -5150,10 +5082,10 @@
                   "projectName": "firefox",
                   "results": [
                     {
-                      "workerIndex": 70,
+                      "workerIndex": 72,
                       "parallelIndex": 7,
                       "status": "timedOut",
-                      "duration": 60508,
+                      "duration": 60305,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8",
@@ -5185,7 +5117,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:30:26.154Z",
+                      "startTime": "2025-11-17T21:31:53.787Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -5230,56 +5162,7 @@
                   "expectedStatus": "passed",
                   "projectId": "firefox",
                   "projectName": "firefox",
-                  "results": [
-                    {
-                      "workerIndex": 78,
-                      "parallelIndex": 7,
-                      "status": "interrupted",
-                      "duration": 10163,
-                      "error": {
-                        "message": "Error: page.waitForLoadState: Test ended.",
-                        "stack": "Error: page.waitForLoadState: Test ended.\n    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\n    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\n    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:24:5",
-                        "location": {
-                          "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
-                          "column": 21,
-                          "line": 33
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
-                            "column": 21,
-                            "line": 33
-                          },
-                          "message": "Error: page.waitForLoadState: Test ended.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:24:5\u001b[22m"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-11-17T16:31:29.494Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-c2339-ndle-empty-state-gracefully-firefox/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/private/projects/studio/test-results/dashboard-analytics-Featur-c2339-ndle-empty-state-gracefully-firefox/video.webm"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
-                        "column": 21,
-                        "line": 33
-                      }
-                    }
-                  ],
+                  "results": [],
                   "status": "skipped"
                 }
               ],
@@ -6141,7 +6024,7 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "timedOut",
-                      "duration": 62711,
+                      "duration": 63903,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/fine-management.spec.ts:24:8",
@@ -6173,7 +6056,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:21:44.415Z",
+                      "startTime": "2025-11-17T21:22:58.327Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -6220,10 +6103,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 13,
+                      "workerIndex": 9,
                       "parallelIndex": 2,
                       "status": "timedOut",
-                      "duration": 63235,
+                      "duration": 62442,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/fine-management.spec.ts:24:8",
@@ -6255,7 +6138,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:22:49.104Z",
+                      "startTime": "2025-11-17T21:24:04.441Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -6302,10 +6185,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 20,
+                      "workerIndex": 19,
                       "parallelIndex": 2,
                       "status": "timedOut",
-                      "duration": 63098,
+                      "duration": 63536,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/fine-management.spec.ts:24:8",
@@ -6337,7 +6220,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:23:53.468Z",
+                      "startTime": "2025-11-17T21:25:08.229Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -6387,7 +6270,7 @@
                       "workerIndex": 26,
                       "parallelIndex": 2,
                       "status": "timedOut",
-                      "duration": 63680,
+                      "duration": 63837,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/fine-management.spec.ts:24:8",
@@ -6419,7 +6302,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:24:57.757Z",
+                      "startTime": "2025-11-17T21:26:12.999Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -6469,7 +6352,7 @@
                       "workerIndex": 37,
                       "parallelIndex": 2,
                       "status": "timedOut",
-                      "duration": 63002,
+                      "duration": 63636,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/fine-management.spec.ts:24:8",
@@ -6501,7 +6384,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:26:02.579Z",
+                      "startTime": "2025-11-17T21:27:17.988Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -6548,10 +6431,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 44,
+                      "workerIndex": 45,
                       "parallelIndex": 2,
                       "status": "timedOut",
-                      "duration": 62821,
+                      "duration": 63466,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/fine-management.spec.ts:24:8",
@@ -6583,7 +6466,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:27:06.674Z",
+                      "startTime": "2025-11-17T21:28:22.713Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -6630,10 +6513,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 50,
+                      "workerIndex": 52,
                       "parallelIndex": 2,
                       "status": "timedOut",
-                      "duration": 63103,
+                      "duration": 63506,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/fine-management.spec.ts:24:8",
@@ -6665,7 +6548,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:28:11.161Z",
+                      "startTime": "2025-11-17T21:29:27.364Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -6712,10 +6595,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 59,
+                      "workerIndex": 60,
                       "parallelIndex": 2,
                       "status": "timedOut",
-                      "duration": 63199,
+                      "duration": 63572,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/fine-management.spec.ts:24:8",
@@ -6747,7 +6630,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:29:15.546Z",
+                      "startTime": "2025-11-17T21:30:32.149Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -6794,10 +6677,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 68,
+                      "workerIndex": 69,
                       "parallelIndex": 2,
                       "status": "timedOut",
-                      "duration": 63086,
+                      "duration": 63589,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/fine-management.spec.ts:24:8",
@@ -6829,7 +6712,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:30:19.706Z",
+                      "startTime": "2025-11-17T21:31:36.814Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -6876,10 +6759,10 @@
                   "projectName": "firefox",
                   "results": [
                     {
-                      "workerIndex": 75,
-                      "parallelIndex": 2,
+                      "workerIndex": 74,
+                      "parallelIndex": 3,
                       "status": "interrupted",
-                      "duration": 14195,
+                      "duration": 12911,
                       "error": {
                         "message": "Error: page.waitForLoadState: Test ended.",
                         "stack": "Error: page.waitForLoadState: Test ended.\n    at PlayersPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\n    at PlayersPage.navigate (/Users/private/projects/studio/e2e/page-objects/PlayersPage.ts:49:16)\n    at /Users/private/projects/studio/e2e/fine-management.spec.ts:33:5",
@@ -6903,7 +6786,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:31:23.939Z",
+                      "startTime": "2025-11-17T21:32:41.096Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -7665,7 +7548,7 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "timedOut",
-                      "duration": 62663,
+                      "duration": 63950,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/payment-processing.spec.ts:24:8",
@@ -7697,7 +7580,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:21:44.413Z",
+                      "startTime": "2025-11-17T21:22:58.321Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -7747,7 +7630,7 @@
                       "workerIndex": 11,
                       "parallelIndex": 3,
                       "status": "timedOut",
-                      "duration": 63228,
+                      "duration": 62427,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/payment-processing.spec.ts:24:8",
@@ -7779,7 +7662,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:22:49.105Z",
+                      "startTime": "2025-11-17T21:24:04.446Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -7826,10 +7709,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 19,
+                      "workerIndex": 18,
                       "parallelIndex": 3,
                       "status": "timedOut",
-                      "duration": 63227,
+                      "duration": 63404,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/payment-processing.spec.ts:24:8",
@@ -7861,7 +7744,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:23:53.470Z",
+                      "startTime": "2025-11-17T21:25:08.229Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -7908,10 +7791,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 27,
+                      "workerIndex": 25,
                       "parallelIndex": 3,
                       "status": "timedOut",
-                      "duration": 63674,
+                      "duration": 63040,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/payment-processing.spec.ts:24:8",
@@ -7943,7 +7826,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:24:57.758Z",
+                      "startTime": "2025-11-17T21:26:12.999Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -7990,10 +7873,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 36,
+                      "workerIndex": 33,
                       "parallelIndex": 3,
                       "status": "timedOut",
-                      "duration": 63003,
+                      "duration": 63388,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/payment-processing.spec.ts:24:8",
@@ -8025,7 +7908,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:26:02.582Z",
+                      "startTime": "2025-11-17T21:27:17.580Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -8072,10 +7955,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 45,
+                      "workerIndex": 41,
                       "parallelIndex": 3,
                       "status": "timedOut",
-                      "duration": 63230,
+                      "duration": 63433,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/payment-processing.spec.ts:24:8",
@@ -8107,7 +7990,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:27:06.674Z",
+                      "startTime": "2025-11-17T21:28:22.273Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -8154,10 +8037,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 52,
+                      "workerIndex": 50,
                       "parallelIndex": 3,
                       "status": "timedOut",
-                      "duration": 63160,
+                      "duration": 63253,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/payment-processing.spec.ts:24:8",
@@ -8189,7 +8072,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:28:11.219Z",
+                      "startTime": "2025-11-17T21:29:26.938Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -8236,10 +8119,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 61,
+                      "workerIndex": 57,
                       "parallelIndex": 3,
                       "status": "timedOut",
-                      "duration": 63187,
+                      "duration": 63479,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/payment-processing.spec.ts:24:8",
@@ -8271,7 +8154,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:29:15.547Z",
+                      "startTime": "2025-11-17T21:30:31.534Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -8318,10 +8201,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 67,
+                      "workerIndex": 66,
                       "parallelIndex": 3,
                       "status": "timedOut",
-                      "duration": 63111,
+                      "duration": 63493,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/payment-processing.spec.ts:24:8",
@@ -8353,7 +8236,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:30:19.704Z",
+                      "startTime": "2025-11-17T21:31:36.316Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -8400,10 +8283,10 @@
                   "projectName": "firefox",
                   "results": [
                     {
-                      "workerIndex": 76,
-                      "parallelIndex": 3,
+                      "workerIndex": 77,
+                      "parallelIndex": 2,
                       "status": "interrupted",
-                      "duration": 15167,
+                      "duration": 11708,
                       "error": {
                         "message": "Error: page.waitForLoadState: Test ended.",
                         "stack": "Error: page.waitForLoadState: Test ended.\n    at PlayersPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\n    at PlayersPage.navigate (/Users/private/projects/studio/e2e/page-objects/PlayersPage.ts:49:16)\n    at /Users/private/projects/studio/e2e/payment-processing.spec.ts:33:5",
@@ -8427,7 +8310,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:31:23.944Z",
+                      "startTime": "2025-11-17T21:32:41.609Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -9189,7 +9072,7 @@
                       "workerIndex": 4,
                       "parallelIndex": 4,
                       "status": "timedOut",
-                      "duration": 62739,
+                      "duration": 63903,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/player-management.spec.ts:20:8",
@@ -9221,7 +9104,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:21:44.406Z",
+                      "startTime": "2025-11-17T21:22:58.317Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -9271,7 +9154,7 @@
                       "workerIndex": 10,
                       "parallelIndex": 4,
                       "status": "timedOut",
-                      "duration": 63208,
+                      "duration": 62449,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/player-management.spec.ts:20:8",
@@ -9303,7 +9186,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:22:49.102Z",
+                      "startTime": "2025-11-17T21:24:04.440Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -9350,10 +9233,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 18,
+                      "workerIndex": 20,
                       "parallelIndex": 4,
                       "status": "timedOut",
-                      "duration": 63230,
+                      "duration": 63547,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/player-management.spec.ts:20:8",
@@ -9385,7 +9268,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:23:53.466Z",
+                      "startTime": "2025-11-17T21:25:08.225Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -9432,10 +9315,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 28,
+                      "workerIndex": 27,
                       "parallelIndex": 4,
                       "status": "timedOut",
-                      "duration": 63656,
+                      "duration": 63779,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/player-management.spec.ts:20:8",
@@ -9467,7 +9350,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:24:57.755Z",
+                      "startTime": "2025-11-17T21:26:12.995Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -9514,10 +9397,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 35,
+                      "workerIndex": 36,
                       "parallelIndex": 4,
                       "status": "timedOut",
-                      "duration": 62957,
+                      "duration": 63006,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/player-management.spec.ts:20:8",
@@ -9549,7 +9432,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:26:02.576Z",
+                      "startTime": "2025-11-17T21:27:17.948Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -9599,7 +9482,7 @@
                       "workerIndex": 42,
                       "parallelIndex": 4,
                       "status": "timedOut",
-                      "duration": 63248,
+                      "duration": 63394,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/player-management.spec.ts:20:8",
@@ -9631,7 +9514,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:27:06.672Z",
+                      "startTime": "2025-11-17T21:28:22.271Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -9678,10 +9561,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 53,
+                      "workerIndex": 49,
                       "parallelIndex": 4,
                       "status": "timedOut",
-                      "duration": 63162,
+                      "duration": 63287,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/player-management.spec.ts:20:8",
@@ -9713,7 +9596,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:28:11.203Z",
+                      "startTime": "2025-11-17T21:29:26.935Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -9760,10 +9643,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 60,
+                      "workerIndex": 58,
                       "parallelIndex": 4,
                       "status": "timedOut",
-                      "duration": 63204,
+                      "duration": 63477,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/player-management.spec.ts:20:8",
@@ -9795,7 +9678,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:29:15.544Z",
+                      "startTime": "2025-11-17T21:30:31.531Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -9842,10 +9725,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 69,
+                      "workerIndex": 65,
                       "parallelIndex": 4,
                       "status": "timedOut",
-                      "duration": 63110,
+                      "duration": 63486,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/private/projects/studio/e2e/player-management.spec.ts:20:8",
@@ -9877,7 +9760,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:30:19.702Z",
+                      "startTime": "2025-11-17T21:31:36.314Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -9924,10 +9807,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 77,
+                      "workerIndex": 73,
                       "parallelIndex": 4,
                       "status": "interrupted",
-                      "duration": 16861,
+                      "duration": 15055,
                       "error": {
                         "message": "Error: page.waitForLoadState: Test ended.",
                         "stack": "Error: page.waitForLoadState: Test ended.\n    at PlayersPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\n    at PlayersPage.navigate (/Users/private/projects/studio/e2e/page-objects/PlayersPage.ts:49:16)\n    at /Users/private/projects/studio/e2e/player-management.spec.ts:26:5",
@@ -9951,7 +9834,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-17T16:31:23.941Z",
+                      "startTime": "2025-11-17T21:32:41.091Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -10819,32 +10702,29 @@
                         {
                           "workerIndex": 5,
                           "parallelIndex": 5,
-                          "status": "failed",
-                          "duration": 4038,
+                          "status": "timedOut",
+                          "duration": 64206,
                           "error": {
-                            "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
-                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:27:25",
-                            "location": {
-                              "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
-                              "column": 25,
-                              "line": 27
-                            },
-                            "snippet": "  25 |       const isVisible = await mobileMenu.isVisible().catch(() => false);\n  26 |\n> 27 |       expect(isVisible).toBe(true);\n     |                         ^\n  28 |     });\n  29 |\n  30 |     test('should adapt dashboard layout for mobile', async ({ page }) => {"
+                            "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
                           },
                           "errors": [
                             {
+                              "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                            },
+                            {
                               "location": {
-                                "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
-                                "column": 25,
-                                "line": 27
+                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                                "column": 21,
+                                "line": 33
                               },
-                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  25 |       const isVisible = await mobileMenu.isVisible().catch(() => false);\n  26 |\n> 27 |       expect(isVisible).toBe(true);\n     |                         ^\n  28 |     });\n  29 |\n  30 |     test('should adapt dashboard layout for mobile', async ({ page }) => {\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:27:25\u001b[22m"
+                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:21:7\u001b[22m"
                             }
                           ],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:21:44.415Z",
+                          "startTime": "2025-11-17T21:22:58.320Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -10862,12 +10742,7 @@
                               "contentType": "text/markdown",
                               "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--2f87f-mobile-navigation-correctly-chromium/error-context.md"
                             }
-                          ],
-                          "errorLocation": {
-                            "file": "/Users/private/projects/studio/e2e/responsive-design.spec.ts",
-                            "column": 25,
-                            "line": 27
-                          }
+                          ]
                         }
                       ],
                       "status": "unexpected"
@@ -10891,15 +10766,15 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 8,
+                          "workerIndex": 14,
                           "parallelIndex": 5,
                           "status": "passed",
-                          "duration": 2452,
+                          "duration": 3116,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:21:52.661Z",
+                          "startTime": "2025-11-17T21:24:04.621Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -10914,40 +10789,6 @@
                 },
                 {
                   "title": "should make action buttons accessible on mobile",
-                  "ok": true,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 60000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "chromium",
-                      "projectName": "chromium",
-                      "results": [
-                        {
-                          "workerIndex": 8,
-                          "parallelIndex": 5,
-                          "status": "passed",
-                          "duration": 5346,
-                          "errors": [],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2025-11-17T16:21:55.411Z",
-                          "annotations": [],
-                          "attachments": []
-                        }
-                      ],
-                      "status": "expected"
-                    }
-                  ],
-                  "id": "a027f4963a965b420d0c-15544814a432062663fc",
-                  "file": "responsive-design.spec.ts",
-                  "line": 43,
-                  "column": 9
-                },
-                {
-                  "title": "should handle table scrolling on mobile",
                   "ok": false,
                   "tags": [],
                   "tests": [
@@ -10959,10 +10800,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 8,
+                          "workerIndex": 14,
                           "parallelIndex": 5,
                           "status": "timedOut",
-                          "duration": 62164,
+                          "duration": 63734,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -10977,34 +10818,68 @@
                                 "column": 21,
                                 "line": 33
                               },
-                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at MoneyPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at MoneyPage.navigate (/Users/private/projects/studio/e2e/page-objects/MoneyPage.ts:71:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:56:7\u001b[22m"
+                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:46:7\u001b[22m"
                             }
                           ],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:22:00.780Z",
+                          "startTime": "2025-11-17T21:24:08.161Z",
                           "annotations": [],
                           "attachments": [
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/test-failed-1.png"
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/test-failed-1.png"
                             },
                             {
                               "name": "video",
                               "contentType": "video/webm",
-                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/video.webm"
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/video.webm"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/error-context.md"
+                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/error-context.md"
                             }
                           ]
                         }
                       ],
                       "status": "unexpected"
+                    }
+                  ],
+                  "id": "a027f4963a965b420d0c-15544814a432062663fc",
+                  "file": "responsive-design.spec.ts",
+                  "line": 43,
+                  "column": 9
+                },
+                {
+                  "title": "should handle table scrolling on mobile",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 23,
+                          "parallelIndex": 5,
+                          "status": "passed",
+                          "duration": 5062,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-17T21:25:13.466Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
                     }
                   ],
                   "id": "a027f4963a965b420d0c-912565694dcf02bb8a8b",
@@ -11353,10 +11228,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 15,
+                          "workerIndex": 23,
                           "parallelIndex": 5,
                           "status": "timedOut",
-                          "duration": 62140,
+                          "duration": 62697,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -11377,7 +11252,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:23:03.658Z",
+                          "startTime": "2025-11-17T21:25:19.313Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -11507,10 +11382,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 23,
+                          "workerIndex": 31,
                           "parallelIndex": 5,
                           "status": "timedOut",
-                          "duration": 62060,
+                          "duration": 63231,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -11531,7 +11406,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:24:06.657Z",
+                          "startTime": "2025-11-17T21:26:22.938Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -11573,10 +11448,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 31,
+                          "workerIndex": 39,
                           "parallelIndex": 5,
                           "status": "timedOut",
-                          "duration": 63622,
+                          "duration": 62799,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -11597,7 +11472,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:25:09.627Z",
+                          "startTime": "2025-11-17T21:27:27.307Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -11807,10 +11682,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 40,
+                          "workerIndex": 47,
                           "parallelIndex": 5,
                           "status": "timedOut",
-                          "duration": 63067,
+                          "duration": 63486,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -11831,7 +11706,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:26:14.196Z",
+                          "startTime": "2025-11-17T21:28:31.089Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -11873,10 +11748,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 48,
+                          "workerIndex": 54,
                           "parallelIndex": 5,
                           "status": "timedOut",
-                          "duration": 62404,
+                          "duration": 63969,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -11897,7 +11772,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:27:18.753Z",
+                          "startTime": "2025-11-17T21:29:35.618Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -11939,10 +11814,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 56,
+                          "workerIndex": 63,
                           "parallelIndex": 5,
                           "status": "timedOut",
-                          "duration": 62610,
+                          "duration": 64185,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -11963,7 +11838,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:28:22.302Z",
+                          "startTime": "2025-11-17T21:30:40.453Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -12005,10 +11880,10 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 64,
+                          "workerIndex": 71,
                           "parallelIndex": 5,
                           "status": "timedOut",
-                          "duration": 62657,
+                          "duration": 63313,
                           "error": {
                             "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                             "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -12029,7 +11904,7 @@
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:29:26.237Z",
+                          "startTime": "2025-11-17T21:31:45.481Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -12388,7 +12263,7 @@
               "specs": [
                 {
                   "title": "should maintain data consistency across viewports",
-                  "ok": false,
+                  "ok": true,
                   "tags": [],
                   "tests": [
                     {
@@ -12399,31 +12274,34 @@
                       "projectName": "chromium",
                       "results": [
                         {
-                          "workerIndex": 72,
+                          "workerIndex": 79,
                           "parallelIndex": 5,
-                          "status": "timedOut",
-                          "duration": 64038,
+                          "status": "interrupted",
+                          "duration": 5701,
                           "error": {
-                            "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
-                            "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                            "message": "Error: page.waitForLoadState: Test ended.",
+                            "stack": "Error: page.waitForLoadState: Test ended.\n    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\n    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\n    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:166:7",
+                            "location": {
+                              "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                              "column": 21,
+                              "line": 33
+                            },
+                            "snippet": "\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**"
                           },
                           "errors": [
-                            {
-                              "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
-                            },
                             {
                               "location": {
                                 "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
                                 "column": 21,
                                 "line": 33
                               },
-                              "message": "Error: page.waitForLoadState: Test timeout of 60000ms exceeded.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:166:7\u001b[22m"
+                              "message": "Error: page.waitForLoadState: Test ended.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:166:7\u001b[22m"
                             }
                           ],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2025-11-17T16:30:30.124Z",
+                          "startTime": "2025-11-17T21:32:49.865Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -12435,16 +12313,16 @@
                               "name": "video",
                               "contentType": "video/webm",
                               "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--a8d61-onsistency-across-viewports-chromium/video.webm"
-                            },
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--a8d61-onsistency-across-viewports-chromium/error-context.md"
                             }
-                          ]
+                          ],
+                          "errorLocation": {
+                            "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
+                            "column": 21,
+                            "line": 33
+                          }
                         }
                       ],
-                      "status": "unexpected"
+                      "status": "skipped"
                     }
                   ],
                   "id": "a027f4963a965b420d0c-df2f625f5741db3a7bfd",
@@ -12463,56 +12341,7 @@
                       "expectedStatus": "passed",
                       "projectId": "chromium",
                       "projectName": "chromium",
-                      "results": [
-                        {
-                          "workerIndex": 82,
-                          "parallelIndex": 5,
-                          "status": "interrupted",
-                          "duration": 4653,
-                          "error": {
-                            "message": "Error: page.waitForLoadState: Test ended.",
-                            "stack": "Error: page.waitForLoadState: Test ended.\n    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\n    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\n    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:191:9",
-                            "location": {
-                              "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
-                              "column": 21,
-                              "line": 33
-                            },
-                            "snippet": "\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
-                                "column": 21,
-                                "line": 33
-                              },
-                              "message": "Error: page.waitForLoadState: Test ended.\n\n\u001b[90m   at \u001b[39mpage-objects/BasePage.ts:33\n\n  31 |    */\n  32 |   async waitForPageLoad(): Promise<void> {\n> 33 |     await this.page.waitForLoadState('networkidle');\n     |                     ^\n  34 |   }\n  35 |\n  36 |   /**\n\u001b[2m    at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)\u001b[22m\n\u001b[2m    at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)\u001b[22m\n\u001b[2m    at /Users/private/projects/studio/e2e/responsive-design.spec.ts:191:9\u001b[22m"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2025-11-17T16:31:35.474Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "screenshot",
-                              "contentType": "image/png",
-                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--97111-unctionality-across-devices-chromium/test-failed-1.png"
-                            },
-                            {
-                              "name": "video",
-                              "contentType": "video/webm",
-                              "path": "/Users/private/projects/studio/test-results/responsive-design-Feature--97111-unctionality-across-devices-chromium/video.webm"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "/Users/private/projects/studio/e2e/page-objects/BasePage.ts",
-                            "column": 21,
-                            "line": 33
-                          }
-                        }
-                      ],
+                      "results": [],
                       "status": "skipped"
                     }
                   ],
@@ -13322,11 +13151,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-11-17T16:21:41.378Z",
-    "duration": 600061.3809999999,
-    "expected": 4,
-    "skipped": 336,
-    "unexpected": 75,
+    "startTime": "2025-11-17T21:22:56.427Z",
+    "duration": 601575.603,
+    "expected": 3,
+    "skipped": 339,
+    "unexpected": 73,
     "flaky": 0
   }
 }

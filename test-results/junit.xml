@@ -1,6 +1,6 @@
-<testsuites id="" name="" tests="415" failures="75" skipped="336" errors="0" time="600.061381">
-<testsuite name="accessibility.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="chromium" tests="23" failures="9" skipped="14" time="585.226" errors="0">
-<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on dashboard" classname="accessibility.spec.ts" time="62.827">
+<testsuites id="" name="" tests="415" failures="73" skipped="339" errors="0" time="601.575603">
+<testsuite name="accessibility.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="chromium" tests="23" failures="9" skipped="14" time="586.324" errors="0">
+<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on dashboard" classname="accessibility.spec.ts" time="64.432">
 <failure message="accessibility.spec.ts:19:9 should not have accessibility violations on dashboard" type="FAILURE">
 <![CDATA[  [chromium] › accessibility.spec.ts:19:9 › Feature: Accessibility › WCAG Compliance › should not have accessibility violations on dashboard 
 
@@ -42,7 +42,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on players page" classname="accessibility.spec.ts" time="63.238">
+<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on players page" classname="accessibility.spec.ts" time="62.348">
 <failure message="accessibility.spec.ts:28:9 should not have accessibility violations on players page" type="FAILURE">
 <![CDATA[  [chromium] › accessibility.spec.ts:28:9 › Feature: Accessibility › WCAG Compliance › should not have accessibility violations on players page 
 
@@ -84,7 +84,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on money page" classname="accessibility.spec.ts" time="63.245">
+<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on money page" classname="accessibility.spec.ts" time="63.701">
 <failure message="accessibility.spec.ts:37:9 should not have accessibility violations on money page" type="FAILURE">
 <![CDATA[  [chromium] › accessibility.spec.ts:37:9 › Feature: Accessibility › WCAG Compliance › should not have accessibility violations on money page 
 
@@ -126,7 +126,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate using Tab key" classname="accessibility.spec.ts" time="63.609">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate using Tab key" classname="accessibility.spec.ts" time="63.705">
 <failure message="accessibility.spec.ts:48:9 should navigate using Tab key" type="FAILURE">
 <![CDATA[  [chromium] › accessibility.spec.ts:48:9 › Feature: Accessibility › Keyboard Navigation › should navigate using Tab key 
 
@@ -168,7 +168,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should activate buttons with Enter key" classname="accessibility.spec.ts" time="62.963">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should activate buttons with Enter key" classname="accessibility.spec.ts" time="63.58">
 <failure message="accessibility.spec.ts:61:9 should activate buttons with Enter key" type="FAILURE">
 <![CDATA[  [chromium] › accessibility.spec.ts:61:9 › Feature: Accessibility › Keyboard Navigation › should activate buttons with Enter key 
 
@@ -210,7 +210,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should activate buttons with Space key" classname="accessibility.spec.ts" time="63.103">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should activate buttons with Space key" classname="accessibility.spec.ts" time="63.348">
 <failure message="accessibility.spec.ts:76:9 should activate buttons with Space key" type="FAILURE">
 <![CDATA[  [chromium] › accessibility.spec.ts:76:9 › Feature: Accessibility › Keyboard Navigation › should activate buttons with Space key 
 
@@ -252,7 +252,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should close dialogs with Escape key" classname="accessibility.spec.ts" time="63.079">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should close dialogs with Escape key" classname="accessibility.spec.ts" time="63.649">
 <failure message="accessibility.spec.ts:91:9 should close dialogs with Escape key" type="FAILURE">
 <![CDATA[  [chromium] › accessibility.spec.ts:91:9 › Feature: Accessibility › Keyboard Navigation › should close dialogs with Escape key 
 
@@ -294,7 +294,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate through form fields with Tab" classname="accessibility.spec.ts" time="63.079">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate through form fields with Tab" classname="accessibility.spec.ts" time="63.533">
 <failure message="accessibility.spec.ts:108:9 should navigate through form fields with Tab" type="FAILURE">
 <![CDATA[  [chromium] › accessibility.spec.ts:108:9 › Feature: Accessibility › Keyboard Navigation › should navigate through form fields with Tab 
 
@@ -336,7 +336,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate tables with arrow keys" classname="accessibility.spec.ts" time="63.077">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate tables with arrow keys" classname="accessibility.spec.ts" time="63.555">
 <failure message="accessibility.spec.ts:124:9 should navigate tables with arrow keys" type="FAILURE">
 <![CDATA[  [chromium] › accessibility.spec.ts:124:9 › Feature: Accessibility › Keyboard Navigation › should navigate tables with arrow keys 
 
@@ -378,7 +378,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Screen Reader Support › should have proper heading hierarchy" classname="accessibility.spec.ts" time="17.006">
+<testcase name="Feature: Accessibility › Screen Reader Support › should have proper heading hierarchy" classname="accessibility.spec.ts" time="14.473">
 <skipped>
 </skipped>
 </testcase>
@@ -435,10 +435,59 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="dashboard-analytics.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="chromium" tests="13" failures="10" skipped="2" time="583.811" errors="0">
-<testcase name="Feature: Dashboard Analytics › should display dashboard with all key components" classname="dashboard-analytics.spec.ts" time="11.696">
+<testsuite name="dashboard-analytics.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="chromium" tests="13" failures="9" skipped="4" time="586.468" errors="0">
+<testcase name="Feature: Dashboard Analytics › should display dashboard with all key components" classname="dashboard-analytics.spec.ts" time="64.28">
+<failure message="dashboard-analytics.spec.ts:27:7 should display dashboard with all key components" type="FAILURE">
+<![CDATA[  [chromium] › dashboard-analytics.spec.ts:27:7 › Feature: Dashboard Analytics › should display dashboard with all key components 
+
+    Test timeout of 60000ms exceeded while running "beforeEach" hook.
+
+      18 |   let playersPage: PlayersPage;
+      19 |
+    > 20 |   test.beforeEach(async ({ page }) => {
+         |        ^
+      21 |     dashboardPage = new DashboardPage(page);
+      22 |     playersPage = new PlayersPage(page);
+      23 |
+        at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8
+
+    Error: page.waitForLoadState: Test timeout of 60000ms exceeded.
+
+       at page-objects/BasePage.ts:33
+
+      31 |    */
+      32 |   async waitForPageLoad(): Promise<void> {
+    > 33 |     await this.page.waitForLoadState('networkidle');
+         |                     ^
+      34 |   }
+      35 |
+      36 |   /**
+        at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)
+        at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)
+        at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:24:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-analytics-Featur-d82d4-ard-with-all-key-components-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-analytics-Featur-d82d4-ard-with-all-key-components-chromium/video.webm]]
+
+[[ATTACHMENT|dashboard-analytics-Featur-d82d4-ard-with-all-key-components-chromium/error-context.md]]
+]]>
+</system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should display stat cards correctly" classname="dashboard-analytics.spec.ts" time="61.934">
+<testcase name="Feature: Dashboard Analytics › should display stat cards correctly" classname="dashboard-analytics.spec.ts" time="62.406">
 <failure message="dashboard-analytics.spec.ts:37:7 should display stat cards correctly" type="FAILURE">
 <![CDATA[  [chromium] › dashboard-analytics.spec.ts:37:7 › Feature: Dashboard Analytics › should display stat cards correctly 
 
@@ -489,7 +538,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should render revenue chart" classname="dashboard-analytics.spec.ts" time="62.056">
+<testcase name="Feature: Dashboard Analytics › should render revenue chart" classname="dashboard-analytics.spec.ts" time="63.643">
 <failure message="dashboard-analytics.spec.ts:50:7 should render revenue chart" type="FAILURE">
 <![CDATA[  [chromium] › dashboard-analytics.spec.ts:50:7 › Feature: Dashboard Analytics › should render revenue chart 
 
@@ -540,7 +589,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should display top debtors widget" classname="dashboard-analytics.spec.ts" time="62.075">
+<testcase name="Feature: Dashboard Analytics › should display top debtors widget" classname="dashboard-analytics.spec.ts" time="63.783">
 <failure message="dashboard-analytics.spec.ts:59:7 should display top debtors widget" type="FAILURE">
 <![CDATA[  [chromium] › dashboard-analytics.spec.ts:59:7 › Feature: Dashboard Analytics › should display top debtors widget 
 
@@ -591,7 +640,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should display recent activity widget" classname="dashboard-analytics.spec.ts" time="64.787">
+<testcase name="Feature: Dashboard Analytics › should display recent activity widget" classname="dashboard-analytics.spec.ts" time="63.617">
 <failure message="dashboard-analytics.spec.ts:72:7 should display recent activity widget" type="FAILURE">
 <![CDATA[  [chromium] › dashboard-analytics.spec.ts:72:7 › Feature: Dashboard Analytics › should display recent activity widget 
 
@@ -642,7 +691,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should navigate to players page from dashboard" classname="dashboard-analytics.spec.ts" time="62.624">
+<testcase name="Feature: Dashboard Analytics › should navigate to players page from dashboard" classname="dashboard-analytics.spec.ts" time="63.494">
 <failure message="dashboard-analytics.spec.ts:84:7 should navigate to players page from dashboard" type="FAILURE">
 <![CDATA[  [chromium] › dashboard-analytics.spec.ts:84:7 › Feature: Dashboard Analytics › should navigate to players page from dashboard 
 
@@ -693,7 +742,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should open quick action dialogs" classname="dashboard-analytics.spec.ts" time="62.8">
+<testcase name="Feature: Dashboard Analytics › should open quick action dialogs" classname="dashboard-analytics.spec.ts" time="63.52">
 <failure message="dashboard-analytics.spec.ts:95:7 should open quick action dialogs" type="FAILURE">
 <![CDATA[  [chromium] › dashboard-analytics.spec.ts:95:7 › Feature: Dashboard Analytics › should open quick action dialogs 
 
@@ -744,7 +793,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should display data freshness indicator" classname="dashboard-analytics.spec.ts" time="62.47">
+<testcase name="Feature: Dashboard Analytics › should display data freshness indicator" classname="dashboard-analytics.spec.ts" time="63.487">
 <failure message="dashboard-analytics.spec.ts:116:7 should display data freshness indicator" type="FAILURE">
 <![CDATA[  [chromium] › dashboard-analytics.spec.ts:116:7 › Feature: Dashboard Analytics › should display data freshness indicator 
 
@@ -795,7 +844,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should show correct stat values" classname="dashboard-analytics.spec.ts" time="63.537">
+<testcase name="Feature: Dashboard Analytics › should show correct stat values" classname="dashboard-analytics.spec.ts" time="63.643">
 <failure message="dashboard-analytics.spec.ts:126:7 should show correct stat values" type="FAILURE">
 <![CDATA[  [chromium] › dashboard-analytics.spec.ts:126:7 › Feature: Dashboard Analytics › should show correct stat values 
 
@@ -846,97 +895,15 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should update dashboard in real-time after adding transaction" classname="dashboard-analytics.spec.ts" time="63.063">
-<failure message="dashboard-analytics.spec.ts:139:7 should update dashboard in real-time after adding transaction" type="FAILURE">
-<![CDATA[  [chromium] › dashboard-analytics.spec.ts:139:7 › Feature: Dashboard Analytics › should update dashboard in real-time after adding transaction 
-
-    Test timeout of 60000ms exceeded while running "beforeEach" hook.
-
-      18 |   let playersPage: PlayersPage;
-      19 |
-    > 20 |   test.beforeEach(async ({ page }) => {
-         |        ^
-      21 |     dashboardPage = new DashboardPage(page);
-      22 |     playersPage = new PlayersPage(page);
-      23 |
-        at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8
-
-    Error: page.waitForLoadState: Test timeout of 60000ms exceeded.
-
-       at page-objects/BasePage.ts:33
-
-      31 |    */
-      32 |   async waitForPageLoad(): Promise<void> {
-    > 33 |     await this.page.waitForLoadState('networkidle');
-         |                     ^
-      34 |   }
-      35 |
-      36 |   /**
-        at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)
-        at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)
-        at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:24:5
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/dashboard-analytics-Featur-6f143-me-after-adding-transaction-chromium/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/dashboard-analytics-Featur-6f143-me-after-adding-transaction-chromium/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ../test-results/dashboard-analytics-Featur-6f143-me-after-adding-transaction-chromium/error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|dashboard-analytics-Featur-6f143-me-after-adding-transaction-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|dashboard-analytics-Featur-6f143-me-after-adding-transaction-chromium/video.webm]]
-
-[[ATTACHMENT|dashboard-analytics-Featur-6f143-me-after-adding-transaction-chromium/error-context.md]]
-]]>
-</system-out>
+<testcase name="Feature: Dashboard Analytics › should update dashboard in real-time after adding transaction" classname="dashboard-analytics.spec.ts" time="14.595">
+<skipped>
+</skipped>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should handle empty state gracefully" classname="dashboard-analytics.spec.ts" time="1.673">
-<failure message="dashboard-analytics.spec.ts:168:7 should handle empty state gracefully" type="FAILURE">
-<![CDATA[  [chromium] › dashboard-analytics.spec.ts:168:7 › Feature: Dashboard Analytics › should handle empty state gracefully 
-
-    Error: expect(received).toBe(expected) // Object.is equality
-
-    Expected: true
-    Received: false
-
-      188 |
-      189 |     // Either has data or shows empty state
-    > 190 |     expect(hasEmptyState || await dashboardPage.getRecentTransactions() > 0).toBe(true);
-          |                                                                              ^
-      191 |   });
-      192 |
-      193 |   test('should display transaction types correctly', async ({ page }) => {
-        at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:190:78
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/dashboard-analytics-Featur-c2339-ndle-empty-state-gracefully-chromium/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/dashboard-analytics-Featur-c2339-ndle-empty-state-gracefully-chromium/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ../test-results/dashboard-analytics-Featur-c2339-ndle-empty-state-gracefully-chromium/error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|dashboard-analytics-Featur-c2339-ndle-empty-state-gracefully-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|dashboard-analytics-Featur-c2339-ndle-empty-state-gracefully-chromium/video.webm]]
-
-[[ATTACHMENT|dashboard-analytics-Featur-c2339-ndle-empty-state-gracefully-chromium/error-context.md]]
-]]>
-</system-out>
+<testcase name="Feature: Dashboard Analytics › should handle empty state gracefully" classname="dashboard-analytics.spec.ts" time="0">
+<skipped>
+</skipped>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should display transaction types correctly" classname="dashboard-analytics.spec.ts" time="5.096">
+<testcase name="Feature: Dashboard Analytics › should display transaction types correctly" classname="dashboard-analytics.spec.ts" time="0">
 <skipped>
 </skipped>
 </testcase>
@@ -945,8 +912,8 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="fine-management.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="chromium" tests="9" failures="9" skipped="0" time="567.935" errors="0">
-<testcase name="Feature: Fine Management › should create a manual fine successfully" classname="fine-management.spec.ts" time="62.711">
+<testsuite name="fine-management.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="chromium" tests="9" failures="9" skipped="0" time="571.487" errors="0">
+<testcase name="Feature: Fine Management › should create a manual fine successfully" classname="fine-management.spec.ts" time="63.903">
 <failure message="fine-management.spec.ts:41:7 should create a manual fine successfully" type="FAILURE">
 <![CDATA[  [chromium] › fine-management.spec.ts:41:7 › Feature: Fine Management › should create a manual fine successfully 
 
@@ -997,7 +964,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Fine Management › should validate fine form fields" classname="fine-management.spec.ts" time="63.235">
+<testcase name="Feature: Fine Management › should validate fine form fields" classname="fine-management.spec.ts" time="62.442">
 <failure message="fine-management.spec.ts:72:7 should validate fine form fields" type="FAILURE">
 <![CDATA[  [chromium] › fine-management.spec.ts:72:7 › Feature: Fine Management › should validate fine form fields 
 
@@ -1048,7 +1015,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Fine Management › should create fine for multiple players" classname="fine-management.spec.ts" time="63.098">
+<testcase name="Feature: Fine Management › should create fine for multiple players" classname="fine-management.spec.ts" time="63.536">
 <failure message="fine-management.spec.ts:89:7 should create fine for multiple players" type="FAILURE">
 <![CDATA[  [chromium] › fine-management.spec.ts:89:7 › Feature: Fine Management › should create fine for multiple players 
 
@@ -1099,7 +1066,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Fine Management › should use predefined fine amounts" classname="fine-management.spec.ts" time="63.68">
+<testcase name="Feature: Fine Management › should use predefined fine amounts" classname="fine-management.spec.ts" time="63.837">
 <failure message="fine-management.spec.ts:129:7 should use predefined fine amounts" type="FAILURE">
 <![CDATA[  [chromium] › fine-management.spec.ts:129:7 › Feature: Fine Management › should use predefined fine amounts 
 
@@ -1150,7 +1117,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Fine Management › should toggle fine payment status" classname="fine-management.spec.ts" time="63.002">
+<testcase name="Feature: Fine Management › should toggle fine payment status" classname="fine-management.spec.ts" time="63.636">
 <failure message="fine-management.spec.ts:146:7 should toggle fine payment status" type="FAILURE">
 <![CDATA[  [chromium] › fine-management.spec.ts:146:7 › Feature: Fine Management › should toggle fine payment status 
 
@@ -1201,7 +1168,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Fine Management › should filter fines by status" classname="fine-management.spec.ts" time="62.821">
+<testcase name="Feature: Fine Management › should filter fines by status" classname="fine-management.spec.ts" time="63.466">
 <failure message="fine-management.spec.ts:180:7 should filter fines by status" type="FAILURE">
 <![CDATA[  [chromium] › fine-management.spec.ts:180:7 › Feature: Fine Management › should filter fines by status 
 
@@ -1252,7 +1219,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Fine Management › should display fine in player balance calculation" classname="fine-management.spec.ts" time="63.103">
+<testcase name="Feature: Fine Management › should display fine in player balance calculation" classname="fine-management.spec.ts" time="63.506">
 <failure message="fine-management.spec.ts:211:7 should display fine in player balance calculation" type="FAILURE">
 <![CDATA[  [chromium] › fine-management.spec.ts:211:7 › Feature: Fine Management › should display fine in player balance calculation 
 
@@ -1303,7 +1270,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Fine Management › should clear fine filters" classname="fine-management.spec.ts" time="63.199">
+<testcase name="Feature: Fine Management › should clear fine filters" classname="fine-management.spec.ts" time="63.572">
 <failure message="fine-management.spec.ts:234:7 should clear fine filters" type="FAILURE">
 <![CDATA[  [chromium] › fine-management.spec.ts:234:7 › Feature: Fine Management › should clear fine filters 
 
@@ -1354,7 +1321,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Fine Management › should show open fines KPI" classname="fine-management.spec.ts" time="63.086">
+<testcase name="Feature: Fine Management › should show open fines KPI" classname="fine-management.spec.ts" time="63.589">
 <failure message="fine-management.spec.ts:250:7 should show open fines KPI" type="FAILURE">
 <![CDATA[  [chromium] › fine-management.spec.ts:250:7 › Feature: Fine Management › should show open fines KPI 
 
@@ -1406,8 +1373,8 @@
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="payment-processing.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="chromium" tests="9" failures="9" skipped="0" time="568.483" errors="0">
-<testcase name="Feature: Payment Processing › should record a cash payment successfully" classname="payment-processing.spec.ts" time="62.663">
+<testsuite name="payment-processing.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="chromium" tests="9" failures="9" skipped="0" time="569.867" errors="0">
+<testcase name="Feature: Payment Processing › should record a cash payment successfully" classname="payment-processing.spec.ts" time="63.95">
 <failure message="payment-processing.spec.ts:41:7 should record a cash payment successfully" type="FAILURE">
 <![CDATA[  [chromium] › payment-processing.spec.ts:41:7 › Feature: Payment Processing › should record a cash payment successfully 
 
@@ -1458,7 +1425,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Payment Processing › should validate payment form fields" classname="payment-processing.spec.ts" time="63.228">
+<testcase name="Feature: Payment Processing › should validate payment form fields" classname="payment-processing.spec.ts" time="62.427">
 <failure message="payment-processing.spec.ts:72:7 should validate payment form fields" type="FAILURE">
 <![CDATA[  [chromium] › payment-processing.spec.ts:72:7 › Feature: Payment Processing › should validate payment form fields 
 
@@ -1509,7 +1476,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Payment Processing › should apply payment to balance correctly" classname="payment-processing.spec.ts" time="63.227">
+<testcase name="Feature: Payment Processing › should apply payment to balance correctly" classname="payment-processing.spec.ts" time="63.404">
 <failure message="payment-processing.spec.ts:91:7 should apply payment to balance correctly" type="FAILURE">
 <![CDATA[  [chromium] › payment-processing.spec.ts:91:7 › Feature: Payment Processing › should apply payment to balance correctly 
 
@@ -1560,7 +1527,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Payment Processing › should filter payments by type" classname="payment-processing.spec.ts" time="63.674">
+<testcase name="Feature: Payment Processing › should filter payments by type" classname="payment-processing.spec.ts" time="63.04">
 <failure message="payment-processing.spec.ts:123:7 should filter payments by type" type="FAILURE">
 <![CDATA[  [chromium] › payment-processing.spec.ts:123:7 › Feature: Payment Processing › should filter payments by type 
 
@@ -1611,7 +1578,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Payment Processing › should display payment in recent activity" classname="payment-processing.spec.ts" time="63.003">
+<testcase name="Feature: Payment Processing › should display payment in recent activity" classname="payment-processing.spec.ts" time="63.388">
 <failure message="payment-processing.spec.ts:148:7 should display payment in recent activity" type="FAILURE">
 <![CDATA[  [chromium] › payment-processing.spec.ts:148:7 › Feature: Payment Processing › should display payment in recent activity 
 
@@ -1662,7 +1629,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Payment Processing › should show revenue KPIs after payment" classname="payment-processing.spec.ts" time="63.23">
+<testcase name="Feature: Payment Processing › should show revenue KPIs after payment" classname="payment-processing.spec.ts" time="63.433">
 <failure message="payment-processing.spec.ts:172:7 should show revenue KPIs after payment" type="FAILURE">
 <![CDATA[  [chromium] › payment-processing.spec.ts:172:7 › Feature: Payment Processing › should show revenue KPIs after payment 
 
@@ -1713,7 +1680,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Payment Processing › should create Guthaben and Guthaben Rest payments" classname="payment-processing.spec.ts" time="63.16">
+<testcase name="Feature: Payment Processing › should create Guthaben and Guthaben Rest payments" classname="payment-processing.spec.ts" time="63.253">
 <failure message="payment-processing.spec.ts:201:7 should create Guthaben and Guthaben Rest payments" type="FAILURE">
 <![CDATA[  [chromium] › payment-processing.spec.ts:201:7 › Feature: Payment Processing › should create Guthaben and Guthaben Rest payments 
 
@@ -1764,7 +1731,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Payment Processing › should handle multiple payments from same player" classname="payment-processing.spec.ts" time="63.187">
+<testcase name="Feature: Payment Processing › should handle multiple payments from same player" classname="payment-processing.spec.ts" time="63.479">
 <failure message="payment-processing.spec.ts:229:7 should handle multiple payments from same player" type="FAILURE">
 <![CDATA[  [chromium] › payment-processing.spec.ts:229:7 › Feature: Payment Processing › should handle multiple payments from same player 
 
@@ -1815,7 +1782,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Payment Processing › should display total credits correctly" classname="payment-processing.spec.ts" time="63.111">
+<testcase name="Feature: Payment Processing › should display total credits correctly" classname="payment-processing.spec.ts" time="63.493">
 <failure message="payment-processing.spec.ts:256:7 should display total credits correctly" type="FAILURE">
 <![CDATA[  [chromium] › payment-processing.spec.ts:256:7 › Feature: Payment Processing › should display total credits correctly 
 
@@ -1867,8 +1834,8 @@
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="player-management.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="chromium" tests="10" failures="9" skipped="1" time="585.375" errors="0">
-<testcase name="Feature: Player Management › should display players page correctly" classname="player-management.spec.ts" time="62.739">
+<testsuite name="player-management.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="chromium" tests="10" failures="9" skipped="1" time="585.383" errors="0">
+<testcase name="Feature: Player Management › should display players page correctly" classname="player-management.spec.ts" time="63.903">
 <failure message="player-management.spec.ts:29:7 should display players page correctly" type="FAILURE">
 <![CDATA[  [chromium] › player-management.spec.ts:29:7 › Feature: Player Management › should display players page correctly 
 
@@ -1919,7 +1886,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Player Management › should create a new player successfully" classname="player-management.spec.ts" time="63.208">
+<testcase name="Feature: Player Management › should create a new player successfully" classname="player-management.spec.ts" time="62.449">
 <failure message="player-management.spec.ts:37:7 should create a new player successfully" type="FAILURE">
 <![CDATA[  [chromium] › player-management.spec.ts:37:7 › Feature: Player Management › should create a new player successfully 
 
@@ -1970,7 +1937,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Player Management › should validate player form fields" classname="player-management.spec.ts" time="63.23">
+<testcase name="Feature: Player Management › should validate player form fields" classname="player-management.spec.ts" time="63.547">
 <failure message="player-management.spec.ts:55:7 should validate player form fields" type="FAILURE">
 <![CDATA[  [chromium] › player-management.spec.ts:55:7 › Feature: Player Management › should validate player form fields 
 
@@ -2021,7 +1988,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Player Management › should edit player details successfully" classname="player-management.spec.ts" time="63.656">
+<testcase name="Feature: Player Management › should edit player details successfully" classname="player-management.spec.ts" time="63.779">
 <failure message="player-management.spec.ts:70:7 should edit player details successfully" type="FAILURE">
 <![CDATA[  [chromium] › player-management.spec.ts:70:7 › Feature: Player Management › should edit player details successfully 
 
@@ -2072,7 +2039,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Player Management › should view player balance" classname="player-management.spec.ts" time="62.957">
+<testcase name="Feature: Player Management › should view player balance" classname="player-management.spec.ts" time="63.006">
 <failure message="player-management.spec.ts:92:7 should view player balance" type="FAILURE">
 <![CDATA[  [chromium] › player-management.spec.ts:92:7 › Feature: Player Management › should view player balance 
 
@@ -2123,7 +2090,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Player Management › should deactivate and reactivate player" classname="player-management.spec.ts" time="63.248">
+<testcase name="Feature: Player Management › should deactivate and reactivate player" classname="player-management.spec.ts" time="63.394">
 <failure message="player-management.spec.ts:105:7 should deactivate and reactivate player" type="FAILURE">
 <![CDATA[  [chromium] › player-management.spec.ts:105:7 › Feature: Player Management › should deactivate and reactivate player 
 
@@ -2174,7 +2141,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Player Management › should delete player successfully" classname="player-management.spec.ts" time="63.162">
+<testcase name="Feature: Player Management › should delete player successfully" classname="player-management.spec.ts" time="63.287">
 <failure message="player-management.spec.ts:132:7 should delete player successfully" type="FAILURE">
 <![CDATA[  [chromium] › player-management.spec.ts:132:7 › Feature: Player Management › should delete player successfully 
 
@@ -2225,7 +2192,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Player Management › should navigate to player detail page" classname="player-management.spec.ts" time="63.204">
+<testcase name="Feature: Player Management › should navigate to player detail page" classname="player-management.spec.ts" time="63.477">
 <failure message="player-management.spec.ts:150:7 should navigate to player detail page" type="FAILURE">
 <![CDATA[  [chromium] › player-management.spec.ts:150:7 › Feature: Player Management › should navigate to player detail page 
 
@@ -2276,7 +2243,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Player Management › should show validation for duplicate player names" classname="player-management.spec.ts" time="63.11">
+<testcase name="Feature: Player Management › should show validation for duplicate player names" classname="player-management.spec.ts" time="63.486">
 <failure message="player-management.spec.ts:162:7 should show validation for duplicate player names" type="FAILURE">
 <![CDATA[  [chromium] › player-management.spec.ts:162:7 › Feature: Player Management › should show validation for duplicate player names 
 
@@ -2327,29 +2294,32 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Player Management › should display player with generated avatar when no photo URL provided" classname="player-management.spec.ts" time="16.861">
+<testcase name="Feature: Player Management › should display player with generated avatar when no photo URL provided" classname="player-management.spec.ts" time="15.055">
 <skipped>
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="responsive-design.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="chromium" tests="19" failures="10" skipped="7" time="581.251" errors="0">
-<testcase name="Feature: Responsive Design › Mobile - Portrait › should display mobile navigation correctly" classname="responsive-design.spec.ts" time="4.038">
+<testsuite name="responsive-design.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="chromium" tests="19" failures="9" skipped="8" time="585.499" errors="0">
+<testcase name="Feature: Responsive Design › Mobile - Portrait › should display mobile navigation correctly" classname="responsive-design.spec.ts" time="64.206">
 <failure message="responsive-design.spec.ts:18:9 should display mobile navigation correctly" type="FAILURE">
 <![CDATA[  [chromium] › responsive-design.spec.ts:18:9 › Feature: Responsive Design › Mobile - Portrait › should display mobile navigation correctly 
 
-    Error: expect(received).toBe(expected) // Object.is equality
+    Test timeout of 60000ms exceeded.
 
-    Expected: true
-    Received: false
+    Error: page.waitForLoadState: Test timeout of 60000ms exceeded.
 
-      25 |       const isVisible = await mobileMenu.isVisible().catch(() => false);
-      26 |
-    > 27 |       expect(isVisible).toBe(true);
-         |                         ^
-      28 |     });
-      29 |
-      30 |     test('should adapt dashboard layout for mobile', async ({ page }) => {
-        at /Users/private/projects/studio/e2e/responsive-design.spec.ts:27:25
+       at page-objects/BasePage.ts:33
+
+      31 |    */
+      32 |   async waitForPageLoad(): Promise<void> {
+    > 33 |     await this.page.waitForLoadState('networkidle');
+         |                     ^
+      34 |   }
+      35 |
+      36 |   /**
+        at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)
+        at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)
+        at /Users/private/projects/studio/e2e/responsive-design.spec.ts:21:7
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     ../test-results/responsive-design-Feature--2f87f-mobile-navigation-correctly-chromium/test-failed-1.png
@@ -2372,13 +2342,11 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Responsive Design › Mobile - Portrait › should adapt dashboard layout for mobile" classname="responsive-design.spec.ts" time="2.452">
+<testcase name="Feature: Responsive Design › Mobile - Portrait › should adapt dashboard layout for mobile" classname="responsive-design.spec.ts" time="3.116">
 </testcase>
-<testcase name="Feature: Responsive Design › Mobile - Portrait › should make action buttons accessible on mobile" classname="responsive-design.spec.ts" time="5.346">
-</testcase>
-<testcase name="Feature: Responsive Design › Mobile - Portrait › should handle table scrolling on mobile" classname="responsive-design.spec.ts" time="62.164">
-<failure message="responsive-design.spec.ts:53:9 should handle table scrolling on mobile" type="FAILURE">
-<![CDATA[  [chromium] › responsive-design.spec.ts:53:9 › Feature: Responsive Design › Mobile - Portrait › should handle table scrolling on mobile 
+<testcase name="Feature: Responsive Design › Mobile - Portrait › should make action buttons accessible on mobile" classname="responsive-design.spec.ts" time="63.734">
+<failure message="responsive-design.spec.ts:43:9 should make action buttons accessible on mobile" type="FAILURE">
+<![CDATA[  [chromium] › responsive-design.spec.ts:43:9 › Feature: Responsive Design › Mobile - Portrait › should make action buttons accessible on mobile 
 
     Test timeout of 60000ms exceeded.
 
@@ -2393,32 +2361,34 @@
       34 |   }
       35 |
       36 |   /**
-        at MoneyPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)
-        at MoneyPage.navigate (/Users/private/projects/studio/e2e/page-objects/MoneyPage.ts:71:16)
-        at /Users/private/projects/studio/e2e/responsive-design.spec.ts:56:7
+        at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)
+        at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)
+        at /Users/private/projects/studio/e2e/responsive-design.spec.ts:46:7
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/test-failed-1.png
+    ../test-results/responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/video.webm
+    ../test-results/responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ../test-results/responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/error-context.md
+    Error Context: ../test-results/responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/test-failed-1.png]]
+[[ATTACHMENT|responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/test-failed-1.png]]
 
-[[ATTACHMENT|responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/video.webm]]
+[[ATTACHMENT|responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/video.webm]]
 
-[[ATTACHMENT|responsive-design-Feature--51149-e-table-scrolling-on-mobile-chromium/error-context.md]]
+[[ATTACHMENT|responsive-design-Feature--637eb-uttons-accessible-on-mobile-chromium/error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Responsive Design › Mobile - Landscape › should adapt to landscape orientation" classname="responsive-design.spec.ts" time="62.14">
+<testcase name="Feature: Responsive Design › Mobile - Portrait › should handle table scrolling on mobile" classname="responsive-design.spec.ts" time="5.062">
+</testcase>
+<testcase name="Feature: Responsive Design › Mobile - Landscape › should adapt to landscape orientation" classname="responsive-design.spec.ts" time="62.697">
 <failure message="responsive-design.spec.ts:70:9 should adapt to landscape orientation" type="FAILURE">
 <![CDATA[  [chromium] › responsive-design.spec.ts:70:9 › Feature: Responsive Design › Mobile - Landscape › should adapt to landscape orientation 
 
@@ -2460,7 +2430,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Responsive Design › Tablet › should display tablet layout correctly" classname="responsive-design.spec.ts" time="62.06">
+<testcase name="Feature: Responsive Design › Tablet › should display tablet layout correctly" classname="responsive-design.spec.ts" time="63.231">
 <failure message="responsive-design.spec.ts:83:9 should display tablet layout correctly" type="FAILURE">
 <![CDATA[  [chromium] › responsive-design.spec.ts:83:9 › Feature: Responsive Design › Tablet › should display tablet layout correctly 
 
@@ -2502,7 +2472,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Responsive Design › Tablet › should show grid layouts on tablet" classname="responsive-design.spec.ts" time="63.622">
+<testcase name="Feature: Responsive Design › Tablet › should show grid layouts on tablet" classname="responsive-design.spec.ts" time="62.799">
 <failure message="responsive-design.spec.ts:96:9 should show grid layouts on tablet" type="FAILURE">
 <![CDATA[  [chromium] › responsive-design.spec.ts:96:9 › Feature: Responsive Design › Tablet › should show grid layouts on tablet 
 
@@ -2544,7 +2514,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Responsive Design › Desktop › should display full desktop layout" classname="responsive-design.spec.ts" time="63.067">
+<testcase name="Feature: Responsive Design › Desktop › should display full desktop layout" classname="responsive-design.spec.ts" time="63.486">
 <failure message="responsive-design.spec.ts:109:9 should display full desktop layout" type="FAILURE">
 <![CDATA[  [chromium] › responsive-design.spec.ts:109:9 › Feature: Responsive Design › Desktop › should display full desktop layout 
 
@@ -2586,7 +2556,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Responsive Design › Desktop › should show sidebar navigation on desktop" classname="responsive-design.spec.ts" time="62.404">
+<testcase name="Feature: Responsive Design › Desktop › should show sidebar navigation on desktop" classname="responsive-design.spec.ts" time="63.969">
 <failure message="responsive-design.spec.ts:121:9 should show sidebar navigation on desktop" type="FAILURE">
 <![CDATA[  [chromium] › responsive-design.spec.ts:121:9 › Feature: Responsive Design › Desktop › should show sidebar navigation on desktop 
 
@@ -2628,7 +2598,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Responsive Design › Desktop › should display charts at full width on desktop" classname="responsive-design.spec.ts" time="62.61">
+<testcase name="Feature: Responsive Design › Desktop › should display charts at full width on desktop" classname="responsive-design.spec.ts" time="64.185">
 <failure message="responsive-design.spec.ts:135:9 should display charts at full width on desktop" type="FAILURE">
 <![CDATA[  [chromium] › responsive-design.spec.ts:135:9 › Feature: Responsive Design › Desktop › should display charts at full width on desktop 
 
@@ -2670,7 +2640,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Responsive Design › Desktop › should show hover effects on desktop" classname="responsive-design.spec.ts" time="62.657">
+<testcase name="Feature: Responsive Design › Desktop › should show hover effects on desktop" classname="responsive-design.spec.ts" time="63.313">
 <failure message="responsive-design.spec.ts:145:9 should show hover effects on desktop" type="FAILURE">
 <![CDATA[  [chromium] › responsive-design.spec.ts:145:9 › Feature: Responsive Design › Desktop › should show hover effects on desktop 
 
@@ -2712,49 +2682,11 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Responsive Design › Cross-Device Consistency › should maintain data consistency across viewports" classname="responsive-design.spec.ts" time="64.038">
-<failure message="responsive-design.spec.ts:161:9 should maintain data consistency across viewports" type="FAILURE">
-<![CDATA[  [chromium] › responsive-design.spec.ts:161:9 › Feature: Responsive Design › Cross-Device Consistency › should maintain data consistency across viewports 
-
-    Test timeout of 60000ms exceeded.
-
-    Error: page.waitForLoadState: Test timeout of 60000ms exceeded.
-
-       at page-objects/BasePage.ts:33
-
-      31 |    */
-      32 |   async waitForPageLoad(): Promise<void> {
-    > 33 |     await this.page.waitForLoadState('networkidle');
-         |                     ^
-      34 |   }
-      35 |
-      36 |   /**
-        at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)
-        at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)
-        at /Users/private/projects/studio/e2e/responsive-design.spec.ts:166:7
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/responsive-design-Feature--a8d61-onsistency-across-viewports-chromium/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/responsive-design-Feature--a8d61-onsistency-across-viewports-chromium/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ../test-results/responsive-design-Feature--a8d61-onsistency-across-viewports-chromium/error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|responsive-design-Feature--a8d61-onsistency-across-viewports-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|responsive-design-Feature--a8d61-onsistency-across-viewports-chromium/video.webm]]
-
-[[ATTACHMENT|responsive-design-Feature--a8d61-onsistency-across-viewports-chromium/error-context.md]]
-]]>
-</system-out>
+<testcase name="Feature: Responsive Design › Cross-Device Consistency › should maintain data consistency across viewports" classname="responsive-design.spec.ts" time="5.701">
+<skipped>
+</skipped>
 </testcase>
-<testcase name="Feature: Responsive Design › Cross-Device Consistency › should maintain functionality across devices" classname="responsive-design.spec.ts" time="4.653">
+<testcase name="Feature: Responsive Design › Cross-Device Consistency › should maintain functionality across devices" classname="responsive-design.spec.ts" time="0">
 <skipped>
 </skipped>
 </testcase>
@@ -2783,8 +2715,8 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="accessibility.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="firefox" tests="23" failures="10" skipped="13" time="562.422" errors="0">
-<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on dashboard" classname="accessibility.spec.ts" time="13.518">
+<testsuite name="accessibility.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="firefox" tests="23" failures="10" skipped="13" time="571.592" errors="0">
+<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on dashboard" classname="accessibility.spec.ts" time="16.186">
 <failure message="accessibility.spec.ts:19:9 should not have accessibility violations on dashboard" type="FAILURE">
 <![CDATA[  [firefox] › accessibility.spec.ts:19:9 › Feature: Accessibility › WCAG Compliance › should not have accessibility violations on dashboard 
 
@@ -3173,7 +3105,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on players page" classname="accessibility.spec.ts" time="60.945">
+<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on players page" classname="accessibility.spec.ts" time="60.925">
 <failure message="accessibility.spec.ts:28:9 should not have accessibility violations on players page" type="FAILURE">
 <![CDATA[  [firefox] › accessibility.spec.ts:28:9 › Feature: Accessibility › WCAG Compliance › should not have accessibility violations on players page 
 
@@ -3215,7 +3147,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on money page" classname="accessibility.spec.ts" time="60.395">
+<testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on money page" classname="accessibility.spec.ts" time="60.366">
 <failure message="accessibility.spec.ts:37:9 should not have accessibility violations on money page" type="FAILURE">
 <![CDATA[  [firefox] › accessibility.spec.ts:37:9 › Feature: Accessibility › WCAG Compliance › should not have accessibility violations on money page 
 
@@ -3257,7 +3189,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate using Tab key" classname="accessibility.spec.ts" time="60.328">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate using Tab key" classname="accessibility.spec.ts" time="60.514">
 <failure message="accessibility.spec.ts:48:9 should navigate using Tab key" type="FAILURE">
 <![CDATA[  [firefox] › accessibility.spec.ts:48:9 › Feature: Accessibility › Keyboard Navigation › should navigate using Tab key 
 
@@ -3299,7 +3231,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should activate buttons with Enter key" classname="accessibility.spec.ts" time="60.378">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should activate buttons with Enter key" classname="accessibility.spec.ts" time="60.511">
 <failure message="accessibility.spec.ts:61:9 should activate buttons with Enter key" type="FAILURE">
 <![CDATA[  [firefox] › accessibility.spec.ts:61:9 › Feature: Accessibility › Keyboard Navigation › should activate buttons with Enter key 
 
@@ -3341,7 +3273,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should activate buttons with Space key" classname="accessibility.spec.ts" time="60.461">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should activate buttons with Space key" classname="accessibility.spec.ts" time="60.475">
 <failure message="accessibility.spec.ts:76:9 should activate buttons with Space key" type="FAILURE">
 <![CDATA[  [firefox] › accessibility.spec.ts:76:9 › Feature: Accessibility › Keyboard Navigation › should activate buttons with Space key 
 
@@ -3383,7 +3315,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should close dialogs with Escape key" classname="accessibility.spec.ts" time="60.312">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should close dialogs with Escape key" classname="accessibility.spec.ts" time="60.47">
 <failure message="accessibility.spec.ts:91:9 should close dialogs with Escape key" type="FAILURE">
 <![CDATA[  [firefox] › accessibility.spec.ts:91:9 › Feature: Accessibility › Keyboard Navigation › should close dialogs with Escape key 
 
@@ -3425,7 +3357,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate through form fields with Tab" classname="accessibility.spec.ts" time="61.273">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate through form fields with Tab" classname="accessibility.spec.ts" time="61.783">
 <failure message="accessibility.spec.ts:108:9 should navigate through form fields with Tab" type="FAILURE">
 <![CDATA[  [firefox] › accessibility.spec.ts:108:9 › Feature: Accessibility › Keyboard Navigation › should navigate through form fields with Tab 
 
@@ -3467,7 +3399,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate tables with arrow keys" classname="accessibility.spec.ts" time="61.118">
+<testcase name="Feature: Accessibility › Keyboard Navigation › should navigate tables with arrow keys" classname="accessibility.spec.ts" time="61.848">
 <failure message="accessibility.spec.ts:124:9 should navigate tables with arrow keys" type="FAILURE">
 <![CDATA[  [firefox] › accessibility.spec.ts:124:9 › Feature: Accessibility › Keyboard Navigation › should navigate tables with arrow keys 
 
@@ -3509,7 +3441,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Screen Reader Support › should have proper heading hierarchy" classname="accessibility.spec.ts" time="60.638">
+<testcase name="Feature: Accessibility › Screen Reader Support › should have proper heading hierarchy" classname="accessibility.spec.ts" time="60.536">
 <failure message="accessibility.spec.ts:143:9 should have proper heading hierarchy" type="FAILURE">
 <![CDATA[  [firefox] › accessibility.spec.ts:143:9 › Feature: Accessibility › Screen Reader Support › should have proper heading hierarchy 
 
@@ -3551,7 +3483,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Accessibility › Screen Reader Support › should have alt text for images" classname="accessibility.spec.ts" time="3.056">
+<testcase name="Feature: Accessibility › Screen Reader Support › should have alt text for images" classname="accessibility.spec.ts" time="7.978">
 <skipped>
 </skipped>
 </testcase>
@@ -3604,10 +3536,59 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="dashboard-analytics.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="firefox" tests="13" failures="9" skipped="3" time="566.578" errors="0">
-<testcase name="Feature: Dashboard Analytics › should display dashboard with all key components" classname="dashboard-analytics.spec.ts" time="13.22">
+<testsuite name="dashboard-analytics.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="firefox" tests="13" failures="9" skipped="3" time="561.848" errors="0">
+<testcase name="Feature: Dashboard Analytics › should display dashboard with all key components" classname="dashboard-analytics.spec.ts" time="60.563">
+<failure message="dashboard-analytics.spec.ts:27:7 should display dashboard with all key components" type="FAILURE">
+<![CDATA[  [firefox] › dashboard-analytics.spec.ts:27:7 › Feature: Dashboard Analytics › should display dashboard with all key components 
+
+    Test timeout of 60000ms exceeded while running "beforeEach" hook.
+
+      18 |   let playersPage: PlayersPage;
+      19 |
+    > 20 |   test.beforeEach(async ({ page }) => {
+         |        ^
+      21 |     dashboardPage = new DashboardPage(page);
+      22 |     playersPage = new PlayersPage(page);
+      23 |
+        at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8
+
+    Error: page.waitForLoadState: Test timeout of 60000ms exceeded.
+
+       at page-objects/BasePage.ts:33
+
+      31 |    */
+      32 |   async waitForPageLoad(): Promise<void> {
+    > 33 |     await this.page.waitForLoadState('networkidle');
+         |                     ^
+      34 |   }
+      35 |
+      36 |   /**
+        at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)
+        at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)
+        at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:24:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-analytics-Featur-d82d4-ard-with-all-key-components-firefox/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-analytics-Featur-d82d4-ard-with-all-key-components-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-analytics-Featur-d82d4-ard-with-all-key-components-firefox/video.webm]]
+
+[[ATTACHMENT|dashboard-analytics-Featur-d82d4-ard-with-all-key-components-firefox/error-context.md]]
+]]>
+</system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should display stat cards correctly" classname="dashboard-analytics.spec.ts" time="60.216">
+<testcase name="Feature: Dashboard Analytics › should display stat cards correctly" classname="dashboard-analytics.spec.ts" time="60.317">
 <failure message="dashboard-analytics.spec.ts:37:7 should display stat cards correctly" type="FAILURE">
 <![CDATA[  [firefox] › dashboard-analytics.spec.ts:37:7 › Feature: Dashboard Analytics › should display stat cards correctly 
 
@@ -3658,7 +3639,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should render revenue chart" classname="dashboard-analytics.spec.ts" time="60.247">
+<testcase name="Feature: Dashboard Analytics › should render revenue chart" classname="dashboard-analytics.spec.ts" time="60.61">
 <failure message="dashboard-analytics.spec.ts:50:7 should render revenue chart" type="FAILURE">
 <![CDATA[  [firefox] › dashboard-analytics.spec.ts:50:7 › Feature: Dashboard Analytics › should render revenue chart 
 
@@ -3709,7 +3690,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should display top debtors widget" classname="dashboard-analytics.spec.ts" time="60.284">
+<testcase name="Feature: Dashboard Analytics › should display top debtors widget" classname="dashboard-analytics.spec.ts" time="60.618">
 <failure message="dashboard-analytics.spec.ts:59:7 should display top debtors widget" type="FAILURE">
 <![CDATA[  [firefox] › dashboard-analytics.spec.ts:59:7 › Feature: Dashboard Analytics › should display top debtors widget 
 
@@ -3760,7 +3741,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should display recent activity widget" classname="dashboard-analytics.spec.ts" time="60.438">
+<testcase name="Feature: Dashboard Analytics › should display recent activity widget" classname="dashboard-analytics.spec.ts" time="60.506">
 <failure message="dashboard-analytics.spec.ts:72:7 should display recent activity widget" type="FAILURE">
 <![CDATA[  [firefox] › dashboard-analytics.spec.ts:72:7 › Feature: Dashboard Analytics › should display recent activity widget 
 
@@ -3811,58 +3792,9 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should navigate to players page from dashboard" classname="dashboard-analytics.spec.ts" time="60.329">
-<failure message="dashboard-analytics.spec.ts:84:7 should navigate to players page from dashboard" type="FAILURE">
-<![CDATA[  [firefox] › dashboard-analytics.spec.ts:84:7 › Feature: Dashboard Analytics › should navigate to players page from dashboard 
-
-    Test timeout of 60000ms exceeded while running "beforeEach" hook.
-
-      18 |   let playersPage: PlayersPage;
-      19 |
-    > 20 |   test.beforeEach(async ({ page }) => {
-         |        ^
-      21 |     dashboardPage = new DashboardPage(page);
-      22 |     playersPage = new PlayersPage(page);
-      23 |
-        at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:20:8
-
-    Error: page.waitForLoadState: Test timeout of 60000ms exceeded.
-
-       at page-objects/BasePage.ts:33
-
-      31 |    */
-      32 |   async waitForPageLoad(): Promise<void> {
-    > 33 |     await this.page.waitForLoadState('networkidle');
-         |                     ^
-      34 |   }
-      35 |
-      36 |   /**
-        at DashboardPage.waitForPageLoad (/Users/private/projects/studio/e2e/page-objects/BasePage.ts:33:21)
-        at DashboardPage.navigate (/Users/private/projects/studio/e2e/page-objects/DashboardPage.ts:39:16)
-        at /Users/private/projects/studio/e2e/dashboard-analytics.spec.ts:24:5
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/dashboard-analytics-Featur-ade69-players-page-from-dashboard-firefox/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/dashboard-analytics-Featur-ade69-players-page-from-dashboard-firefox/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ../test-results/dashboard-analytics-Featur-ade69-players-page-from-dashboard-firefox/error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|dashboard-analytics-Featur-ade69-players-page-from-dashboard-firefox/test-failed-1.png]]
-
-[[ATTACHMENT|dashboard-analytics-Featur-ade69-players-page-from-dashboard-firefox/video.webm]]
-
-[[ATTACHMENT|dashboard-analytics-Featur-ade69-players-page-from-dashboard-firefox/error-context.md]]
-]]>
-</system-out>
+<testcase name="Feature: Dashboard Analytics › should navigate to players page from dashboard" classname="dashboard-analytics.spec.ts" time="18.207">
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should open quick action dialogs" classname="dashboard-analytics.spec.ts" time="60.324">
+<testcase name="Feature: Dashboard Analytics › should open quick action dialogs" classname="dashboard-analytics.spec.ts" time="60.21">
 <failure message="dashboard-analytics.spec.ts:95:7 should open quick action dialogs" type="FAILURE">
 <![CDATA[  [firefox] › dashboard-analytics.spec.ts:95:7 › Feature: Dashboard Analytics › should open quick action dialogs 
 
@@ -3913,7 +3845,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should display data freshness indicator" classname="dashboard-analytics.spec.ts" time="60.336">
+<testcase name="Feature: Dashboard Analytics › should display data freshness indicator" classname="dashboard-analytics.spec.ts" time="60.245">
 <failure message="dashboard-analytics.spec.ts:116:7 should display data freshness indicator" type="FAILURE">
 <![CDATA[  [firefox] › dashboard-analytics.spec.ts:116:7 › Feature: Dashboard Analytics › should display data freshness indicator 
 
@@ -3964,7 +3896,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should show correct stat values" classname="dashboard-analytics.spec.ts" time="60.513">
+<testcase name="Feature: Dashboard Analytics › should show correct stat values" classname="dashboard-analytics.spec.ts" time="60.267">
 <failure message="dashboard-analytics.spec.ts:126:7 should show correct stat values" type="FAILURE">
 <![CDATA[  [firefox] › dashboard-analytics.spec.ts:126:7 › Feature: Dashboard Analytics › should show correct stat values 
 
@@ -4015,7 +3947,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should update dashboard in real-time after adding transaction" classname="dashboard-analytics.spec.ts" time="60.508">
+<testcase name="Feature: Dashboard Analytics › should update dashboard in real-time after adding transaction" classname="dashboard-analytics.spec.ts" time="60.305">
 <failure message="dashboard-analytics.spec.ts:139:7 should update dashboard in real-time after adding transaction" type="FAILURE">
 <![CDATA[  [firefox] › dashboard-analytics.spec.ts:139:7 › Feature: Dashboard Analytics › should update dashboard in real-time after adding transaction 
 
@@ -4066,7 +3998,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Feature: Dashboard Analytics › should handle empty state gracefully" classname="dashboard-analytics.spec.ts" time="10.163">
+<testcase name="Feature: Dashboard Analytics › should handle empty state gracefully" classname="dashboard-analytics.spec.ts" time="0">
 <skipped>
 </skipped>
 </testcase>
@@ -4079,8 +4011,8 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="fine-management.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="firefox" tests="9" failures="0" skipped="9" time="14.195" errors="0">
-<testcase name="Feature: Fine Management › should create a manual fine successfully" classname="fine-management.spec.ts" time="14.195">
+<testsuite name="fine-management.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="firefox" tests="9" failures="0" skipped="9" time="12.911" errors="0">
+<testcase name="Feature: Fine Management › should create a manual fine successfully" classname="fine-management.spec.ts" time="12.911">
 <skipped>
 </skipped>
 </testcase>
@@ -4117,8 +4049,8 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="payment-processing.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="firefox" tests="9" failures="0" skipped="9" time="15.167" errors="0">
-<testcase name="Feature: Payment Processing › should record a cash payment successfully" classname="payment-processing.spec.ts" time="15.167">
+<testsuite name="payment-processing.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="firefox" tests="9" failures="0" skipped="9" time="11.708" errors="0">
+<testcase name="Feature: Payment Processing › should record a cash payment successfully" classname="payment-processing.spec.ts" time="11.708">
 <skipped>
 </skipped>
 </testcase>
@@ -4155,7 +4087,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="player-management.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="firefox" tests="10" failures="0" skipped="10" time="0" errors="0">
+<testsuite name="player-management.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="firefox" tests="10" failures="0" skipped="10" time="0" errors="0">
 <testcase name="Feature: Player Management › should display players page correctly" classname="player-management.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4197,7 +4129,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="responsive-design.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="firefox" tests="19" failures="0" skipped="19" time="0" errors="0">
+<testsuite name="responsive-design.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="firefox" tests="19" failures="0" skipped="19" time="0" errors="0">
 <testcase name="Feature: Responsive Design › Mobile - Portrait › should display mobile navigation correctly" classname="responsive-design.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4275,7 +4207,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="accessibility.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="webkit" tests="23" failures="0" skipped="23" time="0" errors="0">
+<testsuite name="accessibility.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="webkit" tests="23" failures="0" skipped="23" time="0" errors="0">
 <testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on dashboard" classname="accessibility.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4369,7 +4301,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="dashboard-analytics.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="webkit" tests="13" failures="0" skipped="13" time="0" errors="0">
+<testsuite name="dashboard-analytics.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="webkit" tests="13" failures="0" skipped="13" time="0" errors="0">
 <testcase name="Feature: Dashboard Analytics › should display dashboard with all key components" classname="dashboard-analytics.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4423,7 +4355,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="fine-management.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="webkit" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testsuite name="fine-management.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="webkit" tests="9" failures="0" skipped="9" time="0" errors="0">
 <testcase name="Feature: Fine Management › should create a manual fine successfully" classname="fine-management.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4461,7 +4393,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="payment-processing.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="webkit" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testsuite name="payment-processing.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="webkit" tests="9" failures="0" skipped="9" time="0" errors="0">
 <testcase name="Feature: Payment Processing › should record a cash payment successfully" classname="payment-processing.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4499,7 +4431,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="player-management.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="webkit" tests="10" failures="0" skipped="10" time="0" errors="0">
+<testsuite name="player-management.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="webkit" tests="10" failures="0" skipped="10" time="0" errors="0">
 <testcase name="Feature: Player Management › should display players page correctly" classname="player-management.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4541,7 +4473,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="responsive-design.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="webkit" tests="19" failures="0" skipped="19" time="0" errors="0">
+<testsuite name="responsive-design.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="webkit" tests="19" failures="0" skipped="19" time="0" errors="0">
 <testcase name="Feature: Responsive Design › Mobile - Portrait › should display mobile navigation correctly" classname="responsive-design.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4619,7 +4551,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="accessibility.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Chrome" tests="23" failures="0" skipped="23" time="0" errors="0">
+<testsuite name="accessibility.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Chrome" tests="23" failures="0" skipped="23" time="0" errors="0">
 <testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on dashboard" classname="accessibility.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4713,7 +4645,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="dashboard-analytics.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Chrome" tests="13" failures="0" skipped="13" time="0" errors="0">
+<testsuite name="dashboard-analytics.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Chrome" tests="13" failures="0" skipped="13" time="0" errors="0">
 <testcase name="Feature: Dashboard Analytics › should display dashboard with all key components" classname="dashboard-analytics.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4767,7 +4699,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="fine-management.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Chrome" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testsuite name="fine-management.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Chrome" tests="9" failures="0" skipped="9" time="0" errors="0">
 <testcase name="Feature: Fine Management › should create a manual fine successfully" classname="fine-management.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4805,7 +4737,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="payment-processing.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Chrome" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testsuite name="payment-processing.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Chrome" tests="9" failures="0" skipped="9" time="0" errors="0">
 <testcase name="Feature: Payment Processing › should record a cash payment successfully" classname="payment-processing.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4843,7 +4775,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="player-management.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Chrome" tests="10" failures="0" skipped="10" time="0" errors="0">
+<testsuite name="player-management.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Chrome" tests="10" failures="0" skipped="10" time="0" errors="0">
 <testcase name="Feature: Player Management › should display players page correctly" classname="player-management.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4885,7 +4817,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="responsive-design.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Chrome" tests="19" failures="0" skipped="19" time="0" errors="0">
+<testsuite name="responsive-design.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Chrome" tests="19" failures="0" skipped="19" time="0" errors="0">
 <testcase name="Feature: Responsive Design › Mobile - Portrait › should display mobile navigation correctly" classname="responsive-design.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -4963,7 +4895,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="accessibility.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Safari" tests="23" failures="0" skipped="23" time="0" errors="0">
+<testsuite name="accessibility.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Safari" tests="23" failures="0" skipped="23" time="0" errors="0">
 <testcase name="Feature: Accessibility › WCAG Compliance › should not have accessibility violations on dashboard" classname="accessibility.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -5057,7 +4989,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="dashboard-analytics.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Safari" tests="13" failures="0" skipped="13" time="0" errors="0">
+<testsuite name="dashboard-analytics.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Safari" tests="13" failures="0" skipped="13" time="0" errors="0">
 <testcase name="Feature: Dashboard Analytics › should display dashboard with all key components" classname="dashboard-analytics.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -5111,7 +5043,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="fine-management.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Safari" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testsuite name="fine-management.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Safari" tests="9" failures="0" skipped="9" time="0" errors="0">
 <testcase name="Feature: Fine Management › should create a manual fine successfully" classname="fine-management.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -5149,7 +5081,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="payment-processing.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Safari" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testsuite name="payment-processing.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Safari" tests="9" failures="0" skipped="9" time="0" errors="0">
 <testcase name="Feature: Payment Processing › should record a cash payment successfully" classname="payment-processing.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -5187,7 +5119,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="player-management.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Safari" tests="10" failures="0" skipped="10" time="0" errors="0">
+<testsuite name="player-management.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Safari" tests="10" failures="0" skipped="10" time="0" errors="0">
 <testcase name="Feature: Player Management › should display players page correctly" classname="player-management.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -5229,7 +5161,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="responsive-design.spec.ts" timestamp="2025-11-17T16:21:43.489Z" hostname="Mobile Safari" tests="19" failures="0" skipped="19" time="0" errors="0">
+<testsuite name="responsive-design.spec.ts" timestamp="2025-11-17T21:22:57.271Z" hostname="Mobile Safari" tests="19" failures="0" skipped="19" time="0" errors="0">
 <testcase name="Feature: Responsive Design › Mobile - Portrait › should display mobile navigation correctly" classname="responsive-design.spec.ts" time="0">
 <skipped>
 </skipped>
