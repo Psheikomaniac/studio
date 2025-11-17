@@ -9,6 +9,7 @@ export default defineConfig({
     globals: true,
     pool: 'threads',
     // Run integration tests in a single worker to avoid cross-worker emulator/mock issues
+    // @ts-expect-error: poolOptions may not be available in current Vitest type definitions, but is supported at runtime.
     poolOptions: {
       threads: {
         singleThread: true,
