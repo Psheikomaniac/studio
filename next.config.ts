@@ -3,7 +3,12 @@ import type {NextConfig} from 'next';
 const nextConfig: NextConfig = {
   /* config options here */
   typescript: {
-    ignoreBuildErrors: true,
+    // Enforce TypeScript errors to fail the build as required by PRD-08
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    // Ensure ESLint errors fail the build in CI as per PRD-08
+    ignoreDuringBuilds: false,
   },
   images: {
     remotePatterns: [
