@@ -46,7 +46,7 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="justify-start gap-2 w-full">
+        <Button variant="ghost" size="sm" className="justify-start gap-2 w-full" suppressHydrationWarning>
           {icon}
           <span className="text-sm">Theme</span>
         </Button>
