@@ -32,10 +32,17 @@ export interface PredefinedFine {
   amount: number;
 }
 
+export enum PaymentCategory {
+  PAYMENT = 'PAYMENT', // Paying a fine/due
+  DEPOSIT = 'DEPOSIT', // Adding credit
+  TRANSFER = 'TRANSFER'
+}
+
 export interface Payment {
   id: string;
   userId: string;
   reason: string;
+  category?: PaymentCategory;
   amount: number;
   date: string; // ISO string
   paid: boolean;

@@ -30,13 +30,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Payment, Player } from '@/lib/types';
+import { Payment, Player, PaymentCategory } from '@/lib/types';
 import { PlayerMultiSelect } from "@/components/dashboard/player-multi-select";
 
 const paymentSchema = z.object({
   playerIds: z.array(z.string()).min(1, "Please select at least one player."),
   reason: z.string().min(3, 'Reason must be at least 3 characters long.'),
   amount: z.coerce.number().positive("Amount must be a positive number."),
+  category: z.nativeEnum(PaymentCategory),
 });
 
 type AddEditPaymentDialogProps = {
@@ -54,6 +55,7 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
       playerIds: [],
       reason: '',
       amount: 0,
+      category: PaymentCategory.PAYMENT,
     },
   });
 
@@ -64,12 +66,14 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
           playerIds: [payment.userId],
           reason: payment.reason,
           amount: payment.amount,
+          category: payment.category || PaymentCategory.PAYMENT,
         });
       } else {
           form.reset({
               playerIds: [],
               reason: '',
               amount: 0,
+              category: PaymentCategory.PAYMENT,
           });
       }
     }
@@ -79,11 +83,11 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
     if (payment) {
       // Edit single payment: use the first selected player
       const userId = values.playerIds[0] ?? '';
-      onSave({ userId, reason: values.reason, amount: values.amount });
+      onSave({ userId, reason: values.reason, amount: values.amount, category: values.category });
     } else {
       // Create one payment per selected player
       values.playerIds.forEach((userId) => {
-        onSave({ userId, reason: values.reason, amount: values.amount });
+        onSave({ userId, reason: values.reason, amount: values.amount, category: values.category });
       });
     }
     setOpen(false);
@@ -115,6 +119,31 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
                     value={field.value ?? []}
                     onChange={field.onChange}
                   />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.values(PaymentCategory).map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

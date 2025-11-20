@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { Player, Fine, Payment, DuePayment, BeverageConsumption } from "./types"
+import { Player, Fine, Payment, DuePayment, BeverageConsumption, PaymentCategory } from "./types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -19,7 +19,22 @@ export function calculatePlayerBalance(
 ): number {
   // Total credits from payments
   const totalCredits = payments
-    .filter(p => p.userId === playerId && p.paid)
+    .filter(p => {
+      if (p.userId !== playerId) return false;
+      
+      // Category Logic: DEPOSIT and PAYMENT are always credits
+      if (p.category === PaymentCategory.DEPOSIT || p.category === PaymentCategory.PAYMENT) {
+        return true;
+      }
+
+      // Legacy/Default Logic: Paid payments are credits
+      if (p.paid) return true;
+      
+      // Note: Logic for 'paid: false' "Guthaben" strings (from usePlayerBalances) is not included here 
+      // to avoid complexity, assuming standard Payments are 'paid: true'.
+      
+      return false;
+    })
     .reduce((sum, p) => sum + p.amount, 0);
 
   // Total debits from unpaid fines (or partially paid)

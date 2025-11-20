@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Payment, Fine, Due, DuePayment, BeverageConsumption } from '@/lib/types';
+import { Payment, Fine, Due, DuePayment, BeverageConsumption, PaymentCategory } from '@/lib/types';
 
 export type BalanceBreakdown = {
   guthaben: number;
@@ -44,7 +44,18 @@ export function usePlayerBalances(
       if (p.paid) continue; // nur unpaid Guthaben/Guthaben Rest zählen
       const r = norm(p.reason);
       const amt = Number(p.amount) || 0;
-      // Robustere Klassifikation:
+
+      // Robustere Klassifikation via Category
+      if (p.category === PaymentCategory.DEPOSIT || p.category === PaymentCategory.PAYMENT) {
+          ensure(p.userId).guthaben += amt;
+          continue;
+      }
+      // Wenn Category gesetzt ist (z.B. TRANSFER), aber wir es oben nicht behandelt haben:
+      if (p.category) {
+          continue;
+      }
+
+      // Fallback: String Matching
       // - explizit "guthaben rest" oder enthält es → Guthaben Rest
       // - enthält "guthaben" (z. B. "Strafen: Name (Guthaben)") → Guthaben
       // - beginnt mit "einzahlung" (z. B. "Einzahlung: Name") → Guthaben
