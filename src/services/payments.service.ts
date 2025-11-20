@@ -16,6 +16,7 @@ import {
   query,
   orderBy,
   runTransaction,
+  increment,
   type Firestore,
   type CollectionReference,
   type DocumentReference,
@@ -64,8 +65,13 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
       } as Payment;
 
       const docRef = this.getDocRef(id);
+      const userRef = doc(this.firestore, 'users', this.userId);
+
       await runTransaction(this.firestore, async (transaction) => {
         transaction.set(docRef, fullData);
+        if (fullData.paid) {
+          transaction.update(userRef, { balance: increment(fullData.amount) });
+        }
       });
 
       return {
@@ -124,7 +130,42 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
     paymentData: Partial<Omit<Payment, 'id'>>,
     options: UpdateOptions = {}
   ): Promise<ServiceResult<Payment>> {
-    return this.update(paymentId, paymentData as any, options);
+    try {
+      const docRef = this.getDocRef(paymentId);
+      const userRef = doc(this.firestore, 'users', this.userId);
+      const now = this.timestamp();
+
+      const updatedPayment = await runTransaction(this.firestore, async (transaction) => {
+        const docSnap = await transaction.get(docRef);
+        if (!docSnap.exists()) throw new Error('Payment not found');
+        const current = docSnap.data() as Payment;
+
+        const updateData = {
+          ...paymentData,
+          updatedAt: now,
+          ...(options.userId && { updatedBy: options.userId }),
+        };
+
+        // Balance Check
+        const oldAmount = current.paid ? current.amount : 0;
+        const newPaid = (updateData.paid !== undefined) ? updateData.paid : current.paid;
+        const newAmountVal = (updateData.amount !== undefined) ? updateData.amount : current.amount;
+        const newAmount = newPaid ? newAmountVal : 0;
+
+        const diff = newAmount - oldAmount;
+
+        transaction.update(docRef, updateData);
+        if (diff !== 0) {
+          transaction.update(userRef, { balance: increment(diff) });
+        }
+
+        return { ...current, ...updateData } as Payment;
+      });
+
+      return { success: true, data: updatedPayment };
+    } catch (error) {
+      return { success: false, error: error as Error };
+    }
   }
 
   /**
@@ -161,7 +202,31 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
     paymentId: string,
     options: DeleteOptions = {}
   ): Promise<ServiceResult<void>> {
-    return this.delete(paymentId, options);
+    try {
+      const docRef = this.getDocRef(paymentId);
+      const userRef = doc(this.firestore, 'users', this.userId);
+
+      await runTransaction(this.firestore, async (transaction) => {
+        const paymentDoc = await transaction.get(docRef);
+        if (!paymentDoc.exists()) {
+          throw new Error('Payment not found');
+        }
+        const payment = paymentDoc.data() as Payment;
+
+        transaction.delete(docRef);
+
+        if (payment.paid) {
+          transaction.update(userRef, { balance: increment(-payment.amount) });
+        }
+      });
+
+      return { success: true, data: undefined };
+    } catch (error) {
+      return {
+        success: false,
+        error: error as Error,
+      };
+    }
   }
 
   /**

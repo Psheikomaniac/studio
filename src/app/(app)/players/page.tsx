@@ -4,75 +4,23 @@
 // Force dynamic rendering since this page uses Firebase hooks
 export const dynamic = 'force-dynamic';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Player, Due } from '@/lib/types';
-import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
-import { useMemoFirebase, useCollection } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { Player } from '@/lib/types';
 import { usePlayers, usePlayersService } from '@/services/players.service';
-import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
 import { AddEditPlayerDialog } from '@/components/players/add-edit-player-dialog';
 import { DeletePlayerDialog } from '@/components/players/delete-player-dialog';
 import { useToast } from "@/hooks/use-toast";
-import { usePlayerBalances } from '@/hooks/use-player-balances';
-import { usePlayerStats } from '@/hooks/use-player-stats';
 import { PlayersTable } from '@/components/players/players-table';
 
 export default function PlayersPage() {
   // Firebase hooks for real-time data
   const { data: players, isLoading, error } = usePlayers();
   const playersService = usePlayersService();
-
-  // Collection group data used for per-player aggregates (Phase 2)
-  const { data: finesData } = useAllFines();
-  const { data: paymentsData } = useAllPayments();
-  const { data: duePaymentsData } = useAllDuePayments();
-  const { data: consumptionsData } = useAllBeverageConsumptions();
-
-  const fines = finesData || [];
-  const payments = paymentsData || [];
-  const duePayments = duePaymentsData || [];
-  const beverageConsumptions = consumptionsData || [];
-
-  // Load dues metadata to filter out archived dues from balance calculations
-  const firebase = useFirebaseOptional();
-  const duesQuery = useMemoFirebase(() => {
-    if (!firebase?.firestore) return null;
-    return collection(firebase.firestore, 'dues');
-  }, [firebase?.firestore]);
-  const { data: dues } = useCollection<Due>(duesQuery);
-
-  // Recompute balances and derive per-user stats
-  const balanceBreakdownByUser = usePlayerBalances(
-    payments,
-    fines,
-    duePayments,
-    beverageConsumptions,
-    dues || []
-  );
-
-  const { lastActivityByUser, beverageCountByUser, paymentSparklineByUser } = usePlayerStats(
-    payments,
-    fines,
-    duePayments,
-    beverageConsumptions
-  );
-
-  const enhancedPlayers = useMemo(() => {
-    if (!players) return [] as Player[];
-    return players.map(p => {
-      const bb = balanceBreakdownByUser.get(p.id);
-      return {
-        ...p,
-        balance: bb?.balance ?? 0,
-      };
-    });
-  }, [players, balanceBreakdownByUser]);
 
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -166,8 +114,8 @@ export default function PlayersPage() {
   };
 
 
-  const activePlayers = (enhancedPlayers ?? []).filter((p) => p.active !== false);
-  const inactivePlayers = (enhancedPlayers ?? []).filter((p) => p.active === false);
+  const activePlayers = (players ?? []).filter((p) => p.active !== false);
+  const inactivePlayers = (players ?? []).filter((p) => p.active === false);
 
   // Loading state
   if (isLoading) {
@@ -232,10 +180,10 @@ export default function PlayersPage() {
             <CardContent>
               <PlayersTable
                 players={activePlayers}
-                lastActivityByUser={lastActivityByUser}
-                beverageCountByUser={beverageCountByUser}
-                paymentSparklineByUser={paymentSparklineByUser}
-                balanceBreakdownByUser={balanceBreakdownByUser}
+                lastActivityByUser={new Map()}
+                beverageCountByUser={new Map()}
+                paymentSparklineByUser={new Map()}
+                balanceBreakdownByUser={new Map()}
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
                 onToggleStatus={handleToggleStatus}
@@ -251,10 +199,10 @@ export default function PlayersPage() {
             <CardContent>
               <PlayersTable
                 players={inactivePlayers}
-                lastActivityByUser={lastActivityByUser}
-                beverageCountByUser={beverageCountByUser}
-                paymentSparklineByUser={paymentSparklineByUser}
-                balanceBreakdownByUser={balanceBreakdownByUser}
+                lastActivityByUser={new Map()}
+                beverageCountByUser={new Map()}
+                paymentSparklineByUser={new Map()}
+                balanceBreakdownByUser={new Map()}
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
                 onToggleStatus={handleToggleStatus}

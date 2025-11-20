@@ -16,6 +16,7 @@ import {
   query,
   orderBy,
   runTransaction,
+  increment,
   type Firestore,
   type CollectionReference,
   type DocumentReference,
@@ -98,8 +99,11 @@ export class FinesService extends BaseFirebaseService<Fine> {
       } as Fine;
 
       const docRef = this.getDocRef(id);
+      const userRef = doc(this.firestore, 'users', this.userId);
+
       await runTransaction(this.firestore, async (transaction) => {
         transaction.set(docRef, fullData);
+        transaction.update(userRef, { balance: increment(-fullData.amount) });
       });
 
       return {
@@ -232,6 +236,7 @@ export class FinesService extends BaseFirebaseService<Fine> {
   ): Promise<ServiceResult<Fine>> {
     try {
       const docRef = this.getDocRef(fineId);
+      const userRef = doc(this.firestore, 'users', this.userId);
       const now = this.timestamp();
 
       const updatedFine = await runTransaction(this.firestore, async (transaction) => {
@@ -251,7 +256,17 @@ export class FinesService extends BaseFirebaseService<Fine> {
           ...(options.userId && { updatedBy: options.userId }),
         };
 
+        // Calculate balance change
+        const oldDebit = currentFine.paid ? 0 : (currentFine.amount - (currentFine.amountPaid || 0));
+        const newAmountPaid = updateData.amountPaid || 0;
+        const newDebit = paid ? 0 : (currentFine.amount - newAmountPaid);
+        const balanceChange = oldDebit - newDebit;
+
         transaction.update(docRef, updateData);
+        
+        if (balanceChange !== 0) {
+          transaction.update(userRef, { balance: increment(balanceChange) });
+        }
 
         return { ...currentFine, ...updateData };
       });

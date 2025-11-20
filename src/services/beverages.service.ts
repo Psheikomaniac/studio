@@ -16,6 +16,7 @@ import {
   query,
   orderBy,
   runTransaction,
+  increment,
   type Firestore,
   type CollectionReference,
   type DocumentReference,
@@ -97,8 +98,11 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
       } as BeverageConsumption;
 
       const docRef = this.getDocRef(id);
+      const userRef = doc(this.firestore, 'users', this.userId);
+
       await runTransaction(this.firestore, async (transaction) => {
         transaction.set(docRef, fullData);
+        transaction.update(userRef, { balance: increment(-fullData.amount) });
       });
 
       return {
@@ -176,6 +180,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
   ): Promise<ServiceResult<BeverageConsumption>> {
     try {
       const docRef = this.getDocRef(consumptionId);
+      const userRef = doc(this.firestore, 'users', this.userId);
       const now = this.timestamp();
 
       const updatedConsumption = await runTransaction(this.firestore, async (transaction) => {
@@ -198,6 +203,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
         };
 
         transaction.update(docRef, updateData);
+        transaction.update(userRef, { balance: increment(additionalPayment) });
 
         return { ...currentConsumption, ...updateData };
       });
@@ -229,6 +235,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
   ): Promise<ServiceResult<BeverageConsumption>> {
     try {
       const docRef = this.getDocRef(consumptionId);
+      const userRef = doc(this.firestore, 'users', this.userId);
       const now = this.timestamp();
 
       const updatedConsumption = await runTransaction(this.firestore, async (transaction) => {
@@ -246,8 +253,16 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
           amountPaid: paid ? currentConsumption.amount : (currentConsumption.amountPaid || null),
           ...(options.userId && { updatedBy: options.userId }),
         };
+        
+        const oldDebit = currentConsumption.paid ? 0 : (currentConsumption.amount - (currentConsumption.amountPaid || 0));
+        const newAmountPaid = updateData.amountPaid || 0;
+        const newDebit = paid ? 0 : (currentConsumption.amount - newAmountPaid);
+        const balanceChange = oldDebit - newDebit;
 
         transaction.update(docRef, updateData);
+        if (balanceChange !== 0) {
+             transaction.update(userRef, { balance: increment(balanceChange) });
+        }
 
         return { ...currentConsumption, ...updateData };
       });
@@ -337,7 +352,25 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
     consumptionId: string,
     options: DeleteOptions = {}
   ): Promise<ServiceResult<void>> {
-    return this.delete(consumptionId, options);
+    try {
+      const docRef = this.getDocRef(consumptionId);
+      const userRef = doc(this.firestore, 'users', this.userId);
+
+      await runTransaction(this.firestore, async (transaction) => {
+        const docSnap = await transaction.get(docRef);
+        if (!docSnap.exists()) {
+             throw new Error('Beverage consumption not found');
+        }
+        const consumption = docSnap.data() as BeverageConsumption;
+        
+        transaction.delete(docRef);
+        transaction.update(userRef, { balance: increment(consumption.amount) });
+      });
+      
+      return { success: true, data: undefined };
+    } catch (error) {
+        return { success: false, error: error as Error };
+    }
   }
 
   /**

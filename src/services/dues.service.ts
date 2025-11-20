@@ -17,6 +17,7 @@ import {
   query,
   orderBy,
   runTransaction,
+  increment,
   type Firestore,
   type CollectionReference,
   type DocumentReference,
@@ -102,8 +103,13 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
       } as DuePayment;
 
       const docRef = this.getDocRef(id);
+      const userRef = doc(this.firestore, 'users', this.userId);
+
       await runTransaction(this.firestore, async (transaction) => {
         transaction.set(docRef, fullData);
+        if (!fullData.exempt) {
+            transaction.update(userRef, { balance: increment(-fullData.amountDue) });
+        }
       });
 
       return {
@@ -184,6 +190,7 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
   ): Promise<ServiceResult<DuePayment>> {
     try {
       const docRef = this.getDocRef(duePaymentId);
+      const userRef = doc(this.firestore, 'users', this.userId);
       const now = this.timestamp();
 
       const updatedDuePayment = await runTransaction(this.firestore, async (transaction) => {
@@ -205,6 +212,10 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
           updatedAt: now,
           ...(options.userId && { updatedBy: options.userId }),
         };
+        
+        if (!currentDuePayment.exempt) {
+             transaction.update(userRef, { balance: increment(additionalPayment) });
+        }
 
         transaction.update(docRef, updateData);
 
@@ -238,6 +249,7 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
   ): Promise<ServiceResult<DuePayment>> {
     try {
       const docRef = this.getDocRef(duePaymentId);
+      const userRef = doc(this.firestore, 'users', this.userId);
       const now = this.timestamp();
 
       const updatedDuePayment = await runTransaction(this.firestore, async (transaction) => {
@@ -256,6 +268,17 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
           updatedAt: now,
           ...(options.userId && { updatedBy: options.userId }),
         };
+
+        if (!currentDuePayment.exempt) {
+             const oldDebit = currentDuePayment.paid ? 0 : (currentDuePayment.amountDue - (currentDuePayment.amountPaid || 0));
+             const newAmountPaid = updateData.amountPaid || 0;
+             const newDebit = paid ? 0 : (currentDuePayment.amountDue - newAmountPaid);
+             const balanceChange = oldDebit - newDebit;
+
+             if (balanceChange !== 0) {
+                 transaction.update(userRef, { balance: increment(balanceChange) });
+             }
+        }
 
         transaction.update(docRef, updateData);
 
@@ -349,7 +372,28 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
     duePaymentId: string,
     options: DeleteOptions = {}
   ): Promise<ServiceResult<void>> {
-    return this.delete(duePaymentId, options);
+    try {
+      const docRef = this.getDocRef(duePaymentId);
+      const userRef = doc(this.firestore, 'users', this.userId);
+
+      await runTransaction(this.firestore, async (transaction) => {
+        const docSnap = await transaction.get(docRef);
+        if (!docSnap.exists()) {
+             throw new Error('Due payment not found');
+        }
+        const duePayment = docSnap.data() as DuePayment;
+        
+        transaction.delete(docRef);
+        
+        if (!duePayment.exempt) {
+            transaction.update(userRef, { balance: increment(duePayment.amountDue) });
+        }
+      });
+      
+      return { success: true, data: undefined };
+    } catch (error) {
+        return { success: false, error: error as Error };
+    }
   }
 
   /**

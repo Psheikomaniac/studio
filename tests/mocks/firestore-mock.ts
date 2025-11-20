@@ -291,7 +291,17 @@ export const mockFirestoreFunctions = {
       throw new Error('Document not found');
     }
     const existing = exists ? mockDocuments.get(docRef.path) : {};
-    mockDocuments.set(docRef.path, { ...existing, ...data });
+    
+    const newData = { ...existing };
+    Object.entries(data).forEach(([k, v]: [string, any]) => {
+        if (v && typeof v === 'object' && v.__op === 'increment') {
+            newData[k] = (existing[k] || 0) + v.value;
+        } else {
+            newData[k] = v;
+        }
+    });
+    
+    mockDocuments.set(docRef.path, newData);
     emitToCollectionPath(docRef.path.split('/').slice(0, -1).join('/'));
     return Promise.resolve();
   }),
@@ -362,7 +372,15 @@ export const mockFirestoreFunctions = {
         }
         ops.push(() => {
           const existing = exists ? mockDocuments.get(docRef.path) : {};
-          mockDocuments.set(docRef.path, { ...existing, ...data });
+          const newData = { ...existing };
+          Object.entries(data).forEach(([k, v]: [string, any]) => {
+              if (v && typeof v === 'object' && v.__op === 'increment') {
+                  newData[k] = (existing[k] || 0) + v.value;
+              } else {
+                  newData[k] = v;
+              }
+          });
+          mockDocuments.set(docRef.path, newData);
           affectedCollections.add(docRef.path.split('/').slice(0, -1).join('/'));
         });
       }),
@@ -407,7 +425,15 @@ export const mockFirestoreFunctions = {
         }
         ops.push(() => {
           const existing = exists ? mockDocuments.get(docRef.path) : {};
-          mockDocuments.set(docRef.path, { ...existing, ...data });
+          const newData = { ...existing };
+          Object.entries(data).forEach(([k, v]: [string, any]) => {
+              if (v && typeof v === 'object' && v.__op === 'increment') {
+                  newData[k] = (existing[k] || 0) + v.value;
+              } else {
+                  newData[k] = v;
+              }
+          });
+          mockDocuments.set(docRef.path, newData);
           affectedCollections.add(docRef.path.split('/').slice(0, -1).join('/'));
         });
       }),
@@ -465,6 +491,7 @@ export const mockFirestoreFunctions = {
   }),
 
   serverTimestamp: vi.fn(() => new Date().toISOString()),
+  increment: vi.fn((val) => ({ __op: 'increment', value: val })),
 };
 
 /**

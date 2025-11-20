@@ -17,6 +17,7 @@ import {
   createMockDocumentSnapshot,
   clearMockDocuments,
   mockFirestoreFunctions,
+  setMockDocument
 } from '../../mocks/firestore-mock';
 
 // Mock Firebase Firestore module (use dynamic import inside factory to avoid hoist issues)
@@ -293,22 +294,20 @@ describe('PaymentsService', () => {
         amount: 120,
       };
 
-      mockFirestoreFunctions.getDoc.mockResolvedValueOnce(
-        createMockDocumentSnapshot(paymentId, {
+      setMockDocument(`users/${TEST_USER_ID}/payments/${paymentId}`, {
           id: paymentId,
           userId: TEST_USER_ID,
           amount: 100,
           reason: 'Original reason',
           paid: true,
-        })
-      );
+      });
 
       // When: Updating payment
       const result = await service.updatePayment(paymentId, updateData);
 
       // Then: Payment should be updated
       expect(result.success).toBe(true);
-      expect(mockFirestoreFunctions.updateDoc).toHaveBeenCalled();
+      expect(mockFirestoreFunctions.runTransaction).toHaveBeenCalled();
     });
 
     it('should include updatedBy when userId provided (Given-When-Then)', async () => {
@@ -319,12 +318,10 @@ describe('PaymentsService', () => {
       };
       const userId = 'admin-update-789';
 
-      mockFirestoreFunctions.getDoc.mockResolvedValueOnce(
-        createMockDocumentSnapshot(paymentId, {
+      setMockDocument(`users/${TEST_USER_ID}/payments/${paymentId}`, {
           id: paymentId,
           amount: 100,
-        })
-      );
+      });
 
       // When: Updating with userId
       const result = await service.updatePayment(paymentId, updateData, { userId });
@@ -388,32 +385,36 @@ describe('PaymentsService', () => {
       // Given: Payment ID to delete
       const paymentId = 'payment-hard-delete';
 
+      setMockDocument(`users/${TEST_USER_ID}/payments/${paymentId}`, {
+          id: paymentId,
+          amount: 100,
+          paid: true
+      });
+
       // When: Hard deleting payment
       const result = await service.deletePayment(paymentId, { soft: false });
 
       // Then: Should call deleteDoc
       expect(result.success).toBe(true);
-      expect(mockFirestoreFunctions.deleteDoc).toHaveBeenCalled();
+      expect(mockFirestoreFunctions.runTransaction).toHaveBeenCalled();
     });
 
     it('should soft delete payment when soft=true (Given-When-Then)', async () => {
       // Given: Payment ID to soft delete
       const paymentId = 'payment-soft-delete';
 
-      mockFirestoreFunctions.getDoc.mockResolvedValueOnce(
-        createMockDocumentSnapshot(paymentId, {
+      setMockDocument(`users/${TEST_USER_ID}/payments/${paymentId}`, {
           id: paymentId,
           amount: 100,
           paid: true,
-        })
-      );
+      });
 
       // When: Soft deleting payment
       const result = await service.deletePayment(paymentId, { soft: true });
 
       // Then: Should call updateDoc with deleted flag
       expect(result.success).toBe(true);
-      expect(mockFirestoreFunctions.updateDoc).toHaveBeenCalled();
+      expect(mockFirestoreFunctions.runTransaction).toHaveBeenCalled();
     });
 
     it('should include deletedBy for soft delete when userId provided (Given-When-Then)', async () => {
@@ -421,18 +422,17 @@ describe('PaymentsService', () => {
       const paymentId = 'payment-tracked-delete';
       const userId = 'admin-deleter';
 
-      mockFirestoreFunctions.getDoc.mockResolvedValueOnce(
-        createMockDocumentSnapshot(paymentId, {
+      setMockDocument(`users/${TEST_USER_ID}/payments/${paymentId}`, {
           id: paymentId,
           amount: 75,
-        })
-      );
+      });
 
       // When: Soft deleting with userId
       const result = await service.deletePayment(paymentId, { soft: true, userId });
 
       // Then: Should include deletedBy
       expect(result.success).toBe(true);
+      expect(mockFirestoreFunctions.runTransaction).toHaveBeenCalled();
     });
   });
 
