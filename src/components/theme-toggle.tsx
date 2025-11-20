@@ -15,8 +15,18 @@ import {
 import { ThemeMode, getStoredTheme, setTheme, subscribeSystemPreference, resolveEffectiveTheme } from '@/lib/theme'
 
 export function ThemeToggle() {
-  const [mode, setMode] = React.useState<ThemeMode>(() => getStoredTheme() ?? 'system')
-  const [effective, setEffective] = React.useState<'light' | 'dark'>(() => resolveEffectiveTheme(getStoredTheme()))
+  const [mode, setMode] = React.useState<ThemeMode>('system')
+  const [effective, setEffective] = React.useState<'light' | 'dark'>('light')
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+    const stored = getStoredTheme()
+    if (stored) {
+      setMode(stored)
+    }
+    setEffective(resolveEffectiveTheme(stored ?? 'system'))
+  }, [])
 
   React.useEffect(() => {
     const unsubscribe = subscribeSystemPreference((isDark) => {
@@ -26,9 +36,10 @@ export function ThemeToggle() {
   }, [])
 
   React.useEffect(() => {
+    if (!mounted) return
     setTheme(mode)
     setEffective(resolveEffectiveTheme(mode))
-  }, [mode])
+  }, [mode, mounted])
 
   const icon = effective === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />
 
