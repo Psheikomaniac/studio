@@ -32,7 +32,7 @@ yarn-error.log*
 
 # vercel
 .vercel
-
+0211/90020300
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -62,3 +62,6 @@ reviews/
 /data/cashbox-transactions-03-11-2025-142850.csv
 /playwright-report/
 /test-results/
+/playwright-report/
+/test-results/
+/playwright-report/

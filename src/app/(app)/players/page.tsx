@@ -4,7 +4,7 @@
 // Force dynamic rendering since this page uses Firebase hooks
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,11 +16,58 @@ import { AddEditPlayerDialog } from '@/components/players/add-edit-player-dialog
 import { DeletePlayerDialog } from '@/components/players/delete-player-dialog';
 import { useToast } from "@/hooks/use-toast";
 import { PlayersTable } from '@/components/players/players-table';
+import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
+import { usePlayerBalances } from '@/hooks/use-player-balances';
+import { usePlayerStats } from '@/hooks/use-player-stats';
+import { dues as staticDues } from '@/lib/static-data';
 
 export default function PlayersPage() {
   // Firebase hooks for real-time data
-  const { data: players, isLoading, error } = usePlayers();
+  const { data: playersData, isLoading: playersLoading, error } = usePlayers();
   const playersService = usePlayersService();
+
+  // Load all transaction data
+  const { data: finesData, isLoading: finesLoading } = useAllFines();
+  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments();
+  const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();
+  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions();
+
+  // Use Firebase data or empty arrays while loading
+  const fines = finesData || [];
+  const payments = paymentsData || [];
+  const duePayments = duePaymentsData || [];
+  const beverageConsumptions = consumptionsData || [];
+  const dues = staticDues;
+
+  // Calculate player statistics and balances
+  const { lastActivityByUser, beverageCountByUser, paymentSparklineByUser } = usePlayerStats(
+    payments,
+    fines,
+    duePayments,
+    beverageConsumptions
+  );
+
+  const balanceBreakdownByUser = usePlayerBalances(
+    payments,
+    fines,
+    duePayments,
+    beverageConsumptions,
+    dues
+  );
+
+  // Update players with correct calculated balances from balanceBreakdownByUser
+  const players = useMemo(() => {
+    if (!playersData) return [];
+
+    return playersData.map(player => ({
+      ...player,
+      balance: balanceBreakdownByUser.get(player.id)?.balance || 0
+    }));
+  }, [playersData, balanceBreakdownByUser]);
+
+  // Determine overall loading state
+  const isLoading = playersLoading || finesLoading || paymentsLoading ||
+                    duePaymentsLoading || consumptionsLoading;
 
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -180,10 +227,10 @@ export default function PlayersPage() {
             <CardContent>
               <PlayersTable
                 players={activePlayers}
-                lastActivityByUser={new Map()}
-                beverageCountByUser={new Map()}
-                paymentSparklineByUser={new Map()}
-                balanceBreakdownByUser={new Map()}
+                lastActivityByUser={lastActivityByUser}
+                beverageCountByUser={beverageCountByUser}
+                paymentSparklineByUser={paymentSparklineByUser}
+                balanceBreakdownByUser={balanceBreakdownByUser}
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
                 onToggleStatus={handleToggleStatus}
@@ -199,10 +246,10 @@ export default function PlayersPage() {
             <CardContent>
               <PlayersTable
                 players={inactivePlayers}
-                lastActivityByUser={new Map()}
-                beverageCountByUser={new Map()}
-                paymentSparklineByUser={new Map()}
-                balanceBreakdownByUser={new Map()}
+                lastActivityByUser={lastActivityByUser}
+                beverageCountByUser={beverageCountByUser}
+                paymentSparklineByUser={paymentSparklineByUser}
+                balanceBreakdownByUser={balanceBreakdownByUser}
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
                 onToggleStatus={handleToggleStatus}

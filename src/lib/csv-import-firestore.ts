@@ -333,21 +333,21 @@ export async function importDuesCSVToFirestore(
         }
 
         // Determine payment status
-        const isPaid = row.user_paid === 'STATUS_PAID';
+        // Use the helper to parse status properly (handles "Paid", "yes", dates, etc.)
+        const { paid: isPaid, paidAt: parsedPaidAt } = parsePaidStatus(row.user_paid);
         let isExempt = row.user_paid === 'STATUS_EXEMPT';
 
-        // Option B: Guard against counting old dues for newly joined players
-        // If the player is being created by this import (new to our system),
-        // and the due is clearly from a past season (archived) or significantly old,
-        // and the player hasn't paid it, then auto-mark this due as exempt.
-        const isPlayerNew = (player as any).__isNew === true;
+        // Option B: Guard against counting old dues for ANY player (new or existing)
+        // If the due is significantly old (> 18 months) and unpaid, mark as exempt.
+        // This prevents historical debt from appearing for players who joined recently or data inconsistencies.
         const isArchivedDue = !!due.archived;
         const dueCreatedTs = new Date(dueCreated).getTime();
-        const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+        // 18 months in milliseconds: 18 * 30.44 * 24 * 60 * 60 * 1000 approx
+        const EIGHTEEN_MONTHS_MS = 18 * 30.44 * 24 * 60 * 60 * 1000;
 
-        if (isPlayerNew && !isPaid && !isExempt && (isArchivedDue || (!isNaN(dueCreatedTs) && (Date.now() - dueCreatedTs) > ONE_YEAR_MS))) {
+        if (!isPaid && !isExempt && (isArchivedDue || (!isNaN(dueCreatedTs) && (Date.now() - dueCreatedTs) > EIGHTEEN_MONTHS_MS))) {
           isExempt = true;
-          result.warnings.push(`Auto-exempted old due for new player "${player.name}" on "${due.name}" (${new Date(dueCreatedTs).toISOString()})`);
+          result.warnings.push(`Auto-exempted old due for player "${player.name}" on "${due.name}" (${new Date(dueCreatedTs).toISOString()})`);
         }
 
         // Create DuePayment record
@@ -358,7 +358,7 @@ export async function importDuesCSVToFirestore(
           userName: player.name,
           amountDue: amountEUR,
           paid: isPaid,
-          paidAt: isPaid && paymentDate ? paymentDate : null,
+          paidAt: isPaid ? (parsedPaidAt || (paymentDate ? paymentDate : null)) : null,
           exempt: isExempt,
           createdAt: dueCreated
         };

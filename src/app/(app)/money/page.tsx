@@ -116,7 +116,7 @@ export default function MoneyPage() {
 
   // Determine overall loading state
   const isLoading = playersLoading || finesLoading || paymentsLoading ||
-                    duePaymentsLoading || consumptionsLoading;
+    duePaymentsLoading || consumptionsLoading;
 
   // Dialog states
   const [isAddFineOpen, setAddFineOpen] = useState(false);
@@ -268,7 +268,7 @@ export default function MoneyPage() {
 
   const paginatedTransactions = useMemo(() =>
     filteredTransactions.slice(startIndex, endIndex)
-  , [filteredTransactions, startIndex, endIndex]);
+    , [filteredTransactions, startIndex, endIndex]);
 
   // Calculate totals
   const totals = useMemo(() => {
@@ -626,9 +626,11 @@ export default function MoneyPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Players</SelectItem>
-                      {players.map(player => (
-                        <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
-                      ))}
+                      {players
+                        .filter(p => p.active !== false) // Only show active players
+                        .map(player => (
+                          <SelectItem key={player.id} value={player.id}>{player.name}</SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -742,7 +744,7 @@ export default function MoneyPage() {
                           <CartesianGrid strokeDasharray="3 3" vertical={false} />
                           <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
                           <YAxis tickFormatter={(v) => `€${v}`} />
-                          <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
+                          <Tooltip formatter={(v: number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
                           <Line type="monotone" dataKey="value" name="Revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
                           <Line type="monotone" dataKey="ma7" name="7d MA" stroke="hsl(var(--muted-foreground))" strokeDasharray="5 5" strokeWidth={2} dot={false} />
                         </LineChart>
@@ -789,7 +791,7 @@ export default function MoneyPage() {
                         <YAxis yAxisId="left" tickFormatter={(v) => `${v}`} />
                         <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `€${v}`} />
                         <Tooltip formatter={(value: number, name) => name === 'Cumulative Revenue' ? formatEuro(value as number) : (value as number)} />
-                        <Bar yAxisId="left" dataKey="firstPayers" name="First Payers" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
+                        <Bar yAxisId="left" dataKey="firstPayers" name="First Payers" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                         <Line yAxisId="right" type="monotone" dataKey="cumulativeRevenue" name="Cumulative Revenue" stroke="hsl(var(--muted-foreground))" strokeWidth={2} dot={false} />
                       </ComposedChart>
                     </ResponsiveContainer>
@@ -870,34 +872,34 @@ export default function MoneyPage() {
               </CardHeader>
               <CardContent>
                 <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
-                <Table className="min-w-[720px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="whitespace-nowrap">Date</TableHead>
-                      <TableHead className="whitespace-nowrap">Player</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead className="whitespace-nowrap">Type</TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Amount</TableHead>
-                      <TableHead className="whitespace-nowrap">Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedTransactions.map((transaction) => (
-                      <TableRow key={transaction.id}>
-                        <TableCell className="whitespace-nowrap">
-                          <SafeLocaleDate dateString={transaction.date} />
-                        </TableCell>
-                        <TableCell className="font-medium whitespace-nowrap"><Link href={`/players/${transaction.userId}`} className="hover:underline">{transaction.userName}</Link></TableCell>
-                        <TableCell>{transaction.description}</TableCell>
-                        <TableCell className="whitespace-nowrap">{getTypeBadge(transaction.type)}</TableCell>
-                        <TableCell className={`text-right font-mono whitespace-nowrap ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
-                          {formatEuro(Math.abs(transaction.amount))}
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">{getStatusBadge(transaction)}</TableCell>
+                  <Table className="min-w-[720px]">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="whitespace-nowrap">Date</TableHead>
+                        <TableHead className="whitespace-nowrap">Player</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead className="whitespace-nowrap">Type</TableHead>
+                        <TableHead className="text-right whitespace-nowrap">Amount</TableHead>
+                        <TableHead className="whitespace-nowrap">Status</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedTransactions.map((transaction) => (
+                        <TableRow key={transaction.id}>
+                          <TableCell className="whitespace-nowrap">
+                            <SafeLocaleDate dateString={transaction.date} />
+                          </TableCell>
+                          <TableCell className="font-medium whitespace-nowrap"><Link href={`/players/${transaction.userId}`} className="hover:underline">{transaction.userName}</Link></TableCell>
+                          <TableCell>{transaction.description}</TableCell>
+                          <TableCell className="whitespace-nowrap">{getTypeBadge(transaction.type)}</TableCell>
+                          <TableCell className={`text-right font-mono whitespace-nowrap ${transaction.amount < 0 ? 'text-destructive' : 'text-positive'}`}>
+                            {formatEuro(Math.abs(transaction.amount))}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">{getStatusBadge(transaction)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
                 {filteredTransactions.length === 0 && (
                   <div className="text-center p-8 text-muted-foreground">
@@ -963,28 +965,28 @@ export default function MoneyPage() {
         setOpen={setAddFineOpen}
         players={players}
         predefinedFines={predefinedFines}
-        onFineAdded={() => {}} // Kept for backwards compatibility
+        onFineAdded={() => { }} // Kept for backwards compatibility
       />
       <AddEditPaymentDialog
         isOpen={isAddPaymentOpen}
         setOpen={setAddPaymentOpen}
         players={players}
         payment={null}
-        onSave={() => {}} // Kept for backwards compatibility
+        onSave={() => { }} // Kept for backwards compatibility
       />
       <RecordDuePaymentDialog
         isOpen={isRecordDueOpen}
         setOpen={setRecordDueOpen}
         players={players}
         dues={dues}
-        onRecord={() => {}} // Kept for backwards compatibility
+        onRecord={() => { }} // Kept for backwards compatibility
       />
       <RecordConsumptionDialog
         isOpen={isRecordBeverageOpen}
         setOpen={setRecordBeverageOpen}
         players={players}
         beverages={beverages}
-        onRecord={() => {}} // Kept for backwards compatibility
+        onRecord={() => { }} // Kept for backwards compatibility
       />
     </>
   );
