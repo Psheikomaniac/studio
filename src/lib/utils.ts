@@ -21,7 +21,7 @@ export function calculatePlayerBalance(
   const totalCredits = payments
     .filter(p => {
       if (p.userId !== playerId) return false;
-      
+
       // Category Logic: DEPOSIT and PAYMENT are always credits
       if (p.category === PaymentCategory.DEPOSIT || p.category === PaymentCategory.PAYMENT) {
         return true;
@@ -29,10 +29,10 @@ export function calculatePlayerBalance(
 
       // Legacy/Default Logic: Paid payments are credits
       if (p.paid) return true;
-      
+
       // Note: Logic for 'paid: false' "Guthaben" strings (from usePlayerBalances) is not included here 
       // to avoid complexity, assuming standard Payments are 'paid: true'.
-      
+
       return false;
     })
     .reduce((sum, p) => sum + p.amount, 0);
@@ -84,4 +84,8 @@ export function updatePlayersWithCalculatedBalances(
     ...player,
     balance: calculatePlayerBalance(player.id, payments, fines, duePayments, beverageConsumptions)
   }));
+}
+
+export function generateId(prefix: string): string {
+  return `${prefix}_${Math.random().toString(36).substr(2, 9)}`;
 }

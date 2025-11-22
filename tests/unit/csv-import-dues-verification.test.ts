@@ -65,6 +65,7 @@ Invalid Due;invalid;01-01-2025;NO;Test User;user1;NO;`;
         expect(result.skippedItems).toHaveLength(1);
         expect(result.skippedItems[0].reason).toBe('Invalid Due');
         expect(result.skippedItems[0].skipReason).toContain('Invalid amount');
+        expect(result.skippedItems[0].type).toBe('due');
     });
 
     it('does NOT exempt recent unpaid dues (< 18 months)', async () => {

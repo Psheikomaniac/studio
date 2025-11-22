@@ -18,6 +18,7 @@ import {
   Firestore,
 } from 'firebase/firestore';
 import { Player, Fine, Payment, Due, DuePayment, Beverage, BeverageConsumption } from './types';
+import { classifyPunishment, mapBeverageCategory } from './csv-utils';
 
 export interface SkippedItem {
   date: string;
@@ -26,6 +27,7 @@ export interface SkippedItem {
   amount: number;
   paid: boolean;
   skipReason: string;
+  type: 'fine' | 'payment' | 'due' | 'transaction';
 }
 
 export interface ImportResult {
@@ -124,20 +126,6 @@ function sanitizeFirestoreData<T extends Record<string, any>>(obj: T): T {
     sanitized[key] = value as any;
   }
   return sanitized as T;
-}
-
-// Helper function to classify punishment as DRINK or FINE
-function classifyPunishment(reason: string): 'DRINK' | 'FINE' {
-  const lowerReason = reason.toLowerCase();
-  const drinkKeywords = ['getränke', 'getränk', 'bier', 'beer', 'drink', 'beverage', 'wasser', 'water', 'cola', 'sprite'];
-
-  for (const keyword of drinkKeywords) {
-    if (lowerReason.includes(keyword)) {
-      return 'DRINK';
-    }
-  }
-
-  return 'FINE';
 }
 
 // Helper to validate player names; skip rows with missing or 'Unknown' player names
@@ -315,7 +303,8 @@ export async function importDuesCSVToFirestore(
             reason: row.due_name || 'Unknown Due',
             amount: isNaN(amountEUR) ? 0 : amountEUR,
             paid: false,
-            skipReason: `Invalid amount: ${row.due_amount}`
+            skipReason: `Invalid amount: ${row.due_amount}`,
+            type: 'due'
           });
           continue;
         }
@@ -345,7 +334,8 @@ export async function importDuesCSVToFirestore(
             reason: dueName,
             amount: amountEUR,
             paid: false,
-            skipReason: 'Missing or unknown player name'
+            skipReason: 'Missing or unknown player name',
+            type: 'due'
           });
           continue;
         }
@@ -532,7 +522,8 @@ export async function importPunishmentsCSVToFirestore(
             reason: row.penatly_reason || 'Unknown',
             amount: 0,
             paid: isPaidFlag,
-            skipReason: 'Zero amount'
+            skipReason: 'Zero amount',
+            type: 'fine'
           });
           continue;
         }
@@ -546,7 +537,8 @@ export async function importPunishmentsCSVToFirestore(
             reason: row.penatly_reason || 'Unknown',
             amount: amountEUR,
             paid: isPaidFlag,
-            skipReason: 'Missing or unknown player name'
+            skipReason: 'Missing or unknown player name',
+            type: 'fine'
           });
           continue;
         }
@@ -585,8 +577,11 @@ export async function importPunishmentsCSVToFirestore(
         const type = classifyPunishment(row.penatly_reason);
 
         if (type === 'DRINK') {
+          // Map to standardized category
+          const standardizedName = mapBeverageCategory(row.penatly_reason);
+
           // Create beverage consumption record
-          const beverage = await findOrCreateBeverage(firestore, row.penatly_reason, amountEUR, existingBeverages);
+          const beverage = await findOrCreateBeverage(firestore, standardizedName, amountEUR, existingBeverages);
 
           if ((beverage as any).__isNew && !beveragesToCreate.some(b => b.id === (beverage as any).id)) {
             beveragesToCreate.push(beverage);
@@ -778,38 +773,68 @@ export async function importTransactionsCSVToFirestore(
         let playerName = '';
         let category = '';
 
-        // Skip Beiträge (membership dues) here — handled exclusively by the Dues CSV importer
+        // Special handling for Beiträge (membership dues)
+        // Format: "Beiträge: User Name (Due Name)"
         const subjectPrefix = subject.split(':')[0].trim().toLowerCase();
         if (subjectPrefix.includes('beitr')) { // matches "beitrag", "beiträge"
-          result.warnings.push(`Row ${i + 1}: Skipped Beiträge transaction (handled via dues CSV): ${subject}`);
-          result.skippedItems.push({
-            date: transactionDate,
-            user: 'Unknown (Subject Parse)',
-            reason: subject,
-            amount: amountEUR,
-            paid: true, // Transactions are usually paid
-            skipReason: 'Beiträge handled via Dues CSV'
-          });
-          continue;
+          // Try to parse "Beiträge: User (Due name)"
+          const match = subject.match(/^Beiträge:\s*(.+?)\s*\((.+)\)$/i);
+
+          if (match) {
+            playerName = match[1].trim();
+            const dueName = match[2].trim();
+
+            // Use the due name as the reason/description
+            // We treat this as a generic payment for now, but linked to the user
+            // The user will be found/created below based on playerName
+
+            // Override the subject with the due name for clarity
+            // And let the logic proceed to find/create player
+
+            // We need to set category to something meaningful if needed, 
+            // but the main thing is extracting the player name so it's not skipped.
+
+            // Note: We are NOT setting 'category' here because the logic below 
+            // uses 'category' to determine if it's a fine or payment.
+            // By default, if not fine/drink, it's a payment.
+
+            // We just need to ensure playerName is set so the user lookup works.
+          } else {
+            // Fallback: If format doesn't match, skip it as before
+            result.warnings.push(`Row ${i + 1}: Skipped Beiträge transaction (handled via dues CSV): ${subject}`);
+            result.skippedItems.push({
+              date: transactionDate,
+              user: 'Unknown (Subject Parse)',
+              reason: subject,
+              amount: amountEUR,
+              paid: true, // Transactions are usually paid
+              skipReason: 'Beiträge handled via Dues CSV',
+              type: 'transaction'
+            });
+            continue;
+          }
         }
 
-        const colonIndex = subject.indexOf(':');
-        if (colonIndex > -1) {
-          const afterColon = subject.substring(colonIndex + 1).trim();
+        // Only attempt standard parsing if we haven't found a player name yet
+        if (!playerName) {
+          const colonIndex = subject.indexOf(':');
+          if (colonIndex > -1) {
+            const afterColon = subject.substring(colonIndex + 1).trim();
 
-          const parenIndex = afterColon.indexOf('(');
-          if (parenIndex > -1) {
-            playerName = afterColon.substring(0, parenIndex).trim();
-            const closeParen = afterColon.indexOf(')');
-            if (closeParen > parenIndex) {
-              category = afterColon.substring(parenIndex + 1, closeParen).trim();
+            const parenIndex = afterColon.indexOf('(');
+            if (parenIndex > -1) {
+              playerName = afterColon.substring(0, parenIndex).trim();
+              const closeParen = afterColon.indexOf(')');
+              if (closeParen > parenIndex) {
+                category = afterColon.substring(parenIndex + 1, closeParen).trim();
+              }
+            } else {
+              playerName = afterColon;
             }
           } else {
-            playerName = afterColon;
+            result.warnings.push(`Row ${i + 1}: Could not parse player name from subject: ${subject}`);
+            continue;
           }
-        } else {
-          result.warnings.push(`Row ${i + 1}: Could not parse player name from subject: ${subject}`);
-          continue;
         }
 
         if (!playerName) {
@@ -826,7 +851,8 @@ export async function importTransactionsCSVToFirestore(
             reason: subject,
             amount: amountEUR,
             paid: true,
-            skipReason: 'Missing or unknown player name in subject'
+            skipReason: 'Missing or unknown player name in subject',
+            type: 'transaction'
           });
           continue;
         }

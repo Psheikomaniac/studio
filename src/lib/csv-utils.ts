@@ -275,6 +275,11 @@ export function classifyPunishment(reason: string): 'DRINK' | 'FINE' {
 
   const normalized = reason.toLowerCase().trim();
 
+  // Explicitly exclude penalties that might contain drink keywords but are fines
+  if (normalized.includes('kasten') || normalized.includes('runde')) {
+    return 'FINE';
+  }
+
   // Keywords that indicate a drink-related punishment
   const drinkKeywords = [
     'drink',
@@ -285,6 +290,11 @@ export function classifyPunishment(reason: string): 'DRINK' | 'FINE' {
     'trinken',
     'alkohol',
     'alcohol',
+    'apfelwein',
+    'appler',
+    'äppler',
+    'cidre',
+    'cider',
   ];
 
   const isDrink = drinkKeywords.some(keyword => normalized.includes(keyword));
@@ -367,4 +377,42 @@ export function safeParseNumber(value: string, defaultValue: number = 0): number
 
   const num = parseFloat(value.trim());
   return isNaN(num) ? defaultValue : num;
+}
+
+/**
+ * Maps a raw beverage name to one of the three allowed categories:
+ * 1. "Appler" (Apfelwein, Äppler, etc.)
+ * 2. "Beer/Lemonade" (Bier, Radler, Limo, etc.)
+ * 3. "Beverages" (Everything else)
+ *
+ * @param reason - The raw beverage name/reason
+ * @returns The standardized category name
+ */
+export function mapBeverageCategory(reason: string): string {
+  if (!reason) return 'Beverages';
+
+  const normalized = reason.toLowerCase().trim();
+
+  // 1. Appler check
+  if (
+    normalized.includes('apfelwein') ||
+    normalized.includes('appler') ||
+    normalized.includes('äppler')
+  ) {
+    return 'Appler';
+  }
+
+  // 2. Beer/Lemonade check
+  const beerLimoKeywords = [
+    'bier', 'beer', 'pils', 'weizen', 'helles', 'export',
+    'radler', 'alster',
+    'limo', 'lemonade', 'cola', 'fanta', 'sprite', 'wasser', 'water'
+  ];
+
+  if (beerLimoKeywords.some(k => normalized.includes(k))) {
+    return 'Beer/Lemonade';
+  }
+
+  // 3. Default
+  return 'Beverages';
 }

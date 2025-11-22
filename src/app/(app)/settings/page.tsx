@@ -10,8 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Trash2, RotateCcw, AlertCircle } from "lucide-react";
+import { Loader2, Trash2, RotateCcw, AlertCircle, Check, X } from "lucide-react";
 import { importCSVToFirestore, type SkippedItem } from "@/lib/csv-import-firestore";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { collection, collectionGroup, getDocs, query, limit, writeBatch } from "firebase/firestore";
+import { collection, collectionGroup, getDocs, query, limit, writeBatch, where, addDoc } from "firebase/firestore";
 import { useFirebaseOptional } from "@/firebase/use-firebase-optional";
 import { Progress } from "@/components/ui/progress";
 import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
@@ -31,6 +34,7 @@ import { maxDateFromCollections } from '@/lib/stats';
 import type { Due, Beverage } from '@/lib/types';
 import { useMemoFirebase, useCollection } from '@/firebase';
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
+import { generateId } from "@/lib/utils";
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -77,6 +81,8 @@ export default function SettingsPage() {
   const [importProgress, setImportProgress] = useState(0);
   const [importTotal, setImportTotal] = useState(0);
   const [skippedItems, setSkippedItems] = useState<SkippedItem[]>([]);
+  const [selectedSkippedItems, setSelectedSkippedItems] = useState<Set<number>>(new Set());
+  const [isForceImporting, setIsForceImporting] = useState(false);
 
   // Dialog states
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -125,6 +131,7 @@ export default function SettingsPage() {
     setImportProgress(0);
     setImportTotal(0);
     setSkippedItems([]);
+    setSelectedSkippedItems(new Set());
 
     try {
       // Detect CSV type by filename (robust: singular/plural)
@@ -363,6 +370,134 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSelectAllSkipped = (checked: boolean) => {
+    if (checked) {
+      const allIndices = new Set(skippedItems.map((_, i) => i));
+      setSelectedSkippedItems(allIndices);
+    } else {
+      setSelectedSkippedItems(new Set());
+    }
+  };
+
+  const handleSelectSkippedItem = (index: number, checked: boolean) => {
+    const newSelected = new Set(selectedSkippedItems);
+    if (checked) {
+      newSelected.add(index);
+    } else {
+      newSelected.delete(index);
+    }
+    setSelectedSkippedItems(newSelected);
+  };
+
+  const handleForceImport = async () => {
+    if (!firestore || selectedSkippedItems.size === 0) return;
+
+    setIsForceImporting(true);
+    try {
+      let importedCount = 0;
+      const itemsToImport = skippedItems.filter((_, i) => selectedSkippedItems.has(i));
+
+      // Get all players for name lookup
+      const playersSnapshot = await getDocs(collection(firestore, 'users'));
+      const players = playersSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as any));
+
+      // Helper to find player by name
+      const findPlayerId = (name: string) => {
+        const normalized = name.toLowerCase().trim();
+        const player = players.find(p => p.name.toLowerCase().trim() === normalized);
+        return player ? player.id : null;
+      };
+
+      for (const item of itemsToImport) {
+        const userId = findPlayerId(item.user);
+        if (!userId) {
+          console.warn(`Could not force import item for unknown user: ${item.user}`);
+          continue;
+        }
+
+        const date = new Date(item.date).toISOString();
+
+        if (item.type === 'fine') {
+          await addDoc(collection(firestore, `users/${userId}/fines`), {
+            id: generateId('fine'),
+            userId,
+            amount: item.amount,
+            reason: item.reason,
+            date,
+            paid: item.paid,
+            paidAt: item.paid ? date : null,
+            createdAt: date
+          });
+        } else if (item.type === 'payment' || item.type === 'transaction') {
+          await addDoc(collection(firestore, `users/${userId}/payments`), {
+            id: generateId('payment'),
+            userId,
+            amount: item.amount,
+            reason: item.reason,
+            date,
+            paid: true,
+            paidAt: date,
+            createdAt: date
+          });
+        } else if (item.type === 'due') {
+          // Try to find the due by name
+          const duesSnapshot = await getDocs(query(collection(firestore, 'dues'), where('name', '==', item.reason)));
+          let dueId = null;
+          if (!duesSnapshot.empty) {
+            dueId = duesSnapshot.docs[0].id;
+          }
+
+          if (dueId) {
+            await addDoc(collection(firestore, `users/${userId}/duePayments`), {
+              id: generateId('dp'),
+              dueId,
+              userId,
+              userName: item.user,
+              amountDue: item.amount,
+              paid: item.paid,
+              paidAt: item.paid ? date : null,
+              exempt: false,
+              createdAt: date
+            });
+          } else {
+            // Fallback: create as generic payment if due definition not found
+            await addDoc(collection(firestore, `users/${userId}/payments`), {
+              id: generateId('payment'),
+              userId,
+              amount: item.amount,
+              reason: `Force Import Due: ${item.reason}`,
+              date,
+              paid: item.paid,
+              paidAt: item.paid ? date : null,
+              createdAt: date
+            });
+          }
+        }
+        importedCount++;
+      }
+
+      toast({
+        title: "Force Import Successful",
+        description: `Successfully imported ${importedCount} items.`,
+      });
+
+      // Remove imported items from the list
+      const remainingItems = skippedItems.filter((_, i) => !selectedSkippedItems.has(i));
+      setSkippedItems(remainingItems);
+      setSelectedSkippedItems(new Set());
+
+    } catch (error) {
+      console.error("Error force importing:", error);
+      toast({
+        title: "Force Import Failed",
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive"
+      });
+    } finally {
+      setIsForceImporting(false);
+    }
+  };
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="grid gap-4">
@@ -426,43 +561,71 @@ export default function SettingsPage() {
             )}
 
             {skippedItems.length > 0 && (
-              <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-4">
-                <div className="flex items-center gap-2 mb-2 text-amber-800 font-medium">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Skipped Items ({skippedItems.length})</span>
-                </div>
-                <div className="text-sm text-amber-700 mb-3">
-                  The following items were not imported. Please review the reasons below.
-                </div>
-                <div className="relative w-full overflow-auto max-h-60">
-                  <table className="w-full caption-bottom text-xs">
-                    <thead className="[&_tr]:border-b">
-                      <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">Date</th>
-                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">User</th>
-                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">Reason</th>
-                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">Amount</th>
-                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">Status</th>
-                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">Skip Reason</th>
-                      </tr>
-                    </thead>
-                    <tbody className="[&_tr:last-child]:border-0">
-                      {skippedItems.map((item, i) => (
-                        <tr key={i} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                          <td className="p-2 align-middle">{new Date(item.date).toLocaleDateString()}</td>
-                          <td className="p-2 align-middle font-medium">{item.user}</td>
-                          <td className="p-2 align-middle">{item.reason}</td>
-                          <td className="p-2 align-middle">€{item.amount.toFixed(2)}</td>
-                          <td className="p-2 align-middle">
-                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${item.paid ? 'border-transparent bg-green-100 text-green-700' : 'border-transparent bg-red-100 text-red-700'}`}>
-                              {item.paid ? 'Paid' : 'Unpaid'}
-                            </span>
-                          </td>
-                          <td className="p-2 align-middle text-amber-700">{item.skipReason}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <div className="mt-8 space-y-4">
+                <div className="rounded-md border border-amber-200 bg-amber-50/50 p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-amber-800 font-medium">
+                      <AlertCircle className="h-5 w-5" />
+                      <span>Skipped Items ({skippedItems.length})</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleForceImport}
+                      disabled={selectedSkippedItems.size === 0 || isForceImporting}
+                      className="border-amber-200 hover:bg-amber-100 text-amber-900"
+                    >
+                      {isForceImporting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Check className="mr-2 h-4 w-4" />
+                      )}
+                      Force Import Selected ({selectedSkippedItems.size})
+                    </Button>
+                  </div>
+
+                  <div className="rounded-md border bg-background">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[50px]">
+                            <Checkbox
+                              checked={selectedSkippedItems.size === skippedItems.length && skippedItems.length > 0}
+                              onCheckedChange={handleSelectAllSkipped}
+                            />
+                          </TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>User</TableHead>
+                          <TableHead>Reason</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Skip Reason</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {skippedItems.map((item, i) => (
+                          <TableRow key={i}>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedSkippedItems.has(i)}
+                                onCheckedChange={(checked) => handleSelectSkippedItem(i, checked as boolean)}
+                              />
+                            </TableCell>
+                            <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
+                            <TableCell className="font-medium">{item.user}</TableCell>
+                            <TableCell>{item.reason}</TableCell>
+                            <TableCell>€{item.amount.toFixed(2)}</TableCell>
+                            <TableCell>
+                              <Badge variant={item.paid ? "default" : "destructive"} className="text-[10px]">
+                                {item.paid ? 'Paid' : 'Unpaid'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-amber-600 text-xs">{item.skipReason}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </div>
             )}
