@@ -51,6 +51,20 @@ Old Due;1000;${oldDateStr};NO;Test User;user1;NO;`;
         expect(result.success).toBe(true);
         expect(result.warnings.length).toBeGreaterThan(0);
         expect(result.warnings[0]).toContain('Auto-exempted old due');
+        // Note: Auto-exempted items are NOT skipped, they are imported as exempt.
+        // So skippedItems should be empty for this case.
+        expect(result.skippedItems).toHaveLength(0);
+    });
+
+    it('skips invalid amount and reports it in skippedItems', async () => {
+        const csv = `due_name;due_amount;due_created;due_archived;username;user_id;user_paid;user_payment_date
+Invalid Due;invalid;01-01-2025;NO;Test User;user1;NO;`;
+
+        const result = await importDuesCSVToFirestore(mockFirestore, csv);
+        expect(result.success).toBe(true); // It's partial success usually
+        expect(result.skippedItems).toHaveLength(1);
+        expect(result.skippedItems[0].reason).toBe('Invalid Due');
+        expect(result.skippedItems[0].skipReason).toContain('Invalid amount');
     });
 
     it('does NOT exempt recent unpaid dues (< 18 months)', async () => {

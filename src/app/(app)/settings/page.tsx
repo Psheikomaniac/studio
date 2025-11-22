@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Trash2, RotateCcw } from "lucide-react";
-import { importCSVToFirestore } from "@/lib/csv-import-firestore";
+import { Loader2, Trash2, RotateCcw, AlertCircle } from "lucide-react";
+import { importCSVToFirestore, type SkippedItem } from "@/lib/csv-import-firestore";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -76,6 +76,7 @@ export default function SettingsPage() {
   const [uploadResult, setUploadResult] = useState<string>("");
   const [importProgress, setImportProgress] = useState(0);
   const [importTotal, setImportTotal] = useState(0);
+  const [skippedItems, setSkippedItems] = useState<SkippedItem[]>([]);
 
   // Dialog states
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -123,6 +124,7 @@ export default function SettingsPage() {
     setUploadResult("");
     setImportProgress(0);
     setImportTotal(0);
+    setSkippedItems([]);
 
     try {
       // Detect CSV type by filename (robust: singular/plural)
@@ -161,6 +163,7 @@ export default function SettingsPage() {
 
       const successMessage = `Successfully imported ${csvType} data to Firestore: ${result.rowsProcessed} rows, ${result.playersCreated} players created, ${result.recordsCreated} records created`;
       setUploadResult(successMessage);
+      setSkippedItems(result.skippedItems || []);
 
       if (result.warnings.length > 0) {
         toast({
@@ -371,7 +374,7 @@ export default function SettingsPage() {
             <CardDescription>General team settings.</CardDescription>
           </CardHeader>
           <CardContent>
-             <p className="text-sm text-muted-foreground">Team settings will be available here.</p>
+            <p className="text-sm text-muted-foreground">Team settings will be available here.</p>
           </CardContent>
         </Card>
 
@@ -420,6 +423,48 @@ export default function SettingsPage() {
               <p className={`text-sm ${uploadResult.startsWith('Error') ? 'text-destructive' : 'text-green-600'}`}>
                 {uploadResult}
               </p>
+            )}
+
+            {skippedItems.length > 0 && (
+              <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-4">
+                <div className="flex items-center gap-2 mb-2 text-amber-800 font-medium">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>Skipped Items ({skippedItems.length})</span>
+                </div>
+                <div className="text-sm text-amber-700 mb-3">
+                  The following items were not imported. Please review the reasons below.
+                </div>
+                <div className="relative w-full overflow-auto max-h-60">
+                  <table className="w-full caption-bottom text-xs">
+                    <thead className="[&_tr]:border-b">
+                      <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">Date</th>
+                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">User</th>
+                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">Reason</th>
+                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">Amount</th>
+                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">Status</th>
+                        <th className="h-8 px-2 text-left align-middle font-medium text-muted-foreground">Skip Reason</th>
+                      </tr>
+                    </thead>
+                    <tbody className="[&_tr:last-child]:border-0">
+                      {skippedItems.map((item, i) => (
+                        <tr key={i} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                          <td className="p-2 align-middle">{new Date(item.date).toLocaleDateString()}</td>
+                          <td className="p-2 align-middle font-medium">{item.user}</td>
+                          <td className="p-2 align-middle">{item.reason}</td>
+                          <td className="p-2 align-middle">€{item.amount.toFixed(2)}</td>
+                          <td className="p-2 align-middle">
+                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${item.paid ? 'border-transparent bg-green-100 text-green-700' : 'border-transparent bg-red-100 text-red-700'}`}>
+                              {item.paid ? 'Paid' : 'Unpaid'}
+                            </span>
+                          </td>
+                          <td className="p-2 align-middle text-amber-700">{item.skipReason}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -552,7 +597,7 @@ export default function SettingsPage() {
                       {top.map(d => (
                         <li key={d.id} className="flex items-center justify-between rounded border p-2 text-sm">
                           <span className="truncate mr-2">{d.name}</span>
-                          <span className="font-mono">avg {d.avg.toFixed(2)} € vs. {d.catalog.toFixed(2)} € ({(d.pct*100).toFixed(1)}%)</span>
+                          <span className="font-mono">avg {d.avg.toFixed(2)} € vs. {d.catalog.toFixed(2)} € ({(d.pct * 100).toFixed(1)}%)</span>
                         </li>
                       ))}
                     </ul>
@@ -566,7 +611,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-         <Card className="border-destructive/50">
+        <Card className="border-destructive/50">
           <CardHeader>
             <CardTitle className="text-destructive">Danger Zone</CardTitle>
             <CardDescription>These actions are irreversible.</CardDescription>

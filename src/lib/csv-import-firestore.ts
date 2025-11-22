@@ -19,6 +19,15 @@ import {
 } from 'firebase/firestore';
 import { Player, Fine, Payment, Due, DuePayment, Beverage, BeverageConsumption } from './types';
 
+export interface SkippedItem {
+  date: string;
+  user: string;
+  reason: string;
+  amount: number;
+  paid: boolean;
+  skipReason: string;
+}
+
 export interface ImportResult {
   success: boolean;
   rowsProcessed: number;
@@ -26,6 +35,7 @@ export interface ImportResult {
   recordsCreated: number;
   errors: string[];
   warnings: string[];
+  skippedItems: SkippedItem[];
 }
 
 // Helper function to strip BOM (Byte Order Mark) if present
@@ -249,7 +259,8 @@ export async function importDuesCSVToFirestore(
     playersCreated: 0,
     recordsCreated: 0,
     errors: [],
-    warnings: []
+    warnings: [],
+    skippedItems: []
   };
 
   try {
@@ -298,6 +309,14 @@ export async function importDuesCSVToFirestore(
         // Validate amount
         if (isNaN(amountEUR) || amountEUR < 0) {
           result.warnings.push(`Row ${i + 1}: Invalid amount: ${row.due_amount}`);
+          result.skippedItems.push({
+            date: dueCreated,
+            user: row.username || 'Unknown',
+            reason: row.due_name || 'Unknown Due',
+            amount: isNaN(amountEUR) ? 0 : amountEUR,
+            paid: false,
+            skipReason: `Invalid amount: ${row.due_amount}`
+          });
           continue;
         }
 
@@ -320,6 +339,14 @@ export async function importDuesCSVToFirestore(
         // Skip invalid or unknown player names
         if (isInvalidPlayerName(row.username)) {
           result.warnings.push(`Row ${i + 1}: Skipped due to missing or unknown player name`);
+          result.skippedItems.push({
+            date: dueCreated,
+            user: row.username || 'Unknown',
+            reason: dueName,
+            amount: amountEUR,
+            paid: false,
+            skipReason: 'Missing or unknown player name'
+          });
           continue;
         }
 
@@ -347,7 +374,9 @@ export async function importDuesCSVToFirestore(
 
         if (!isPaid && !isExempt && (isArchivedDue || (!isNaN(dueCreatedTs) && (Date.now() - dueCreatedTs) > EIGHTEEN_MONTHS_MS))) {
           isExempt = true;
-          result.warnings.push(`Auto-exempted old due for player "${player.name}" on "${due.name}" (${new Date(dueCreatedTs).toISOString()})`);
+          const msg = `Auto-exempted old due for player "${player.name}" on "${due.name}" (${new Date(dueCreatedTs).toISOString()})`;
+          result.warnings.push(msg);
+          // Note: We don't add to skippedItems here because it IS imported, just as exempt.
         }
 
         // Create DuePayment record
@@ -438,7 +467,8 @@ export async function importPunishmentsCSVToFirestore(
     playersCreated: 0,
     recordsCreated: 0,
     errors: [],
-    warnings: []
+    warnings: [],
+    skippedItems: []
   };
 
   try {
@@ -496,12 +526,28 @@ export async function importPunishmentsCSVToFirestore(
         // Skip zero-amount penalties
         if (amountEUR === 0) {
           result.warnings.push(`Row ${i + 1}: Skipped zero-amount penalty`);
+          result.skippedItems.push({
+            date: createdDate,
+            user: row.penatly_user || 'Unknown',
+            reason: row.penatly_reason || 'Unknown',
+            amount: 0,
+            paid: isPaidFlag,
+            skipReason: 'Zero amount'
+          });
           continue;
         }
 
         // Skip invalid or unknown player names
         if (isInvalidPlayerName(row.penatly_user)) {
           result.warnings.push(`Row ${i + 1}: Skipped due to missing or unknown player name`);
+          result.skippedItems.push({
+            date: createdDate,
+            user: row.penatly_user || 'Unknown',
+            reason: row.penatly_reason || 'Unknown',
+            amount: amountEUR,
+            paid: isPaidFlag,
+            skipReason: 'Missing or unknown player name'
+          });
           continue;
         }
 
@@ -676,7 +722,8 @@ export async function importTransactionsCSVToFirestore(
     playersCreated: 0,
     recordsCreated: 0,
     errors: [],
-    warnings: []
+    warnings: [],
+    skippedItems: []
   };
 
   try {
@@ -735,6 +782,14 @@ export async function importTransactionsCSVToFirestore(
         const subjectPrefix = subject.split(':')[0].trim().toLowerCase();
         if (subjectPrefix.includes('beitr')) { // matches "beitrag", "beiträge"
           result.warnings.push(`Row ${i + 1}: Skipped Beiträge transaction (handled via dues CSV): ${subject}`);
+          result.skippedItems.push({
+            date: transactionDate,
+            user: 'Unknown (Subject Parse)',
+            reason: subject,
+            amount: amountEUR,
+            paid: true, // Transactions are usually paid
+            skipReason: 'Beiträge handled via Dues CSV'
+          });
           continue;
         }
 
@@ -765,6 +820,14 @@ export async function importTransactionsCSVToFirestore(
         // Skip invalid or unknown player names derived from subject
         if (isInvalidPlayerName(playerName)) {
           result.warnings.push(`Row ${i + 1}: Skipped due to missing or unknown player name in subject`);
+          result.skippedItems.push({
+            date: transactionDate,
+            user: playerName || 'Unknown',
+            reason: subject,
+            amount: amountEUR,
+            paid: true,
+            skipReason: 'Missing or unknown player name in subject'
+          });
           continue;
         }
 
@@ -863,7 +926,8 @@ export async function importCSVToFirestore(
         playersCreated: 0,
         recordsCreated: 0,
         errors: [`Unknown CSV type: ${type}`],
-        warnings: []
+        warnings: [],
+        skippedItems: []
       };
   }
 }
