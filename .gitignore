@@ -55,13 +55,5 @@ reviews/
 *.swp
 *.swo
 *~
-/scripts/check-firestore-data.ts
-/data/cashbox-dues-03-11-2025-142915.csv
-/data/cashbox-punishments-03-11-2025-142903.csv
-/data/cashbox-punishments-24-10-2025-171738.csv
-/data/cashbox-transactions-03-11-2025-142850.csv
 /playwright-report/
 /test-results/
-/playwright-report/
-/test-results/
-/playwright-report/
