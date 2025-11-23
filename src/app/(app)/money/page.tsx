@@ -19,6 +19,7 @@ import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 import { FinesService } from '@/services/fines.service';
 import { DuesService } from '@/services/dues.service';
 import { BeveragesService } from '@/services/beverages.service';
+import { PaymentsService } from '@/services/payments.service';
 import {
   dues as staticDues,
   predefinedFines as staticPredefinedFines,
@@ -386,16 +387,6 @@ export default function MoneyPage() {
       return;
     }
 
-    // Payment status can't be toggled (always paid)
-    if (transaction.type === 'payment') {
-      toast({
-        title: "Cannot Toggle",
-        description: "Payment status cannot be changed.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     // Exempt status can't be toggled
     if (transaction.status === 'exempt') {
       toast({
@@ -427,6 +418,12 @@ export default function MoneyPage() {
         case 'beverage': {
           const beveragesService = new BeveragesService(firestore, transaction.userId);
           await beveragesService.toggleConsumptionPaid(transaction.id, newStatus);
+          break;
+        }
+
+        case 'payment': {
+          const paymentsService = new PaymentsService(firestore, transaction.userId);
+          await paymentsService.togglePaymentPaid(transaction.id, newStatus);
           break;
         }
       }
@@ -467,7 +464,7 @@ export default function MoneyPage() {
   };
 
   const getStatusBadge = (transaction: UnifiedTransaction) => {
-    const isClickable = transaction.type !== 'payment' && transaction.status !== 'exempt';
+    const isClickable = transaction.status !== 'exempt';
     const baseClass = isClickable ? 'cursor-pointer hover:opacity-70 transition-opacity' : '';
 
     const handleClick = (e: React.MouseEvent) => {

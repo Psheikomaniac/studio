@@ -269,6 +269,67 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
   getPaymentsCollectionRef(): CollectionReference {
     return collection(this.firestore, `users/${this.userId}/payments`);
   }
+  /**
+   * Toggle payment paid status (mark as paid/unpaid)
+   *
+   * @param paymentId Payment ID
+   * @param paid New paid status
+   * @param options Update options
+   * @returns Service result with updated payment
+   */
+  async togglePaymentPaid(
+    paymentId: string,
+    paid: boolean,
+    options: UpdateOptions = {}
+  ): Promise<ServiceResult<Payment>> {
+    try {
+      const docRef = this.getDocRef(paymentId);
+      const userRef = doc(this.firestore, 'users', this.userId);
+      const now = this.timestamp();
+
+      const updatedPayment = await runTransaction(this.firestore, async (transaction) => {
+        const paymentDoc = await transaction.get(docRef);
+
+        if (!paymentDoc.exists()) {
+          throw new Error('Payment not found');
+        }
+
+        const currentPayment = paymentDoc.data() as Payment;
+
+        // If status isn't changing, do nothing
+        if (currentPayment.paid === paid) {
+          return currentPayment;
+        }
+
+        const updateData = {
+          paid,
+          paidAt: paid ? now : null,
+          updatedAt: now,
+          ...(options.userId && { updatedBy: options.userId }),
+        };
+
+        // Calculate balance change
+        // If marking as paid: Add amount to balance (credit)
+        // If marking as unpaid: Remove amount from balance (debit)
+        const balanceChange = paid ? currentPayment.amount : -currentPayment.amount;
+
+        transaction.update(docRef, updateData);
+        transaction.update(userRef, { balance: increment(balanceChange) });
+
+        return { ...currentPayment, ...updateData };
+      });
+
+      return {
+        success: true,
+        data: updatedPayment,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error as Error,
+      };
+    }
+  }
 }
 
 /**

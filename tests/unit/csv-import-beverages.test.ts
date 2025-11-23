@@ -49,7 +49,20 @@ describe('importPunishmentsCSVToFirestore Beverage Logic', () => {
         const csvContent = `penatly_date;penatly_amount;penatly_reason;penatly_user
 01.01.2024;1500;Kasten Bier;Max Mustermann`;
 
-        await importPunishmentsCSVToFirestore(mockFirestore, csvContent);
+        const result = await importPunishmentsCSVToFirestore(mockFirestore, csvContent);
+
+        if (result.errors.length > 0) {
+            throw new Error(`Import failed with errors: ${JSON.stringify(result.errors)}`);
+        }
+        if (result.warnings.length > 0) {
+            console.error('Import warnings:', result.warnings);
+        }
+        if (result.skippedItems.length > 0) {
+            console.error('Skipped items:', JSON.stringify(result.skippedItems, null, 2));
+        }
+        console.log('Records created:', result.recordsCreated);
+
+        // Verify classifyPunishment directly
 
         // Verify writeBatch was called
         expect(writeBatch).toHaveBeenCalled();
@@ -68,14 +81,27 @@ describe('importPunishmentsCSVToFirestore Beverage Logic', () => {
 
         expect(beverageCall).toBeUndefined();
 
-        // Should find a fine creation call
-        const allSetCalls = setMock.mock.calls.map((c: any[]) => c[1]);
-        const fineCall = allSetCalls.find((data: any) =>
-            data.reason === 'Kasten Bier' && data.amount === 15
-        );
+        // Verify classifyPunishment directly
+        const { classifyPunishment } = await import('@/lib/csv-utils');
+        const classification = classifyPunishment('Kasten Bier');
+        expect(classification).toBe('FINE');
 
-        if (!fineCall) {
-            console.error('FAILED to find Kasten Bier fine. Actual set calls:', JSON.stringify(allSetCalls, null, 2));
+        // Should find a fine creation call
+        // We need to check ALL writeBatch calls, not just the first one
+        const batchResults = (writeBatch as any).mock.results;
+        let fineCall = undefined;
+
+        for (const res of batchResults) {
+            const batchMock = res.value;
+            const setCalls = batchMock.set.mock.calls;
+            const found = setCalls.find((call: any[]) => {
+                const data = call[1];
+                return data.reason === 'Kasten Bier' && data.amount === 15;
+            });
+            if (found) {
+                fineCall = found;
+                break;
+            }
         }
 
         expect(fineCall).toBeDefined();
