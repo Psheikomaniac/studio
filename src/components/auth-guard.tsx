@@ -15,10 +15,11 @@ export function AuthGuard({ children }: AuthGuardProps) {
     const pathname = usePathname();
 
     useEffect(() => {
-        if (!isUserLoading && !user) {
-            // Redirect to login if not authenticated
-            // Store the attempted URL to redirect back after login (optional enhancement for later)
-            router.push('/login');
+        if (!isUserLoading) {
+            if (!user || user.isAnonymous) {
+                // Redirect to login if not authenticated or if user is anonymous
+                router.push('/login');
+            }
         }
     }, [user, isUserLoading, router, pathname]);
 
@@ -30,8 +31,8 @@ export function AuthGuard({ children }: AuthGuardProps) {
         );
     }
 
-    // If not loading and no user, we render nothing while redirecting
-    if (!user) {
+    // If not loading and no user (or anonymous), we render nothing while redirecting
+    if (!user || user.isAnonymous) {
         return null;
     }
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase/provider';
 import { initiateEmailSignIn, initiateEmailSignUp } from '@/firebase/non-blocking-login';
+import { signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,12 +24,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Redirect if already logged in
+  // Redirect if already logged in (but not if anonymous)
   useEffect(() => {
     if (user && !isUserLoading) {
-      router.push('/dashboard');
+      if (user.isAnonymous) {
+        // If we find an anonymous user on the login page, sign them out
+        // This clears the "ghost" session
+        signOut(auth).catch(err => console.error("Failed to sign out anonymous user", err));
+      } else {
+        router.push('/dashboard');
+      }
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, auth]);
 
   // Handle auth errors from the provider
   useEffect(() => {

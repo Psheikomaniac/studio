@@ -14,10 +14,12 @@ import {
 import { Icons } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AuthGuard } from "@/components/auth-guard";
+import { InactivityHandler } from "@/components/inactivity-handler";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
+      <InactivityHandler />
       <SidebarProvider>
         <Sidebar>
           <SidebarHeader className="p-4">
