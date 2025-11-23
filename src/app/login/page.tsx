@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import { useAuth, useUser } from '@/firebase/provider';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -20,6 +21,7 @@ export default function LoginPage() {
   const { auth, firestore } = useFirebase();
   const { user, isUserLoading, userError } = useUser();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -43,7 +45,7 @@ export default function LoginPage() {
     if (userError) {
       setIsLoading(false);
       toast({
-        title: "Authentication Error",
+        title: t('authError'),
         description: userError.message,
         variant: "destructive",
       });
@@ -63,15 +65,15 @@ export default function LoginPage() {
       let errorMessage = "Failed to sign in.";
 
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        errorMessage = "Invalid email or password. Please try again.";
+        errorMessage = t('invalidCredential');
       } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = "Too many failed attempts. Please try again later.";
+        errorMessage = t('tooManyRequests');
       } else if (error.message) {
         errorMessage = error.message;
       }
 
       toast({
-        title: "Login Failed",
+        title: t('loginFailed'),
         description: errorMessage,
         variant: "destructive",
       });
@@ -106,15 +108,15 @@ export default function LoginPage() {
       let errorMessage = "Failed to create account.";
 
       if (error.code === 'auth/email-already-in-use') {
-        errorMessage = "This email is already registered.";
+        errorMessage = t('emailInUse');
       } else if (error.code === 'auth/weak-password') {
-        errorMessage = "Password should be at least 6 characters.";
+        errorMessage = t('weakPassword');
       } else if (error.message) {
         errorMessage = error.message;
       }
 
       toast({
-        title: "Sign Up Failed",
+        title: t('signUpFailed'),
         description: errorMessage,
         variant: "destructive",
       });
@@ -136,22 +138,22 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             <Icons.Logo className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+          <CardTitle className="text-2xl font-bold">{t('welcomeBack')}</CardTitle>
           <CardDescription>
-            Enter your email to sign in to your account
+            {t('enterEmailToSignIn')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Sign Up</TabsTrigger>
+              <TabsTrigger value="login">{t('login')}</TabsTrigger>
+              <TabsTrigger value="register">{t('signup')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -162,7 +164,7 @@ export default function LoginPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t('password')}</Label>
                   <Input
                     id="password"
                     type="password"
@@ -173,7 +175,7 @@ export default function LoginPage() {
                 </div>
                 <Button className="w-full" type="submit" disabled={isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign In
+                  {t('signIn')}
                 </Button>
               </form>
             </TabsContent>
@@ -181,7 +183,7 @@ export default function LoginPage() {
             <TabsContent value="register">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="register-email">Email</Label>
+                  <Label htmlFor="register-email">{t('email')}</Label>
                   <Input
                     id="register-email"
                     type="email"
@@ -192,7 +194,7 @@ export default function LoginPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-password">Password</Label>
+                  <Label htmlFor="register-password">{t('password')}</Label>
                   <Input
                     id="register-password"
                     type="password"
@@ -203,7 +205,7 @@ export default function LoginPage() {
                 </div>
                 <Button className="w-full" type="submit" disabled={isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create Account
+                  {t('createAccount')}
                 </Button>
               </form>
             </TabsContent>
@@ -211,7 +213,7 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-xs text-muted-foreground text-center">
-            By clicking continue, you agree to our Terms of Service and Privacy Policy.
+            {t('termsAgreement')}
           </p>
         </CardFooter>
       </Card>
