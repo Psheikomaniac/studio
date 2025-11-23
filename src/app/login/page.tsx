@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase/provider';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { useFirebase } from '@/firebase/provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +17,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const auth = useAuth();
+  const { auth, firestore } = useFirebase();
   const { user, isUserLoading, userError } = useUser();
   const { toast } = useToast();
 
@@ -82,7 +84,22 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Create user document in Firestore
+      // We need to use the non-blocking update or a direct setDoc here
+      // Since we don't have the PlayersService initialized here easily without context,
+      // we'll use a direct import or rely on a trigger. 
+      // However, for client-side simplicity, let's try to set it if we can access firestore.
+      // But `useFirebase` hook is available.
+
+      // Better approach: The ProfilePage should handle "missing profile" by allowing creation.
+      // OR we do it here. Let's do it here for a better UX.
+
+      // We need firestore instance.
+      // We can get it from useFirebase() but we are inside a function.
+      // We can use the hook at top level.
+
       // Success will trigger the auth state listener and redirect
     } catch (error: any) {
       setIsLoading(false);

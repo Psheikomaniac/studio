@@ -89,3 +89,10 @@ export function updatePlayersWithCalculatedBalances(
 export function generateId(prefix: string): string {
   return `${prefix}_${Math.random().toString(36).substr(2, 9)}`;
 }
+
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(amount);
+}

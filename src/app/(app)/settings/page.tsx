@@ -35,9 +35,12 @@ import type { Due, Beverage } from '@/lib/types';
 import { useMemoFirebase, useCollection } from '@/firebase';
 import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 import { generateId } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { useI18n } from "@/components/i18n-provider";
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const { showLanguageName, setShowLanguageName } = useI18n();
   const firebase = useFirebaseOptional();
   const [isFirebaseAvailable, setIsFirebaseAvailable] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -510,6 +513,26 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">Team settings will be available here.</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Language Settings</CardTitle>
+            <CardDescription>Customize your language preferences.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="show-language-name">Show Language Name</Label>
+              <p className="text-sm text-muted-foreground">
+                Display the language name next to the flag in the header.
+              </p>
+            </div>
+            <Switch
+              id="show-language-name"
+              checked={showLanguageName}
+              onCheckedChange={setShowLanguageName}
+            />
           </CardContent>
         </Card>
 

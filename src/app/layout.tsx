@@ -1,21 +1,18 @@
+
 'use client';
 
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { cn } from '@/lib/utils';
+import { ThemeProvider } from "@/components/theme-provider";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { useEffect } from 'react';
-import { initWebVitals } from '@/lib/web-vitals';
+import { I18nProvider } from "@/components/i18n-provider";
+import { cn } from '@/lib/utils'; // Keep cn for body class
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // PRD-10: initialize Web Vitals collection on client
-  useEffect(() => {
-    void initWebVitals();
-  }, []);
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

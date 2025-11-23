@@ -11,6 +11,7 @@ export interface Player {
   totalUnpaidPenalties: number;
   totalPaidPenalties: number;
   active?: boolean; // if false, player is inactive and should be hidden from assignment pickers
+  notes?: string;
 }
 
 export interface Fine {
@@ -50,9 +51,9 @@ export interface Payment {
 }
 
 export interface Beverage {
-    id: string;
-    name: string;
-    price: number;
+  id: string;
+  name: string;
+  price: number;
 }
 
 export interface BeverageConsumption {
