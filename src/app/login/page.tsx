@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase/provider';
-import { initiateEmailSignIn, initiateEmailSignUp } from '@/firebase/non-blocking-login';
-import { signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -55,14 +54,23 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      initiateEmailSignIn(auth, email, password);
-      // Loading state will be handled by the auth listener in FirebaseProvider
-      // But we keep local loading true until redirect or error
-    } catch (error) {
+      await signInWithEmailAndPassword(auth, email, password);
+      // Success will trigger the auth state listener and redirect
+    } catch (error: any) {
       setIsLoading(false);
+      let errorMessage = "Failed to sign in.";
+
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        errorMessage = "Invalid email or password. Please try again.";
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = "Too many failed attempts. Please try again later.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       toast({
-        title: "Error",
-        description: "Failed to initiate login.",
+        title: "Login Failed",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -74,12 +82,23 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      initiateEmailSignUp(auth, email, password);
-    } catch (error) {
+      await createUserWithEmailAndPassword(auth, email, password);
+      // Success will trigger the auth state listener and redirect
+    } catch (error: any) {
       setIsLoading(false);
+      let errorMessage = "Failed to create account.";
+
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = "This email is already registered.";
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = "Password should be at least 6 characters.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       toast({
-        title: "Error",
-        description: "Failed to initiate sign up.",
+        title: "Sign Up Failed",
+        description: errorMessage,
         variant: "destructive",
       });
     }
