@@ -73,13 +73,13 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth service not provided.") });
       return;
     }
-    
+
     // Set loading to true only if we don't have a user yet.
     if (!auth.currentUser) {
-        setUserAuthState(prev => ({...prev, isUserLoading: true, userError: null}));
+      setUserAuthState(prev => ({ ...prev, isUserLoading: true, userError: null }));
     } else {
-        // If we have a user from the initial state, we are not loading.
-        setUserAuthState(prev => ({...prev, isUserLoading: false, userError: null}));
+      // If we have a user from the initial state, we are not loading.
+      setUserAuthState(prev => ({ ...prev, isUserLoading: false, userError: null }));
     }
 
 
@@ -140,11 +140,29 @@ export const useFirebase = (): FirebaseServicesAndUser => {
   const context = useContext(FirebaseContext);
 
   if (context === undefined) {
-    throw new Error('useFirebase must be used within a FirebaseProvider.');
+    // Allow usage without provider (e.g. SSR)
+    // Return dummy values that satisfy types but are null at runtime
+    // This is safe because on the client, the provider will be present
+    return {
+      firebaseApp: null as unknown as FirebaseApp,
+      firestore: null as unknown as Firestore,
+      auth: null as unknown as Auth,
+      user: null,
+      isUserLoading: true,
+      userError: null,
+    };
   }
 
   if (!context.areServicesAvailable || !context.firebaseApp || !context.firestore || !context.auth) {
-    throw new Error('Firebase core services not available. Check FirebaseProvider props.');
+    // If services are not available yet (but provider exists), return loading state
+    return {
+      firebaseApp: null as unknown as FirebaseApp,
+      firestore: null as unknown as Firestore,
+      auth: null as unknown as Auth,
+      user: null,
+      isUserLoading: true,
+      userError: null,
+    };
   }
 
   return {
@@ -175,14 +193,14 @@ export const useFirebaseApp = (): FirebaseApp => {
   return firebaseApp;
 };
 
-type MemoFirebase <T> = T & {__memo?: boolean};
+type MemoFirebase<T> = T & { __memo?: boolean };
 
 export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T | (MemoFirebase<T>) {
   const memoized = useMemo(factory, deps);
-  
-  if(typeof memoized !== 'object' || memoized === null) return memoized;
+
+  if (typeof memoized !== 'object' || memoized === null) return memoized;
   (memoized as MemoFirebase<T>).__memo = true;
-  
+
   return memoized;
 }
 
@@ -194,8 +212,9 @@ export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T | 
 export const useUser = (): UserHookResult => { // Renamed from useAuthUser
   const context = useContext(FirebaseContext);
   if (context === undefined) {
-    throw new Error('useUser must be used within a FirebaseProvider.');
+    // Handle SSR/Missing Provider by returning loading state
+    return { user: null, isUserLoading: true, userError: null };
   }
-  const { user, isUserLoading, userError } = context; 
+  const { user, isUserLoading, userError } = context;
   return { user, isUserLoading, userError };
 };

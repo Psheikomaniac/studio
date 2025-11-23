@@ -16,21 +16,21 @@ import { CreditCard, LogOut, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { useUser, useAuth } from '@/firebase/provider';
+import { signOut } from 'firebase/auth';
+
 export function UserNav() {
   const router = useRouter();
+  const { user } = useUser();
+  const auth = useAuth();
 
-  // Mock user data since Firebase is removed
-  const user = {
-    displayName: 'Kassenwart',
-    email: 'treasurer@team.com',
-    photoURL: 'https://ui-avatars.com/api/?name=Kassenwart&size=100&background=0ea5e9&color=fff',
-  };
-
-  const handleSignOut = () => {
-    // In a real app with auth, this would sign the user out.
-    // For now, we can just log to console and simulate a redirect.
-    console.log("User signed out.");
-    // No login page to redirect to, so we can just stay here.
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   return (
@@ -55,10 +55,10 @@ export function UserNav() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {user?.displayName || ''}
+              {user?.displayName || 'User'}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user?.email || ''}
+              {user?.email || 'No email'}
             </p>
           </div>
         </DropdownMenuLabel>
