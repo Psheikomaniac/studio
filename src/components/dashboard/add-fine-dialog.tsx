@@ -37,6 +37,7 @@ import type { Player, PredefinedFine } from "@/lib/types";
 import { PlayerMultiSelect } from "./player-multi-select";
 import { getFineSuggestion } from "@/lib/actions";
 import { formatEuro } from "@/lib/csv-utils";
+import { useTranslation } from 'react-i18next';
 
 
 const fineSchema = z.object({
@@ -55,6 +56,7 @@ type AddFineDialogProps = {
 };
 
 export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFineAdded }: AddFineDialogProps) {
+  const { t } = useTranslation();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const { toast } = useToast();
 
@@ -68,7 +70,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     },
   });
 
-   useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       form.reset({
         playerIds: [],
@@ -94,7 +96,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please enter a description of the transgression first.",
+        description: t('dialogs.pleaseEnterDesc'),
       });
       return;
     }
@@ -104,10 +106,10 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     setIsAiLoading(false);
 
     if (result.error) {
-      toast({ variant: "destructive", title: "AI Error", description: result.error });
+      toast({ variant: "destructive", title: t('dialogs.aiError'), description: result.error });
     } else if (result.suggestedReason && result.suggestedPlayers) {
       form.setValue("reason", result.suggestedReason, { shouldValidate: true });
-      
+
       const matchedIds = (result.suggestedPlayers as (Player | undefined)[])
         .map((sp) => players.find(p => p.id === sp?.id)?.id)
         .filter((id: string | undefined): id is string => !!id);
@@ -116,8 +118,8 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
       }
 
       toast({
-        title: "AI Suggestion Applied!",
-        description: "Reason and players have been pre-filled.",
+        title: t('dialogs.aiSuggestionApplied'),
+        description: t('dialogs.aiSuggestionAppliedDesc'),
       });
     }
   };
@@ -128,7 +130,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
       form.setValue("reason", fine.reason, { shouldValidate: true });
       form.setValue("amount", fine.amount, { shouldValidate: true });
     } else {
-        form.setValue("reason", value, { shouldValidate: true });
+      form.setValue("reason", value, { shouldValidate: true });
     }
   };
 
@@ -136,9 +138,9 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     <Dialog open={isOpen} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">Assign a New Fine</DialogTitle>
+          <DialogTitle className="font-headline">{t('dialogs.addFineTitle')}</DialogTitle>
           <DialogDescription>
-            Select player(s) and a reason to assign a fine. Use the AI helper for quick suggestions.
+            {t('dialogs.addFineDesc')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -148,7 +150,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               name="aiDescription"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Transgression Description (for AI)</FormLabel>
+                  <FormLabel>{t('dialogs.transgressionDesc')}</FormLabel>
                   <FormControl>
                     <Textarea placeholder="e.g., 'Alex and Ben were late for training again...'" {...field} />
                   </FormControl>
@@ -158,13 +160,13 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
             />
             <Button type="button" onClick={handleAiSuggest} disabled={isAiLoading} variant="outline" className="w-full">
               {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4 text-accent" />}
-              Suggest with AI
+              {t('dialogs.suggestWithAI')}
             </Button>
 
             <div className="my-2 flex items-center gap-2">
-                <div className="flex-grow border-t border-border"></div>
-                <span className="text-xs text-muted-foreground">OR</span>
-                <div className="flex-grow border-t border-border"></div>
+              <div className="flex-grow border-t border-border"></div>
+              <span className="text-xs text-muted-foreground">OR</span>
+              <div className="flex-grow border-t border-border"></div>
             </div>
 
             <FormField
@@ -172,7 +174,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               name="playerIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Players</FormLabel>
+                  <FormLabel>{t('dialogs.players')}</FormLabel>
                   <PlayerMultiSelect
                     players={players}
                     value={field.value ?? []}
@@ -182,30 +184,30 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
                 </FormItem>
               )}
             />
-            
+
             <FormField
-                control={form.control}
-                name="reason"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Reason</FormLabel>
-                        <Select onValueChange={handlePredefinedFineChange} value={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select or type a reason..." />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {predefinedFines.map((fine, i) => (
-                                    <SelectItem key={i} value={fine.reason}>
-                                        {fine.reason} ({formatEuro(fine.amount)})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
-                )}
+              control={form.control}
+              name="reason"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('dialogs.reason')}</FormLabel>
+                  <Select onValueChange={handlePredefinedFineChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select or type a reason..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {predefinedFines.map((fine, i) => (
+                        <SelectItem key={i} value={fine.reason}>
+                          {fine.reason} ({formatEuro(fine.amount)})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
 
             <FormField
@@ -213,7 +215,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount (€)</FormLabel>
+                  <FormLabel>{t('dialogs.amount')}</FormLabel>
                   <FormControl>
                     <Input type="number" step="0.01" placeholder="5.00" {...field} />
                   </FormControl>
@@ -222,7 +224,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               )}
             />
             <DialogFooter>
-              <Button type="submit">Assign Fine</Button>
+              <Button type="submit">{t('dialogs.assignFine')}</Button>
             </DialogFooter>
           </form>
         </Form>

@@ -18,8 +18,10 @@ import { useRouter } from 'next/navigation';
 
 import { useUser, useAuth } from '@/firebase/provider';
 import { signOut } from 'firebase/auth';
+import { useTranslation } from 'react-i18next';
 
 export function UserNav() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { user } = useUser();
   const auth = useAuth();
@@ -67,18 +69,18 @@ export function UserNav() {
           <DropdownMenuItem asChild>
             <Link href="/profile" className="cursor-pointer">
               <UserIcon className="mr-2 h-4 w-4" />
-              <span>Profile</span>
+              <span>{t('nav.profile')}</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <CreditCard className="mr-2 h-4 w-4" />
-            <span>Billing</span>
+            <span>{t('nav.billing')}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span>{t('nav.logout')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

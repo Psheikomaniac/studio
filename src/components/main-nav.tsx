@@ -11,15 +11,18 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Icons.Dashboard },
-  { href: "/players", label: "Players", icon: Icons.Players },
-  { href: "/money", label: "Money", icon: Icons.Money },
-  { href: "/settings", label: "Settings", icon: Icons.Settings },
-];
+import { useTranslation } from 'react-i18next';
 
 export function MainNav() {
+  const { t } = useTranslation();
   const pathname = usePathname();
+
+  const navItems = [
+    { href: "/dashboard", label: t('nav.dashboard'), icon: Icons.Dashboard },
+    { href: "/players", label: t('nav.players'), icon: Icons.Players },
+    { href: "/money", label: t('nav.money'), icon: Icons.Money },
+    { href: "/settings", label: t('nav.settings'), icon: Icons.Settings },
+  ];
 
   return (
     <SidebarMenu>

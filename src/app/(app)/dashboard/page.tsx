@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Receipt, Wallet, Beer, TrendingDown } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from 'react-i18next';
 import type { Player, Fine, Payment, Due, DuePayment, BeverageConsumption, PredefinedFine, Beverage } from '@/lib/types';
 import { Stats } from '@/components/dashboard/stats';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -47,6 +48,7 @@ interface UnifiedTransaction {
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   // Fetch all players and their transactions from Firebase
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
   const { data: finesData, isLoading: finesLoading } = useAllFines();
@@ -80,7 +82,7 @@ export default function DashboardPage() {
 
   // Determine overall loading state
   const isLoading = playersLoading || finesLoading || paymentsLoading ||
-                    duePaymentsLoading || consumptionsLoading;
+    duePaymentsLoading || consumptionsLoading;
 
   // Dialog states
   const [isAddFineOpen, setAddFineOpen] = useState(false);
@@ -196,7 +198,7 @@ export default function DashboardPage() {
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-8">
           <SidebarTrigger className="md:hidden" />
           <h1 className="font-headline text-xl font-semibold md:text-2xl">
-            Dashboard
+            {t('nav.dashboard')}
           </h1>
         </header>
 
@@ -204,9 +206,9 @@ export default function DashboardPage() {
           {playersError ? (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error Loading Dashboard</AlertTitle>
+              <AlertTitle>{t('dashboard.errorLoading')}</AlertTitle>
               <AlertDescription>
-                {playersError.message || 'Failed to load dashboard data. Please try again later.'}
+                {playersError.message || t('dashboard.errorLoadingDesc')}
               </AlertDescription>
             </Alert>
           ) : isLoading ? (
@@ -258,7 +260,7 @@ export default function DashboardPage() {
               {/* Data Freshness */}
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <p>
-                  Last data update: {maxDateFromCollections ? (
+                  {t('dashboard.lastUpdate')}: {maxDateFromCollections ? (
                     <>
                       {(() => {
                         const d = maxDateFromCollections([payments, fines, duePayments, beverageConsumptions]);
@@ -274,7 +276,7 @@ export default function DashboardPage() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle>Revenue by Day (last 28 days)</CardTitle>
+                      <CardTitle>{t('dashboard.revenueByDay')}</CardTitle>
                       {(() => {
                         const todayRevenue = sumPaymentsToday(payments);
                         const avg7d = (() => {
@@ -309,7 +311,7 @@ export default function DashboardPage() {
                               <CartesianGrid strokeDasharray="3 3" vertical={false} />
                               <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
                               <YAxis tickFormatter={(v) => `€${v}`} />
-                              <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
+                              <Tooltip formatter={(v: number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
                               <Line type="monotone" dataKey="value" name="Revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
                               <Line type="monotone" dataKey="ma7" name="7d MA" stroke="hsl(var(--muted-foreground))" strokeDasharray="5 5" strokeWidth={2} dot={false} />
                             </LineChart>
@@ -323,8 +325,8 @@ export default function DashboardPage() {
                 </Card>
                 <Card>
                   <CardHeader>
-                    <CardTitle>Top Beverages</CardTitle>
-                    <CardDescription>Most consumed drinks</CardDescription>
+                    <CardTitle>{t('dashboard.topBeverages')}</CardTitle>
+                    <CardDescription>{t('dashboard.mostConsumedDrinks')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {(() => {
@@ -357,8 +359,8 @@ export default function DashboardPage() {
               {/* Transactions by Type (stacked, last 28 days) */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Transactions by Type (last 28 days)</CardTitle>
-                  <CardDescription>Fines, Dues, Beverages vs. Payments</CardDescription>
+                  <CardTitle>{t('dashboard.transactionsByType')}</CardTitle>
+                  <CardDescription>{t('dashboard.transactionsDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {(() => {
@@ -370,7 +372,7 @@ export default function DashboardPage() {
                       if (!ds) return '';
                       const d = new Date(ds);
                       if (isNaN(d.getTime()) || d < start || d > end) return '';
-                      return d.toISOString().slice(0,10);
+                      return d.toISOString().slice(0, 10);
                     };
                     for (const p of payments) {
                       const k = keyOf(p.date);
@@ -400,7 +402,7 @@ export default function DashboardPage() {
                       row.beverages += Math.max(0, Number(b.amount) || 0);
                       map.set(k, row);
                     }
-                    const data = Array.from(map.values()).sort((a,b) => a.date.localeCompare(b.date));
+                    const data = Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
                     return data.length > 0 ? (
                       <div className="w-full h-64">
                         <ResponsiveContainer width="100%" height="100%">
@@ -408,7 +410,7 @@ export default function DashboardPage() {
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
                             <YAxis tickFormatter={(v) => `€${v}`} />
-                            <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
+                            <Tooltip formatter={(v: number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
                             <Area type="monotone" dataKey="fines" name="Fines" stackId="1" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.15} />
                             <Area type="monotone" dataKey="dues" name="Dues" stackId="1" stroke="hsl(var(--secondary))" fill="hsl(var(--secondary))" fillOpacity={0.15} />
                             <Area type="monotone" dataKey="beverages" name="Beverages" stackId="1" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} />
@@ -426,26 +428,26 @@ export default function DashboardPage() {
               {/* Quick Actions */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                  <CardDescription>Common tasks for managing team finances</CardDescription>
+                  <CardTitle>{t('dashboard.quickActions')}</CardTitle>
+                  <CardDescription>{t('dashboard.quickActionsDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     <Button onClick={() => setAddFineOpen(true)} variant="outline">
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      Add Fine
+                      {t('dashboard.addFine')}
                     </Button>
                     <Button onClick={() => setAddPaymentOpen(true)} variant="outline">
                       <Receipt className="mr-2 h-4 w-4" />
-                      Add Payment
+                      {t('dashboard.addPayment')}
                     </Button>
                     <Button onClick={() => setRecordDueOpen(true)} variant="outline">
                       <Wallet className="mr-2 h-4 w-4" />
-                      Record Due
+                      {t('dashboard.recordDue')}
                     </Button>
                     <Button onClick={() => setRecordBeverageOpen(true)} variant="outline">
                       <Beer className="mr-2 h-4 w-4" />
-                      Record Beverage
+                      {t('dashboard.recordBeverage')}
                     </Button>
                   </div>
                 </CardContent>
@@ -457,9 +459,9 @@ export default function DashboardPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <TrendingDown className="h-5 w-5 text-destructive" />
-                      Top Debtors
+                      {t('dashboard.topDebtors')}
                     </CardTitle>
-                    <CardDescription>Players with the highest debts</CardDescription>
+                    <CardDescription>{t('dashboard.topDebtorsDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {topDebtors.length > 0 ? (
@@ -485,7 +487,7 @@ export default function DashboardPage() {
                       </div>
                     ) : (
                       <p className="text-center text-sm text-muted-foreground py-4">
-                        No players in debt
+                        {t('dashboard.noPlayersInDebt')}
                       </p>
                     )}
                   </CardContent>
@@ -494,8 +496,8 @@ export default function DashboardPage() {
                 {/* Recent Activity Widget */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
-                    <CardDescription>Last 5 transactions</CardDescription>
+                    <CardTitle>{t('dashboard.recentActivity')}</CardTitle>
+                    <CardDescription>{t('dashboard.recentActivityDesc')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {recentTransactions.length > 0 ? (
@@ -521,7 +523,7 @@ export default function DashboardPage() {
                       </Table>
                     ) : (
                       <p className="text-center text-sm text-muted-foreground py-4">
-                        No recent activity
+                        {t('dashboard.noRecentActivity')}
                       </p>
                     )}
                   </CardContent>
@@ -538,28 +540,28 @@ export default function DashboardPage() {
         setOpen={setAddFineOpen}
         players={players}
         predefinedFines={predefinedFines}
-        onFineAdded={() => {}} // Kept for backwards compatibility
+        onFineAdded={() => { }} // Kept for backwards compatibility
       />
       <AddEditPaymentDialog
         isOpen={isAddPaymentOpen}
         setOpen={setAddPaymentOpen}
         players={players}
         payment={null}
-        onSave={() => {}} // Kept for backwards compatibility
+        onSave={() => { }} // Kept for backwards compatibility
       />
       <RecordDuePaymentDialog
         isOpen={isRecordDueOpen}
         setOpen={setRecordDueOpen}
         players={players}
         dues={dues}
-        onRecord={() => {}} // Kept for backwards compatibility
+        onRecord={() => { }} // Kept for backwards compatibility
       />
       <RecordConsumptionDialog
         isOpen={isRecordBeverageOpen}
         setOpen={setRecordBeverageOpen}
         players={players}
         beverages={beverages}
-        onRecord={() => {}} // Kept for backwards compatibility
+        onRecord={() => { }} // Kept for backwards compatibility
       />
     </>
   );

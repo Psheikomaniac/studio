@@ -13,8 +13,10 @@ import {
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu'
 import { ThemeMode, getStoredTheme, setTheme, subscribeSystemPreference, resolveEffectiveTheme } from '@/lib/theme'
+import { useTranslation } from 'react-i18next'
 
 export function ThemeToggle() {
+  const { t } = useTranslation()
   const [mode, setMode] = React.useState<ThemeMode>('system')
   const [effective, setEffective] = React.useState<'light' | 'dark'>('light')
   const [mounted, setMounted] = React.useState(false)
@@ -48,21 +50,21 @@ export function ThemeToggle() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="justify-start gap-2 w-full" suppressHydrationWarning>
           {icon}
-          <span className="text-sm">Theme</span>
+          <span className="text-sm">{t('theme.label')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Darstellung</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('theme.label')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={mode} onValueChange={(v) => setMode(v as ThemeMode)}>
           <DropdownMenuRadioItem value="light">
-            <Sun className="mr-2 h-4 w-4" /> Hell
+            <Sun className="mr-2 h-4 w-4" /> {t('theme.light')}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark">
-            <Moon className="mr-2 h-4 w-4" /> Dunkel
+            <Moon className="mr-2 h-4 w-4" /> {t('theme.dark')}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system">
-            <Laptop className="mr-2 h-4 w-4" /> System
+            <Laptop className="mr-2 h-4 w-4" /> {t('theme.system')}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

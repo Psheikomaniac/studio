@@ -11,7 +11,7 @@ const resources = {
             "logout": "Log out",
             "language": "Language",
             "showLanguageName": "Show Language Name",
-            "dashboard": "Dashboard",
+
             "money": "Money",
             "drinks": "Drinks",
             "dues": "Dues",
@@ -38,6 +38,76 @@ const resources = {
             "failedToCreateAccount": "Failed to create account.",
             "emailInUse": "This email is already registered.",
             "weakPassword": "Password should be at least 6 characters.",
+            "nav": {
+                // "dashboard": "Dashboard",
+                "players": "Players",
+                "money": "Money",
+                "settings": "Settings",
+                "profile": "Profile",
+                "billing": "Billing",
+                "logout": "Log out"
+            },
+            "theme": {
+                "label": "Theme",
+                "light": "Light",
+                "dark": "Dark",
+                "system": "System"
+            },
+            "stats": {
+                "totalCredit": "Total Credit",
+                "totalDebt": "Total Debt",
+                "openFines": "Open Fines",
+                "totalCreditDesc": "Total amount owed to players.",
+                "totalDebtDesc": "Total outstanding fines.",
+                "openFinesDesc": "Number of fines waiting for payment."
+            },
+            "dashboard": {
+                "revenueByDay": "Revenue by Day (last 28 days)",
+                "topBeverages": "Top Beverages",
+                "mostConsumedDrinks": "Most consumed drinks",
+                "transactionsByType": "Transactions by Type (last 28 days)",
+                "transactionsDesc": "Fines, Dues, Beverages vs. Payments",
+                "quickActions": "Quick Actions",
+                "quickActionsDesc": "Common tasks for managing team finances",
+                "addFine": "Add Fine",
+                "addPayment": "Add Payment",
+                "recordDue": "Record Due",
+                "recordBeverage": "Record Beverage",
+                "topDebtors": "Top Debtors",
+                "topDebtorsDesc": "Players with the highest debts",
+                "recentActivity": "Recent Activity",
+                "recentActivityDesc": "Last 5 transactions",
+                "noPlayersInDebt": "No players in debt",
+                "noRecentActivity": "No recent activity",
+                "errorLoading": "Error Loading Dashboard",
+                "errorLoadingDesc": "Failed to load dashboard data. Please try again later.",
+                "lastUpdate": "Last data update"
+            },
+            "charts": {
+                "fineStatistics": "Fine Statistics",
+                "totalFinesDesc": "Total fines issued per month."
+            },
+            "multiSelect": {
+                "placeholder": "Select players",
+                "selected": "{{count}} player(s) selected",
+                "search": "Search players...",
+                "noPlayers": "No players found.",
+                "done": "Done"
+            },
+            "dialogs": {
+                "addFineTitle": "Assign a New Fine",
+                "addFineDesc": "Select player(s) and a reason to assign a fine. Use the AI helper for quick suggestions.",
+                "transgressionDesc": "Transgression Description (for AI)",
+                "suggestWithAI": "Suggest with AI",
+                "players": "Players",
+                "reason": "Reason",
+                "amount": "Amount (€)",
+                "assignFine": "Assign Fine",
+                "aiError": "AI Error",
+                "aiSuggestionApplied": "AI Suggestion Applied!",
+                "aiSuggestionAppliedDesc": "Reason and players have been pre-filled.",
+                "pleaseEnterDesc": "Please enter a description of the transgression first."
+            }
         }
     },
     de: {
@@ -74,6 +144,76 @@ const resources = {
             "failedToCreateAccount": "Kontoerstellung fehlgeschlagen.",
             "emailInUse": "Diese E-Mail ist bereits registriert.",
             "weakPassword": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+            "nav": {
+                "dashboard": "Übersicht",
+                "players": "Spieler",
+                "money": "Finanzen",
+                "settings": "Einstellungen",
+                "profile": "Profil",
+                "billing": "Abrechnung",
+                "logout": "Abmelden"
+            },
+            "theme": {
+                "label": "Darstellung",
+                "light": "Hell",
+                "dark": "Dunkel",
+                "system": "System"
+            },
+            "stats": {
+                "totalCredit": "Aktuelles Guthaben",
+                "totalDebt": "Offene Schulden",
+                "openFines": "Offene Strafen",
+                "totalCreditDesc": "Gesamtbetrag, der den Spielern geschuldet wird.",
+                "totalDebtDesc": "Gesamte ausstehende Strafen.",
+                "openFinesDesc": "Anzahl der unbezahlten Strafen."
+            },
+            "dashboard": {
+                "revenueByDay": "Einnahmen pro Tag (letzte 28 Tage)",
+                "topBeverages": "Top Getränke",
+                "mostConsumedDrinks": "Meist konsumierte Getränke",
+                "transactionsByType": "Transaktionen nach Typ (letzte 28 Tage)",
+                "transactionsDesc": "Strafen, Beiträge, Getränke vs. Zahlungen",
+                "quickActions": "Schnellzugriff",
+                "quickActionsDesc": "Häufige Aufgaben für die Teamverwaltung",
+                "addFine": "Strafe hinzufügen",
+                "addPayment": "Zahlung hinzufügen",
+                "recordDue": "Beitrag erfassen",
+                "recordBeverage": "Getränk erfassen",
+                "topDebtors": "Top Schuldner",
+                "topDebtorsDesc": "Spieler mit den höchsten Schulden",
+                "recentActivity": "Letzte Aktivitäten",
+                "recentActivityDesc": "Die letzten 5 Transaktionen",
+                "noPlayersInDebt": "Keine Spieler mit Schulden",
+                "noRecentActivity": "Keine aktuellen Aktivitäten",
+                "errorLoading": "Fehler beim Laden der Übersicht",
+                "errorLoadingDesc": "Daten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+                "lastUpdate": "Letzte Aktualisierung"
+            },
+            "charts": {
+                "fineStatistics": "Strafen Statistik",
+                "totalFinesDesc": "Gesamte Strafen pro Monat."
+            },
+            "multiSelect": {
+                "placeholder": "Spieler auswählen",
+                "selected": "{{count}} Spieler ausgewählt",
+                "search": "Spieler suchen...",
+                "noPlayers": "Keine Spieler gefunden.",
+                "done": "Fertig"
+            },
+            "dialogs": {
+                "addFineTitle": "Neue Strafe zuweisen",
+                "addFineDesc": "Wählen Sie Spieler und einen Grund aus. Nutzen Sie den KI-Helfer für schnelle Vorschläge.",
+                "transgressionDesc": "Beschreibung des Vergehens (für KI)",
+                "suggestWithAI": "Mit KI vorschlagen",
+                "players": "Spieler",
+                "reason": "Grund",
+                "amount": "Betrag (€)",
+                "assignFine": "Strafe zuweisen",
+                "aiError": "KI Fehler",
+                "aiSuggestionApplied": "KI Vorschlag angewendet!",
+                "aiSuggestionAppliedDesc": "Grund und Spieler wurden vorausgefüllt.",
+                "pleaseEnterDesc": "Bitte geben Sie zuerst eine Beschreibung des Vergehens ein."
+            }
         }
     },
     fr: {
@@ -83,7 +223,7 @@ const resources = {
             "logout": "Se déconnecter",
             "language": "Langue",
             "showLanguageName": "Afficher le nom de la langue",
-            "dashboard": "Tableau de bord",
+
             "money": "Argent",
             "drinks": "Boissons",
             "dues": "Cotisations",
@@ -119,7 +259,7 @@ const resources = {
             "logout": "Sair",
             "language": "Idioma",
             "showLanguageName": "Mostrar nome do idioma",
-            "dashboard": "Painel",
+
             "money": "Dinheiro",
             "drinks": "Bebidas",
             "dues": "Mensalidades",
@@ -137,7 +277,7 @@ const resources = {
             "logout": "登出",
             "language": "语言",
             "showLanguageName": "显示语言名称",
-            "dashboard": "仪表板",
+
             "money": "资金",
             "drinks": "饮料",
             "dues": "会费",
@@ -173,7 +313,7 @@ const resources = {
             "logout": "Wyloguj",
             "language": "Język",
             "showLanguageName": "Pokaż nazwę języka",
-            "dashboard": "Pulpit",
+
             "money": "Finanse",
             "drinks": "Napoje",
             "dues": "Składki",
@@ -191,7 +331,7 @@ const resources = {
             "logout": "Выйти",
             "language": "Язык",
             "showLanguageName": "Показывать название языка",
-            "dashboard": "Панель",
+
             "money": "Деньги",
             "drinks": "Напитки",
             "dues": "Взносы",

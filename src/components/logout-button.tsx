@@ -5,8 +5,10 @@ import { useAuth } from '@/firebase/provider';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 
 export function LogoutButton() {
+    const { t } = useTranslation();
     const auth = useAuth();
     const router = useRouter();
 
@@ -26,7 +28,7 @@ export function LogoutButton() {
             onClick={handleLogout}
         >
             <LogOut className="mr-2 h-4 w-4" />
-            Log out
+            {t('nav.logout')}
         </Button>
     );
 }

@@ -6,16 +6,19 @@ import { Check, ChevronsUpDown, UserPlus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Player } from "@/lib/types";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from 'react-i18next';
 
 export type PlayerMultiSelectProps = {
   players: Player[];
   value: string[];
-    onChange: (ids: string[]) => void;
+  onChange: (ids: string[]) => void;
   placeholder?: string;
   className?: string;
 };
 
-export function PlayerMultiSelect({ players, value, onChange, placeholder = "Select players", className }: PlayerMultiSelectProps) {
+export function PlayerMultiSelect({ players, value, onChange, placeholder, className }: PlayerMultiSelectProps) {
+  const { t } = useTranslation();
+  const effectivePlaceholder = placeholder || t('multiSelect.placeholder');
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
 
@@ -48,7 +51,7 @@ export function PlayerMultiSelect({ players, value, onChange, placeholder = "Sel
       >
         <div className="flex gap-1 items-center">
           <UserPlus className="h-4 w-4" />
-          {value?.length > 0 ? `${value.length} player(s) selected` : placeholder}
+          {value?.length > 0 ? t('multiSelect.selected', { count: value.length }) : effectivePlaceholder}
         </div>
         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </Button>
@@ -58,7 +61,7 @@ export function PlayerMultiSelect({ players, value, onChange, placeholder = "Sel
           <div className="mb-2">
             <div className="relative">
               <Input
-                placeholder="Search players..."
+                placeholder={t('multiSelect.search')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pr-8"
@@ -78,7 +81,7 @@ export function PlayerMultiSelect({ players, value, onChange, placeholder = "Sel
           <div className="max-h-64 overflow-y-auto">
             {filteredPlayers.length === 0 ? (
               <div className="py-6 text-center text-sm text-muted-foreground">
-                No players found.
+                {t('multiSelect.noPlayers')}
               </div>
             ) : (
               filteredPlayers.map((player) => (
@@ -112,7 +115,7 @@ export function PlayerMultiSelect({ players, value, onChange, placeholder = "Sel
               variant="secondary"
               onClick={() => setOpen(false)}
             >
-              Done
+              {t('multiSelect.done')}
             </Button>
           </div>
         </div>
