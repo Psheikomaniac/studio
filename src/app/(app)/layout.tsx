@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Icons } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LogoutButton } from "@/components/logout-button";
 import { AuthGuard } from "@/components/auth-guard";
 import { InactivityHandler } from "@/components/inactivity-handler";
 
@@ -37,6 +38,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex flex-col gap-2">
               <UserNav />
               <ThemeToggle />
+              <LogoutButton />
             </div>
           </SidebarFooter>
         </Sidebar>
