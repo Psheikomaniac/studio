@@ -33,12 +33,7 @@ import type { Player, Due } from "@/lib/types";
 import { useEffect } from "react";
 import { PlayerMultiSelect } from "@/components/dashboard/player-multi-select";
 import { formatEuro } from "@/lib/csv-utils";
-
-const duePaymentSchema = z.object({
-  playerIds: z.array(z.string()).min(1, "Please select at least one player."),
-  dueId: z.string().min(1, "Please select a due."),
-  status: z.enum(["paid", "exempt"]),
-});
+import { useTranslation } from 'react-i18next';
 
 type RecordDuePaymentDialogProps = {
   isOpen: boolean;
@@ -49,6 +44,14 @@ type RecordDuePaymentDialogProps = {
 };
 
 export function RecordDuePaymentDialog({ isOpen, setOpen, players, dues, onRecord }: RecordDuePaymentDialogProps) {
+  const { t } = useTranslation();
+
+  const duePaymentSchema = z.object({
+    playerIds: z.array(z.string()).min(1, t('dialogs.validation.selectPlayer')),
+    dueId: z.string().min(1, t('dialogs.validation.selectDue')),
+    status: z.enum(["paid", "exempt"]),
+  });
+
   const form = useForm<z.infer<typeof duePaymentSchema>>({
     resolver: zodResolver(duePaymentSchema),
     defaultValues: {
@@ -77,9 +80,9 @@ export function RecordDuePaymentDialog({ isOpen, setOpen, players, dues, onRecor
     <Dialog open={isOpen} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">Record Due Payment</DialogTitle>
+          <DialogTitle className="font-headline">{t('dialogs.recordDueTitle')}</DialogTitle>
           <DialogDescription>
-            Select players and mark their due as paid or exempt.
+            {t('dialogs.recordDueDesc')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -89,7 +92,7 @@ export function RecordDuePaymentDialog({ isOpen, setOpen, players, dues, onRecor
               name="playerIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Players</FormLabel>
+                  <FormLabel>{t('dialogs.players')}</FormLabel>
                   <PlayerMultiSelect
                     players={players}
                     value={field.value ?? []}
@@ -105,11 +108,11 @@ export function RecordDuePaymentDialog({ isOpen, setOpen, players, dues, onRecor
               name="dueId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Due</FormLabel>
+                  <FormLabel>{t('dialogs.due')}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a due" />
+                        <SelectValue placeholder={t('dialogs.selectDue')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -130,7 +133,7 @@ export function RecordDuePaymentDialog({ isOpen, setOpen, players, dues, onRecor
               name="status"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>{t('dialogs.status')}</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -142,7 +145,7 @@ export function RecordDuePaymentDialog({ isOpen, setOpen, players, dues, onRecor
                           <RadioGroupItem value="paid" />
                         </FormControl>
                         <FormLabel className="font-normal">
-                          Mark as Paid
+                          {t('dialogs.markPaid')}
                         </FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">
@@ -150,7 +153,7 @@ export function RecordDuePaymentDialog({ isOpen, setOpen, players, dues, onRecor
                           <RadioGroupItem value="exempt" />
                         </FormControl>
                         <FormLabel className="font-normal">
-                          Mark as Exempt
+                          {t('dialogs.markExempt')}
                         </FormLabel>
                       </FormItem>
                     </RadioGroup>
@@ -161,7 +164,7 @@ export function RecordDuePaymentDialog({ isOpen, setOpen, players, dues, onRecor
             />
 
             <DialogFooter>
-              <Button type="submit">Record Payment</Button>
+              <Button type="submit">{t('dialogs.recordPayment')}</Button>
             </DialogFooter>
           </form>
         </Form>

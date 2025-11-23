@@ -29,6 +29,7 @@ const resources = {
             "welcomeBack": "Welcome back",
             "enterEmailToSignIn": "Enter your email to sign in to your account",
             "termsAgreement": "By clicking continue, you agree to our Terms of Service and Privacy Policy.",
+            "error": "Error",
             "authError": "Authentication Error",
             "loginFailed": "Login Failed",
             "signUpFailed": "Sign Up Failed",
@@ -106,7 +107,27 @@ const resources = {
                 "aiError": "AI Error",
                 "aiSuggestionApplied": "AI Suggestion Applied!",
                 "aiSuggestionAppliedDesc": "Reason and players have been pre-filled.",
-                "pleaseEnterDesc": "Please enter a description of the transgression first."
+                "pleaseEnterDesc": "Please enter a description of the transgression first.",
+                "recordConsumptionTitle": "Record Beverage Consumption",
+                "recordConsumptionDesc": "Select who had what. This will add the beverage price to the player's balance.",
+                "beverage": "Beverage",
+                "selectBeverage": "Select a beverage",
+                "recordConsumption": "Record Consumption",
+                "recordDueTitle": "Record Due Payment",
+                "recordDueDesc": "Select players and mark their due as paid or exempt.",
+                "due": "Due",
+                "selectDue": "Select a due",
+                "status": "Status",
+                "markPaid": "Mark as Paid",
+                "markExempt": "Mark as Exempt",
+                "recordPayment": "Record Payment",
+                "validation": {
+                    "selectPlayer": "Please select at least one player.",
+                    "reasonLength": "Reason must be at least 3 characters.",
+                    "positiveAmount": "Amount must be positive.",
+                    "selectBeverage": "Please select a beverage.",
+                    "selectDue": "Please select a due."
+                }
             }
         }
     },
@@ -135,6 +156,7 @@ const resources = {
             "welcomeBack": "Willkommen zurück",
             "enterEmailToSignIn": "Geben Sie Ihre E-Mail ein, um sich anzumelden",
             "termsAgreement": "Durch Klicken auf Weiter stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu.",
+            "error": "Fehler",
             "authError": "Authentifizierungsfehler",
             "loginFailed": "Anmeldung fehlgeschlagen",
             "signUpFailed": "Registrierung fehlgeschlagen",
@@ -212,7 +234,27 @@ const resources = {
                 "aiError": "KI Fehler",
                 "aiSuggestionApplied": "KI Vorschlag angewendet!",
                 "aiSuggestionAppliedDesc": "Grund und Spieler wurden vorausgefüllt.",
-                "pleaseEnterDesc": "Bitte geben Sie zuerst eine Beschreibung des Vergehens ein."
+                "pleaseEnterDesc": "Bitte geben Sie zuerst eine Beschreibung des Vergehens ein.",
+                "recordConsumptionTitle": "Getränkekonsum erfassen",
+                "recordConsumptionDesc": "Wählen Sie aus, wer was getrunken hat. Der Preis wird dem Guthaben des Spielers hinzugefügt.",
+                "beverage": "Getränk",
+                "selectBeverage": "Getränk auswählen",
+                "recordConsumption": "Konsum erfassen",
+                "recordDueTitle": "Beitragszahlung erfassen",
+                "recordDueDesc": "Wählen Sie Spieler aus und markieren Sie deren Beitrag als bezahlt oder befreit.",
+                "due": "Beitrag",
+                "selectDue": "Beitrag auswählen",
+                "status": "Status",
+                "markPaid": "Als bezahlt markieren",
+                "markExempt": "Als befreit markieren",
+                "recordPayment": "Zahlung erfassen",
+                "validation": {
+                    "selectPlayer": "Bitte wählen Sie mindestens einen Spieler aus.",
+                    "reasonLength": "Grund muss mindestens 3 Zeichen lang sein.",
+                    "positiveAmount": "Betrag muss positiv sein.",
+                    "selectBeverage": "Bitte wählen Sie ein Getränk aus.",
+                    "selectDue": "Bitte wählen Sie einen Beitrag aus."
+                }
             }
         }
     },
@@ -223,6 +265,7 @@ const resources = {
             "logout": "Se déconnecter",
             "language": "Langue",
             "showLanguageName": "Afficher le nom de la langue",
+            "error": "Erreur",
 
             "money": "Argent",
             "drinks": "Boissons",
@@ -232,6 +275,114 @@ const resources = {
             "currentBalance": "Solde actuel",
             "unpaidPenalties": "Pénalités impayées",
             "totalPaid": "Total payé",
+            "login": "Connexion",
+            "signup": "Inscription",
+            "email": "Email",
+            "password": "Mot de passe",
+            "signIn": "Se connecter",
+            "createAccount": "Créer un compte",
+            "welcomeBack": "Bon retour",
+            "enterEmailToSignIn": "Entrez votre email pour vous connecter",
+            "termsAgreement": "En continuant, vous acceptez nos conditions d'utilisation.",
+            "authError": "Erreur d'authentification",
+            "loginFailed": "Échec de la connexion",
+            "signUpFailed": "Échec de l'inscription",
+            "failedToSignIn": "Échec de la connexion.",
+            "invalidCredential": "Email ou mot de passe invalide.",
+            "tooManyRequests": "Trop de tentatives échouées.",
+            "failedToCreateAccount": "Échec de la création du compte.",
+            "emailInUse": "Cet email est déjà enregistré.",
+            "weakPassword": "Le mot de passe doit contenir au moins 6 caractères.",
+            "nav": {
+                "dashboard": "Tableau de bord",
+                "players": "Joueurs",
+                "money": "Finances",
+                "settings": "Paramètres",
+                "profile": "Profil",
+                "billing": "Facturation",
+                "logout": "Déconnexion"
+            },
+            "theme": {
+                "label": "Thème",
+                "light": "Clair",
+                "dark": "Sombre",
+                "system": "Système"
+            },
+            "stats": {
+                "totalCredit": "Crédit total",
+                "totalDebt": "Dette totale",
+                "openFines": "Amendes ouvertes",
+                "totalCreditDesc": "Montant total dû aux joueurs.",
+                "totalDebtDesc": "Total des amendes impayées.",
+                "openFinesDesc": "Nombre d'amendes en attente de paiement."
+            },
+            "dashboard": {
+                "revenueByDay": "Revenus par jour",
+                "topBeverages": "Top boissons",
+                "mostConsumedDrinks": "Boissons les plus consommées",
+                "transactionsByType": "Transactions par type",
+                "transactionsDesc": "Amendes, Cotisations, Boissons vs Paiements",
+                "quickActions": "Actions rapides",
+                "quickActionsDesc": "Tâches courantes",
+                "addFine": "Ajouter une amende",
+                "addPayment": "Ajouter un paiement",
+                "recordDue": "Enregistrer une cotisation",
+                "recordBeverage": "Enregistrer une boisson",
+                "topDebtors": "Top débiteurs",
+                "topDebtorsDesc": "Joueurs avec les dettes les plus élevées",
+                "recentActivity": "Activité récente",
+                "recentActivityDesc": "5 dernières transactions",
+                "noPlayersInDebt": "Aucun joueur endetté",
+                "noRecentActivity": "Aucune activité récente",
+                "errorLoading": "Erreur de chargement",
+                "errorLoadingDesc": "Impossible de charger les données.",
+                "lastUpdate": "Dernière mise à jour"
+            },
+            "charts": {
+                "fineStatistics": "Statistiques des amendes",
+                "totalFinesDesc": "Total des amendes par mois."
+            },
+            "multiSelect": {
+                "placeholder": "Sélectionner des joueurs",
+                "selected": "{{count}} joueur(s) sélectionné(s)",
+                "search": "Rechercher des joueurs...",
+                "noPlayers": "Aucun joueur trouvé.",
+                "done": "Terminé"
+            },
+            "dialogs": {
+                "addFineTitle": "Attribuer une nouvelle amende",
+                "addFineDesc": "Sélectionnez le(s) joueur(s) et un motif. Utilisez l'assistant IA pour des suggestions rapides.",
+                "transgressionDesc": "Description de la transgression (pour l'IA)",
+                "suggestWithAI": "Suggérer avec l'IA",
+                "players": "Joueurs",
+                "reason": "Motif",
+                "amount": "Montant (€)",
+                "assignFine": "Attribuer l'amende",
+                "aiError": "Erreur IA",
+                "aiSuggestionApplied": "Suggestion IA appliquée !",
+                "aiSuggestionAppliedDesc": "Le motif et les joueurs ont été pré-remplis.",
+                "pleaseEnterDesc": "Veuillez d'abord saisir une description de la transgression.",
+                "recordConsumptionTitle": "Enregistrer la consommation de boissons",
+                "recordConsumptionDesc": "Sélectionnez qui a consommé quoi. Le prix sera ajouté au solde du joueur.",
+                "beverage": "Boisson",
+                "selectBeverage": "Sélectionner une boisson",
+                "recordConsumption": "Enregistrer",
+                "recordDueTitle": "Enregistrer le paiement de cotisation",
+                "recordDueDesc": "Sélectionnez les joueurs et marquez leur cotisation comme payée ou exonérée.",
+                "due": "Cotisation",
+                "selectDue": "Sélectionner une cotisation",
+                "status": "Statut",
+                "markPaid": "Marquer comme payé",
+                "markExempt": "Marquer comme exonéré",
+                "recordPayment": "Enregistrer le paiement",
+                "validation": {
+                    "selectPlayer": "Veuillez sélectionner au moins un joueur.",
+                    "reasonLength": "Le motif doit comporter au moins 3 caractères.",
+                    "positiveAmount": "Le montant doit être positif.",
+                    "selectBeverage": "Veuillez sélectionner une boisson.",
+                    "selectDue": "Veuillez sélectionner une cotisation."
+                }
+            }
         }
     },
     es: {
@@ -241,6 +392,7 @@ const resources = {
             "logout": "Cerrar sesión",
             "language": "Idioma",
             "showLanguageName": "Mostrar nombre del idioma",
+            "error": "Error",
             "dashboard": "Panel",
             "money": "Dinero",
             "drinks": "Bebidas",
@@ -250,6 +402,114 @@ const resources = {
             "currentBalance": "Saldo actual",
             "unpaidPenalties": "Multas impagas",
             "totalPaid": "Total pagado",
+            "login": "Iniciar sesión",
+            "signup": "Registrarse",
+            "email": "Correo electrónico",
+            "password": "Contraseña",
+            "signIn": "Iniciar sesión",
+            "createAccount": "Crear cuenta",
+            "welcomeBack": "Bienvenido de nuevo",
+            "enterEmailToSignIn": "Ingrese su correo para iniciar sesión",
+            "termsAgreement": "Al continuar, acepta nuestros Términos de servicio y Política de privacidad.",
+            "authError": "Error de autenticación",
+            "loginFailed": "Error al iniciar sesión",
+            "signUpFailed": "Error al registrarse",
+            "failedToSignIn": "Error al iniciar sesión.",
+            "invalidCredential": "Correo o contraseña inválidos.",
+            "tooManyRequests": "Demasiados intentos fallidos.",
+            "failedToCreateAccount": "Error al crear la cuenta.",
+            "emailInUse": "Este correo ya está registrado.",
+            "weakPassword": "La contraseña debe tener al menos 6 caracteres.",
+            "nav": {
+                "dashboard": "Panel",
+                "players": "Jugadores",
+                "money": "Finanzas",
+                "settings": "Ajustes",
+                "profile": "Perfil",
+                "billing": "Facturación",
+                "logout": "Cerrar sesión"
+            },
+            "theme": {
+                "label": "Tema",
+                "light": "Claro",
+                "dark": "Oscuro",
+                "system": "Sistema"
+            },
+            "stats": {
+                "totalCredit": "Crédito total",
+                "totalDebt": "Deuda total",
+                "openFines": "Multas abiertas",
+                "totalCreditDesc": "Monto total adeudado a los jugadores.",
+                "totalDebtDesc": "Total de multas pendientes.",
+                "openFinesDesc": "Número de multas esperando pago."
+            },
+            "dashboard": {
+                "revenueByDay": "Ingresos por día",
+                "topBeverages": "Bebidas principales",
+                "mostConsumedDrinks": "Bebidas más consumidas",
+                "transactionsByType": "Transacciones por tipo",
+                "transactionsDesc": "Multas, Cuotas, Bebidas vs Pagos",
+                "quickActions": "Acciones rápidas",
+                "quickActionsDesc": "Tareas comunes",
+                "addFine": "Añadir multa",
+                "addPayment": "Añadir pago",
+                "recordDue": "Registrar cuota",
+                "recordBeverage": "Registrar bebida",
+                "topDebtors": "Mayores deudores",
+                "topDebtorsDesc": "Jugadores con mayores deudas",
+                "recentActivity": "Actividad reciente",
+                "recentActivityDesc": "Últimas 5 transacciones",
+                "noPlayersInDebt": "No hay jugadores con deuda",
+                "noRecentActivity": "No hay actividad reciente",
+                "errorLoading": "Error al cargar",
+                "errorLoadingDesc": "No se pudieron cargar los datos.",
+                "lastUpdate": "Última actualización"
+            },
+            "charts": {
+                "fineStatistics": "Estadísticas de multas",
+                "totalFinesDesc": "Total de multas por mes."
+            },
+            "multiSelect": {
+                "placeholder": "Seleccionar jugadores",
+                "selected": "{{count}} jugador(es) seleccionado(s)",
+                "search": "Buscar jugadores...",
+                "noPlayers": "No se encontraron jugadores.",
+                "done": "Hecho"
+            },
+            "dialogs": {
+                "addFineTitle": "Asignar una nueva multa",
+                "addFineDesc": "Seleccione jugador(es) y un motivo. Use el asistente de IA para sugerencias rápidas.",
+                "transgressionDesc": "Descripción de la transgresión (para IA)",
+                "suggestWithAI": "Sugerir con IA",
+                "players": "Jugadores",
+                "reason": "Motivo",
+                "amount": "Cantidad (€)",
+                "assignFine": "Asignar multa",
+                "aiError": "Error de IA",
+                "aiSuggestionApplied": "¡Sugerencia de IA aplicada!",
+                "aiSuggestionAppliedDesc": "El motivo y los jugadores han sido pre-completados.",
+                "pleaseEnterDesc": "Por favor ingrese una descripción de la transgresión primero.",
+                "recordConsumptionTitle": "Registrar consumo de bebidas",
+                "recordConsumptionDesc": "Seleccione quién tomó qué. El precio se añadirá al saldo del jugador.",
+                "beverage": "Bebida",
+                "selectBeverage": "Seleccionar una bebida",
+                "recordConsumption": "Registrar",
+                "recordDueTitle": "Registrar pago de cuota",
+                "recordDueDesc": "Seleccione jugadores y marque su cuota como pagada o exenta.",
+                "due": "Cuota",
+                "selectDue": "Seleccionar una cuota",
+                "status": "Estado",
+                "markPaid": "Marcar como pagado",
+                "markExempt": "Marcar como exento",
+                "recordPayment": "Registrar pago",
+                "validation": {
+                    "selectPlayer": "Por favor seleccione al menos un jugador.",
+                    "reasonLength": "El motivo debe tener al menos 3 caracteres.",
+                    "positiveAmount": "La cantidad debe ser positiva.",
+                    "selectBeverage": "Por favor seleccione una bebida.",
+                    "selectDue": "Por favor seleccione una cuota."
+                }
+            }
         }
     },
     pt: {
@@ -259,6 +519,7 @@ const resources = {
             "logout": "Sair",
             "language": "Idioma",
             "showLanguageName": "Mostrar nome do idioma",
+            "error": "Erro",
 
             "money": "Dinheiro",
             "drinks": "Bebidas",
@@ -268,6 +529,31 @@ const resources = {
             "currentBalance": "Saldo atual",
             "unpaidPenalties": "Multas não pagas",
             "totalPaid": "Total pago",
+            "dialogs": {
+                "addFineTitle": "Atribuir nova multa",
+                "addFineDesc": "Selecione jogador(es) e um motivo. Use a IA para sugestões rápidas.",
+                "transgressionDesc": "Descrição da transgressão (para IA)",
+                "suggestWithAI": "Sugerir com IA",
+                "players": "Jogadores",
+                "reason": "Motivo",
+                "amount": "Valor (€)",
+                "assignFine": "Atribuir Multa",
+                "aiError": "Erro de IA",
+                "aiSuggestionApplied": "Sugestão da IA aplicada!",
+                "aiSuggestionAppliedDesc": "Motivo e jogadores foram preenchidos.",
+                "pleaseEnterDesc": "Por favor, insira uma descrição da transgressão primeiro.",
+                "recordConsumptionTitle": "Registrar consumo de bebidas",
+                "recordConsumptionDesc": "Selecione quem consumiu o quê. O preço será adicionado ao saldo do jogador.",
+                "beverage": "Bebida",
+                "selectBeverage": "Selecionar uma bebida",
+                "recordConsumption": "Registrar",
+                "validation": {
+                    "selectPlayer": "Por favor selecione pelo menos um jogador.",
+                    "reasonLength": "O motivo deve ter pelo menos 3 caracteres.",
+                    "positiveAmount": "O valor deve ser positivo.",
+                    "selectBeverage": "Por favor selecione uma bebida."
+                }
+            }
         }
     },
     zh: {
@@ -277,6 +563,7 @@ const resources = {
             "logout": "登出",
             "language": "语言",
             "showLanguageName": "显示语言名称",
+            "error": "错误",
 
             "money": "资金",
             "drinks": "饮料",
@@ -286,6 +573,31 @@ const resources = {
             "currentBalance": "当前余额",
             "unpaidPenalties": "未付罚款",
             "totalPaid": "已付总额",
+            "dialogs": {
+                "addFineTitle": "分配新罚款",
+                "addFineDesc": "选择玩家和原因。使用 AI 助手快速建议。",
+                "transgressionDesc": "违规描述 (用于 AI)",
+                "suggestWithAI": "AI 建议",
+                "players": "玩家",
+                "reason": "原因",
+                "amount": "金额 (€)",
+                "assignFine": "分配罚款",
+                "aiError": "AI 错误",
+                "aiSuggestionApplied": "AI 建议已应用！",
+                "aiSuggestionAppliedDesc": "原因和玩家已预填。",
+                "pleaseEnterDesc": "请先输入违规描述。",
+                "recordConsumptionTitle": "记录饮料消费",
+                "recordConsumptionDesc": "选择谁喝了什么。价格将计入玩家余额。",
+                "beverage": "饮料",
+                "selectBeverage": "选择饮料",
+                "recordConsumption": "记录",
+                "validation": {
+                    "selectPlayer": "请至少选择一名玩家。",
+                    "reasonLength": "原因至少需要 3 个字符。",
+                    "positiveAmount": "金额必须为正数。",
+                    "selectBeverage": "请选择一种饮料。"
+                }
+            }
         }
     },
     tr: {
@@ -295,6 +607,7 @@ const resources = {
             "logout": "Çıkış Yap",
             "language": "Dil",
             "showLanguageName": "Dil adını göster",
+            "error": "Hata",
             "dashboard": "Panel",
             "money": "Para",
             "drinks": "İçecekler",
@@ -304,6 +617,31 @@ const resources = {
             "currentBalance": "Güncel Bakiye",
             "unpaidPenalties": "Ödenmemiş Cezalar",
             "totalPaid": "Toplam Ödenen",
+            "dialogs": {
+                "addFineTitle": "Yeni Ceza Ata",
+                "addFineDesc": "Oyuncu(ları) ve bir neden seçin. Hızlı öneriler için AI yardımcısını kullanın.",
+                "transgressionDesc": "İhlal Açıklaması (AI için)",
+                "suggestWithAI": "AI ile Öner",
+                "players": "Oyuncular",
+                "reason": "Neden",
+                "amount": "Miktar (€)",
+                "assignFine": "Ceza Ata",
+                "aiError": "AI Hatası",
+                "aiSuggestionApplied": "AI Önerisi Uygulandı!",
+                "aiSuggestionAppliedDesc": "Neden ve oyuncular önceden dolduruldu.",
+                "pleaseEnterDesc": "Lütfen önce ihlalin açıklamasını girin.",
+                "recordConsumptionTitle": "İçecek Tüketimini Kaydet",
+                "recordConsumptionDesc": "Kimin ne içtiğini seçin. Fiyat oyuncunun bakiyesine eklenecektir.",
+                "beverage": "İçecek",
+                "selectBeverage": "Bir içecek seçin",
+                "recordConsumption": "Kaydet",
+                "validation": {
+                    "selectPlayer": "Lütfen en az bir oyuncu seçin.",
+                    "reasonLength": "Neden en az 3 karakter olmalıdır.",
+                    "positiveAmount": "Miktar pozitif olmalıdır.",
+                    "selectBeverage": "Lütfen bir içecek seçin."
+                }
+            }
         }
     },
     pl: {
@@ -313,6 +651,7 @@ const resources = {
             "logout": "Wyloguj",
             "language": "Język",
             "showLanguageName": "Pokaż nazwę języka",
+            "error": "Błąd",
 
             "money": "Finanse",
             "drinks": "Napoje",
@@ -322,6 +661,31 @@ const resources = {
             "currentBalance": "Obecne saldo",
             "unpaidPenalties": "Niezapłacone kary",
             "totalPaid": "Łącznie zapłacono",
+            "dialogs": {
+                "addFineTitle": "Przypisz nową karę",
+                "addFineDesc": "Wybierz gracza(y) i powód. Użyj asystenta AI dla szybkich sugestii.",
+                "transgressionDesc": "Opis przewinienia (dla AI)",
+                "suggestWithAI": "Sugeruj z AI",
+                "players": "Gracze",
+                "reason": "Powód",
+                "amount": "Kwota (€)",
+                "assignFine": "Przypisz karę",
+                "aiError": "Błąd AI",
+                "aiSuggestionApplied": "Sugestia AI zastosowana!",
+                "aiSuggestionAppliedDesc": "Powód i gracze zostali wstępnie wypełnieni.",
+                "pleaseEnterDesc": "Proszę najpierw wpisać opis przewinienia.",
+                "recordConsumptionTitle": "Zarejestruj spożycie napojów",
+                "recordConsumptionDesc": "Wybierz kto co wypił. Cena zostanie doliczona do salda gracza.",
+                "beverage": "Napój",
+                "selectBeverage": "Wybierz napój",
+                "recordConsumption": "Zarejestruj",
+                "validation": {
+                    "selectPlayer": "Wybierz co najmniej jednego gracza.",
+                    "reasonLength": "Powód musi mieć co najmniej 3 znaki.",
+                    "positiveAmount": "Kwota musi być dodatnia.",
+                    "selectBeverage": "Wybierz napój."
+                }
+            }
         }
     },
     ru: {
@@ -331,6 +695,7 @@ const resources = {
             "logout": "Выйти",
             "language": "Язык",
             "showLanguageName": "Показывать название языка",
+            "error": "Ошибка",
 
             "money": "Деньги",
             "drinks": "Напитки",
@@ -340,6 +705,31 @@ const resources = {
             "currentBalance": "Текущий баланс",
             "unpaidPenalties": "Неоплаченные штрафы",
             "totalPaid": "Всего оплачено",
+            "dialogs": {
+                "addFineTitle": "Назначить новый штраф",
+                "addFineDesc": "Выберите игрока(ов) и причину. Используйте ИИ-помощника для быстрых предложений.",
+                "transgressionDesc": "Описание нарушения (для ИИ)",
+                "suggestWithAI": "Предложить с помощью ИИ",
+                "players": "Игроки",
+                "reason": "Причина",
+                "amount": "Сумма (€)",
+                "assignFine": "Назначить штраф",
+                "aiError": "Ошибка ИИ",
+                "aiSuggestionApplied": "Предложение ИИ применено!",
+                "aiSuggestionAppliedDesc": "Причина и игроки были предварительно заполнены.",
+                "pleaseEnterDesc": "Пожалуйста, сначала введите описание нарушения.",
+                "recordConsumptionTitle": "Записать потребление напитков",
+                "recordConsumptionDesc": "Выберите, кто что пил. Цена будет добавлена к балансу игрока.",
+                "beverage": "Напиток",
+                "selectBeverage": "Выберите напиток",
+                "recordConsumption": "Записать",
+                "validation": {
+                    "selectPlayer": "Пожалуйста, выберите хотя бы одного игрока.",
+                    "reasonLength": "Причина должна содержать не менее 3 символов.",
+                    "positiveAmount": "Сумма должна быть положительной.",
+                    "selectBeverage": "Пожалуйста, выберите напиток."
+                }
+            }
         }
     }
 };

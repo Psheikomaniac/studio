@@ -62,7 +62,7 @@ export default function LoginPage() {
       // Success will trigger the auth state listener and redirect
     } catch (error: any) {
       setIsLoading(false);
-      let errorMessage = "Failed to sign in.";
+      let errorMessage = t('failedToSignIn');
 
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         errorMessage = t('invalidCredential');
@@ -105,7 +105,7 @@ export default function LoginPage() {
       // Success will trigger the auth state listener and redirect
     } catch (error: any) {
       setIsLoading(false);
-      let errorMessage = "Failed to create account.";
+      let errorMessage = t('failedToCreateAccount');
 
       if (error.code === 'auth/email-already-in-use') {
         errorMessage = t('emailInUse');

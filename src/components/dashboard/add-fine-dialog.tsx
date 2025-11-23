@@ -40,13 +40,6 @@ import { formatEuro } from "@/lib/csv-utils";
 import { useTranslation } from 'react-i18next';
 
 
-const fineSchema = z.object({
-  playerIds: z.array(z.string()).min(1, "Please select at least one player."),
-  reason: z.string().min(3, "Reason must be at least 3 characters long."),
-  amount: z.coerce.number().positive("Amount must be a positive number."),
-  aiDescription: z.string().optional(),
-});
-
 type AddFineDialogProps = {
   isOpen: boolean;
   setOpen: (open: boolean) => void;
@@ -59,6 +52,13 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
   const { t } = useTranslation();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const { toast } = useToast();
+
+  const fineSchema = z.object({
+    playerIds: z.array(z.string()).min(1, t('dialogs.validation.selectPlayer')),
+    reason: z.string().min(3, t('dialogs.validation.reasonLength')),
+    amount: z.coerce.number().positive(t('dialogs.validation.positiveAmount')),
+    aiDescription: z.string().optional(),
+  });
 
   const form = useForm<z.infer<typeof fineSchema>>({
     resolver: zodResolver(fineSchema),
@@ -95,7 +95,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
     if (!description) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t('error'),
         description: t('dialogs.pleaseEnterDesc'),
       });
       return;

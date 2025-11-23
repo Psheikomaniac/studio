@@ -32,11 +32,7 @@ import type { Player, Beverage } from "@/lib/types";
 import { useEffect } from "react";
 import { PlayerMultiSelect } from "@/components/dashboard/player-multi-select";
 import { formatEuro } from "@/lib/csv-utils";
-
-const consumptionSchema = z.object({
-  playerIds: z.array(z.string()).min(1, "Please select at least one player."),
-  beverageId: z.string().min(1, "Please select a beverage."),
-});
+import { useTranslation } from 'react-i18next';
 
 type RecordConsumptionDialogProps = {
   isOpen: boolean;
@@ -47,6 +43,13 @@ type RecordConsumptionDialogProps = {
 };
 
 export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, onRecord }: RecordConsumptionDialogProps) {
+  const { t } = useTranslation();
+
+  const consumptionSchema = z.object({
+    playerIds: z.array(z.string()).min(1, t('dialogs.validation.selectPlayer')),
+    beverageId: z.string().min(1, t('dialogs.validation.selectBeverage')),
+  });
+
   const form = useForm<z.infer<typeof consumptionSchema>>({
     resolver: zodResolver(consumptionSchema),
     defaultValues: {
@@ -73,9 +76,9 @@ export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, o
     <Dialog open={isOpen} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">Record Beverage Consumption</DialogTitle>
+          <DialogTitle className="font-headline">{t('dialogs.recordConsumptionTitle')}</DialogTitle>
           <DialogDescription>
-            Select who had what. This will add the beverage price to the player's balance.
+            {t('dialogs.recordConsumptionDesc')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -85,7 +88,7 @@ export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, o
               name="playerIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Players</FormLabel>
+                  <FormLabel>{t('dialogs.players')}</FormLabel>
                   <PlayerMultiSelect
                     players={players}
                     value={field.value ?? []}
@@ -101,11 +104,11 @@ export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, o
               name="beverageId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Beverage</FormLabel>
+                  <FormLabel>{t('dialogs.beverage')}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                         <SelectTrigger>
-                            <SelectValue placeholder="Select a beverage" />
+                            <SelectValue placeholder={t('dialogs.selectBeverage')} />
                         </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -122,7 +125,7 @@ export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, o
             />
 
             <DialogFooter>
-              <Button type="submit">Record Consumption</Button>
+              <Button type="submit">{t('dialogs.recordConsumption')}</Button>
             </DialogFooter>
           </form>
         </Form>
