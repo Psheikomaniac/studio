@@ -37,6 +37,7 @@ import { formatEuro } from '@/lib/csv-utils';
 import { sumPaymentsToday, sumPaymentsInLastDays, computeARPPU, computeOpenFinesTotal, groupPaymentsByDay, maxDateFromCollections, movingAverage, buildFirstPayersAndCumulativeRevenueByMonth } from '@/lib/stats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Bar } from 'recharts';
 import { Tooltip as UiTooltip, TooltipContent as UiTooltipContent, TooltipProvider as UiTooltipProvider, TooltipTrigger as UiTooltipTrigger } from '@/components/ui/tooltip';
+import { useTranslation } from 'react-i18next';
 
 type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
 
@@ -55,6 +56,8 @@ interface UnifiedTransaction {
 }
 
 export default function MoneyPage() {
+  const { t } = useTranslation();
+
   // Get Firebase instance (optional - may be null during SSR or if Firebase is disabled)
   const firebase = useFirebaseOptional();
   const firestore = firebase?.firestore;
@@ -380,8 +383,8 @@ export default function MoneyPage() {
     // Check if Firebase is available
     if (!firestore) {
       toast({
-        title: "Firebase Not Available",
-        description: "Cannot update transaction status without Firebase connection.",
+        title: t('moneyPage.firebaseUnavailableTitle'),
+        description: t('moneyPage.firebaseUnavailableDesc'),
         variant: "destructive"
       });
       return;
@@ -390,8 +393,8 @@ export default function MoneyPage() {
     // Exempt status can't be toggled
     if (transaction.status === 'exempt') {
       toast({
-        title: "Cannot Toggle",
-        description: "Exempt status cannot be changed to paid/unpaid.",
+        title: t('moneyPage.cannotToggleTitle'),
+        description: t('moneyPage.cannotToggleDesc'),
         variant: "destructive"
       });
       return;
@@ -429,13 +432,15 @@ export default function MoneyPage() {
       }
 
       toast({
-        title: "Status Updated",
-        description: `Transaction marked as ${newStatus ? 'paid' : 'unpaid'}.`
+        title: t('moneyPage.statusUpdatedTitle'),
+        description: newStatus
+          ? t('moneyPage.statusUpdatedPaidDesc')
+          : t('moneyPage.statusUpdatedUnpaidDesc')
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : 'Failed to update transaction status',
+        title: t('moneyPage.statusErrorTitle'),
+        description: error instanceof Error ? error.message : t('moneyPage.statusErrorDesc'),
         variant: "destructive"
       });
     }
@@ -453,13 +458,13 @@ export default function MoneyPage() {
   const getTypeBadge = (type: TransactionType) => {
     switch (type) {
       case 'fine':
-        return <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300">Fine</Badge>;
+        return <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300">{t('moneyPage.typeFine')}</Badge>;
       case 'payment':
-        return <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">Payment</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">{t('moneyPage.typePayment')}</Badge>;
       case 'due':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300">Due</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300">{t('moneyPage.typeDue')}</Badge>;
       case 'beverage':
-        return <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-300">Beverage</Badge>;
+        return <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-300">{t('moneyPage.typeBeverage')}</Badge>;
     }
   };
 

@@ -20,8 +20,11 @@ import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumpti
 import { usePlayerBalances } from '@/hooks/use-player-balances';
 import { usePlayerStats } from '@/hooks/use-player-stats';
 import { dues as staticDues } from '@/lib/static-data';
+import { useTranslation } from 'react-i18next';
 
 export default function PlayersPage() {
+  const { t } = useTranslation();
+
   // Firebase hooks for real-time data
   const { data: playersData, isLoading: playersLoading, error } = usePlayers();
   const playersService = usePlayersService();
@@ -93,8 +96,8 @@ export default function PlayersPage() {
     if (!playersService) {
       toast({
         variant: "destructive",
-        title: "Firebase Not Available",
-        description: "Cannot save player without Firebase connection",
+        title: t('playersPage.firebaseUnavailableTitle'),
+        description: t('playersPage.firebaseUnavailableDesc'),
       });
       return;
     }
@@ -103,7 +106,10 @@ export default function PlayersPage() {
       if (selectedPlayer) {
         // Edit mode - update existing player
         await playersService.updatePlayer(selectedPlayer.id, playerData);
-        toast({ title: "Player Updated", description: `${playerData.name} has been updated.` });
+        toast({
+          title: t('playersPage.playerUpdatedTitle'),
+          description: t('playersPage.playerUpdatedDesc', { name: playerData.name }),
+        });
       } else {
         // Add mode - create new player
         const newPlayerData = {
@@ -113,14 +119,17 @@ export default function PlayersPage() {
           totalUnpaidPenalties: 0,
         };
         await playersService.createPlayer(newPlayerData);
-        toast({ title: "Player Added", description: `${newPlayerData.name} has been added.` });
+        toast({
+          title: t('playersPage.playerAddedTitle'),
+          description: t('playersPage.playerAddedDesc', { name: newPlayerData.name }),
+        });
       }
       setAddEditDialogOpen(false);
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : 'Failed to save player',
+        title: t('playersPage.saveErrorTitle'),
+        description: error instanceof Error ? error.message : t('playersPage.saveErrorDesc'),
       });
     }
   };
@@ -132,16 +141,16 @@ export default function PlayersPage() {
       await playersService.deletePlayer(selectedPlayer.id);
       toast({
         variant: "destructive",
-        title: "Player Deleted",
-        description: `${selectedPlayer.name} has been removed.`
+        title: t('playersPage.playerDeletedTitle'),
+        description: t('playersPage.playerDeletedDesc', { name: selectedPlayer.name }),
       });
       setDeleteDialogOpen(false);
       setSelectedPlayer(null);
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : 'Failed to delete player',
+        title: t('playersPage.deleteErrorTitle'),
+        description: error instanceof Error ? error.message : t('playersPage.deleteErrorDesc'),
       });
     }
   };
@@ -152,11 +161,17 @@ export default function PlayersPage() {
     try {
       await playersService.updatePlayer(player.id, { active: nextActive } as any);
       toast({
-        title: nextActive ? "Player Activated" : "Player Deactivated",
-        description: `${player.name} is now ${nextActive ? "active" : "inactive"}.`,
+        title: nextActive ? t('playersPage.statusActivatedTitle') : t('playersPage.statusDeactivatedTitle'),
+        description: nextActive
+          ? t('playersPage.statusActivatedDesc', { name: player.name })
+          : t('playersPage.statusDeactivatedDesc', { name: player.name }),
       });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Error', description: err instanceof Error ? err.message : 'Failed to update player status' });
+      toast({
+        variant: 'destructive',
+        title: t('playersPage.statusErrorTitle'),
+        description: err instanceof Error ? err.message : t('playersPage.statusErrorDesc'),
+      });
     }
   };
 
@@ -197,9 +212,9 @@ export default function PlayersPage() {
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error Loading Players</AlertTitle>
+          <AlertTitle>{t('playersPage.errorLoadingTitle')}</AlertTitle>
           <AlertDescription>
-            {error.message || 'Failed to load players. Please try again later.'}
+            {error.message || t('playersPage.errorLoadingDesc')}
           </AlertDescription>
         </Alert>
       </main>
@@ -213,16 +228,16 @@ export default function PlayersPage() {
         <div className="grid gap-4">
           <div className="flex items-center justify-between">
             <h1 className="font-headline text-3xl font-bold">
-              Player Management
+              {t('playersPage.title')}
             </h1>
              <Button onClick={handleAddClick}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Add Player
+              {t('playersPage.addPlayer')}
             </Button>
           </div>
           <Card>
             <CardHeader>
-              <CardTitle>Active Players</CardTitle>
+              <CardTitle>{t('playersPage.activePlayers')}</CardTitle>
             </CardHeader>
             <CardContent>
               <PlayersTable
@@ -234,14 +249,14 @@ export default function PlayersPage() {
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
                 onToggleStatus={handleToggleStatus}
-                emptyMessage="No active players."
+                emptyMessage={t('playersPage.emptyActive')}
               />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Inactive Players</CardTitle>
+              <CardTitle>{t('playersPage.inactivePlayers')}</CardTitle>
             </CardHeader>
             <CardContent>
               <PlayersTable
@@ -253,7 +268,7 @@ export default function PlayersPage() {
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
                 onToggleStatus={handleToggleStatus}
-                emptyMessage="No inactive players."
+                emptyMessage={t('playersPage.emptyInactive')}
               />
             </CardContent>
           </Card>

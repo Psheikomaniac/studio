@@ -104,8 +104,8 @@ export default function SettingsPage() {
       setUploadResult(""); // Clear previous results
     } else if (file) {
       toast({
-        title: "Invalid file type",
-        description: "Please select a CSV file",
+        title: t('settingsPage.invalidFileTypeTitle'),
+        description: t('settingsPage.invalidFileTypeDesc'),
         variant: "destructive"
       });
       e.target.value = ""; // Reset input
@@ -115,8 +115,8 @@ export default function SettingsPage() {
   const handleImport = async () => {
     if (!firestore) {
       toast({
-        title: "Firebase not available",
-        description: "Firebase must be enabled to import data. Set NEXT_PUBLIC_USE_FIREBASE=true in .env.local",
+        title: t('error'),
+        description: t('settingsPage.firebaseUnavailable'),
         variant: "destructive"
       });
       return;
@@ -124,8 +124,8 @@ export default function SettingsPage() {
 
     if (!selectedFile) {
       toast({
-        title: "No file selected",
-        description: "Please select a file first",
+        title: t('settingsPage.noFileSelectedTitle'),
+        description: t('settingsPage.noFileSelectedDesc'),
         variant: "destructive"
       });
       return;
@@ -159,7 +159,7 @@ export default function SettingsPage() {
 
       // Call appropriate import handler
       if (csvType === 'unknown') {
-        throw new Error('Unknown CSV type. Filename must contain "dues", "transaction", or "punishment"');
+        throw new Error(t('settingsPage.unknownCsvTypeError'));
       }
 
       // Import to Firestore with progress callback
@@ -173,20 +173,25 @@ export default function SettingsPage() {
         }
       );
 
-      const successMessage = `Successfully imported ${csvType} data to Firestore: ${result.rowsProcessed} rows, ${result.playersCreated} players created, ${result.recordsCreated} records created`;
+      const successMessage = t('settingsPage.importSuccessDetails', {
+        csvType,
+        rows: result.rowsProcessed,
+        players: result.playersCreated,
+        records: result.recordsCreated,
+      });
       setUploadResult(successMessage);
       setSkippedItems(result.skippedItems || []);
 
       if (result.warnings.length > 0) {
         toast({
-          title: `Import completed with ${result.warnings.length} warnings`,
+          title: t('settingsPage.importCompletedWithWarningsTitle', { count: result.warnings.length }),
           description: result.warnings.slice(0, 3).join(', '),
           variant: "default"
         });
       } else {
         toast({
           title: t('settingsPage.importSuccess'),
-          description: `${csvType} data imported to Firestore successfully`,
+          description: t('settingsPage.importSuccessToastDesc', { csvType }),
         });
       }
 
@@ -201,8 +206,8 @@ export default function SettingsPage() {
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      setUploadResult(`Error: ${errorMessage}`);
-      setUploadResult(`Error: ${errorMessage}`);
+      const label = t('settingsPage.errorLabel');
+      setUploadResult(`${label}: ${errorMessage}`);
       toast({
         title: t('settingsPage.importFailed'),
         description: errorMessage,
@@ -222,8 +227,8 @@ export default function SettingsPage() {
   const handleResetBalances = async () => {
     if (!firestore) {
       toast({
-        title: "Firebase not available",
-        description: "Firebase must be enabled for this action.",
+        title: t('error'),
+        description: t('settingsPage.firebaseUnavailable'),
         variant: "destructive"
       });
       return;
@@ -277,8 +282,8 @@ export default function SettingsPage() {
       await batch.commit();
 
       toast({
-        title: t('settingsPage.resetDialog.title'), // Reusing title or generic success
-        description: `Alle ${transactionCount} Transaktionen wurden als bezahlt markiert. Alle Guthaben sind jetzt 0€.`, // Keep dynamic part or use generic
+        title: t('settingsPage.resetSuccessTitle'),
+        description: t('settingsPage.resetSuccessDesc', { count: transactionCount }),
       });
 
       setShowResetDialog(false);
@@ -286,8 +291,8 @@ export default function SettingsPage() {
       console.error('Error resetting balances:', error);
       console.error('Error resetting balances:', error);
       toast({
-        title: t('settingsPage.error'),
-        description: error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten",
+        title: t('settingsPage.errorTitle'),
+        description: error instanceof Error ? error.message : t('settingsPage.unknownError'),
         variant: "destructive"
       });
     } finally {
@@ -335,8 +340,8 @@ export default function SettingsPage() {
   const handleDeleteAllData = async () => {
     if (!firestore) {
       toast({
-        title: "Firebase not available",
-        description: "Firebase must be enabled for this action.",
+        title: t('error'),
+        description: t('settingsPage.firebaseUnavailable'),
         variant: "destructive"
       });
       return;
@@ -360,8 +365,17 @@ export default function SettingsPage() {
       totalDeleted += deletedDues + deletedBeverages + deletedUsers;
 
       toast({
-        title: t('settingsPage.deleteAllData'),
-        description: `Insgesamt ${totalDeleted} Dokumente gelöscht. Details: Fines ${deletedFines}, Payments ${deletedPayments}, DuePayments ${deletedDuePayments}, BeverageConsumptions ${deletedConsumptions}, Dues ${deletedDues}, Beverages ${deletedBeverages}, Users ${deletedUsers}.`,
+        title: t('settingsPage.deleteSuccessTitle'),
+        description: t('settingsPage.deleteSuccessDesc', {
+          total: totalDeleted,
+          deletedFines,
+          deletedPayments,
+          deletedDuePayments,
+          deletedConsumptions,
+          deletedDues,
+          deletedBeverages,
+          deletedUsers,
+        }),
       });
 
       setShowDeleteDialog(false);
@@ -369,8 +383,8 @@ export default function SettingsPage() {
       console.error('Error deleting all data:', error);
       console.error('Error deleting all data:', error);
       toast({
-        title: t('settingsPage.error'),
-        description: error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten",
+        title: t('settingsPage.errorTitle'),
+        description: error instanceof Error ? error.message : t('settingsPage.unknownError'),
         variant: "destructive"
       });
     } finally {
