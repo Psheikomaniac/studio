@@ -32,13 +32,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Payment, Player, PaymentCategory } from '@/lib/types';
 import { PlayerMultiSelect } from "@/components/dashboard/player-multi-select";
-
-const paymentSchema = z.object({
-  playerIds: z.array(z.string()).min(1, "Please select at least one player."),
-  reason: z.string().min(3, 'Reason must be at least 3 characters long.'),
-  amount: z.coerce.number().positive("Amount must be a positive number."),
-  category: z.nativeEnum(PaymentCategory),
-});
+import { useTranslation } from 'react-i18next';
 
 type AddEditPaymentDialogProps = {
   isOpen: boolean;
@@ -49,6 +43,15 @@ type AddEditPaymentDialogProps = {
 };
 
 export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players }: AddEditPaymentDialogProps) {
+  const { t } = useTranslation();
+
+  const paymentSchema = z.object({
+    playerIds: z.array(z.string()).min(1, t('dialogs.validation.selectPlayer')),
+    reason: z.string().min(3, t('dialogs.validation.reasonLength')),
+    amount: z.coerce.number().positive(t('dialogs.validation.positiveAmount')),
+    category: z.nativeEnum(PaymentCategory),
+  });
+
   const form = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
@@ -69,12 +72,12 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
           category: payment.category || PaymentCategory.PAYMENT,
         });
       } else {
-          form.reset({
-              playerIds: [],
-              reason: '',
-              amount: 0,
-              category: PaymentCategory.PAYMENT,
-          });
+        form.reset({
+          playerIds: [],
+          reason: '',
+          amount: 0,
+          category: PaymentCategory.PAYMENT,
+        });
       }
     }
   }, [payment, form, isOpen]);
@@ -93,9 +96,9 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
     setOpen(false);
     form.reset();
   };
-  
-  const dialogTitle = payment ? 'Edit Payment' : 'Add New Payment';
-  const dialogDescription = payment ? `Update the details for this payment.` : 'Enter the details for the new payment.';
+
+  const dialogTitle = payment ? t('dialogs.editPaymentTitle') : t('dialogs.addPaymentTitle');
+  const dialogDescription = payment ? t('dialogs.editPaymentDesc') : t('dialogs.addPaymentDesc');
 
   return (
     <Dialog open={isOpen} onOpenChange={setOpen}>
@@ -108,12 +111,12 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
-             <FormField
+            <FormField
               control={form.control}
               name="playerIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Players</FormLabel>
+                  <FormLabel>{t('dialogs.players')}</FormLabel>
                   <PlayerMultiSelect
                     players={players}
                     value={field.value ?? []}
@@ -129,11 +132,11 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>{t('dialogs.category')}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
+                        <SelectValue placeholder={t('dialogs.selectCategory')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -154,21 +157,21 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
               name="reason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Reason</FormLabel>
+                  <FormLabel>{t('dialogs.reason')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Team Contribution" {...field} />
+                    <Input placeholder={t('dialogs.paymentReasonPlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount (€)</FormLabel>
+                  <FormLabel>{t('dialogs.amount')}</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="25.00" {...field} />
                   </FormControl>
@@ -177,7 +180,7 @@ export function AddEditPaymentDialog({ isOpen, setOpen, onSave, payment, players
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save Payment</Button>
+              <Button type="submit">{t('dialogs.savePayment')}</Button>
             </DialogFooter>
           </form>
         </Form>

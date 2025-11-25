@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUser } from '@/firebase/provider';
 import { usePlayer, usePlayersService } from '@/services/players.service';
 import { updatePassword } from 'firebase/auth';
@@ -15,6 +16,7 @@ import { Loader2, Save, User, Wallet, AlertCircle, CheckCircle2, Lock } from 'lu
 import { formatCurrency } from '@/lib/utils';
 
 export default function ProfilePage() {
+    const { t } = useTranslation();
     const { user: authUser } = useUser();
     const { data: player, isLoading: isPlayerLoading } = usePlayer(authUser?.uid);
     const playersService = usePlayersService();
@@ -73,14 +75,14 @@ export default function ProfilePage() {
             }
 
             toast({
-                title: player ? "Profile Updated" : "Profile Created",
-                description: "Your changes have been saved successfully.",
+                title: player ? t('profilePage.updated') : t('profilePage.created'),
+                description: t('profilePage.saved'),
             });
         } catch (error) {
             console.error("Error updating profile:", error);
             toast({
-                title: "Error",
-                description: "Failed to update profile. Please try again.",
+                title: t('profilePage.error'),
+                description: t('profilePage.updateError'),
                 variant: "destructive",
             });
         } finally {
@@ -94,8 +96,8 @@ export default function ProfilePage() {
 
         if (newPassword !== confirmPassword) {
             toast({
-                title: "Error",
-                description: "Passwords do not match.",
+                title: t('profilePage.error'),
+                description: t('profilePage.passwordMismatch'),
                 variant: "destructive",
             });
             return;
@@ -103,8 +105,8 @@ export default function ProfilePage() {
 
         if (newPassword.length < 6) {
             toast({
-                title: "Error",
-                description: "Password must be at least 6 characters.",
+                title: t('profilePage.error'),
+                description: t('profilePage.passwordLength'),
                 variant: "destructive",
             });
             return;
@@ -115,18 +117,18 @@ export default function ProfilePage() {
             await updatePassword(authUser, newPassword);
             toast({
                 title: "Success",
-                description: "Password updated successfully.",
+                description: t('profilePage.passwordSuccess'),
             });
             setNewPassword('');
             setConfirmPassword('');
         } catch (error: any) {
             console.error("Error updating password:", error);
-            let errorMessage = "Failed to update password.";
+            let errorMessage = t('profilePage.passwordUpdateError');
             if (error.code === 'auth/requires-recent-login') {
-                errorMessage = "Please log out and log in again to change your password.";
+                errorMessage = t('profilePage.reauthRequired');
             }
             toast({
-                title: "Error",
+                title: t('profilePage.error'),
                 description: errorMessage,
                 variant: "destructive",
             });
@@ -147,11 +149,11 @@ export default function ProfilePage() {
         return (
             <div className="flex h-full flex-col items-center justify-center p-8 text-center">
                 <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-                <h2 className="text-2xl font-bold">Profile Not Found</h2>
-                <p className="text-muted-foreground mb-4">Your player profile does not exist yet.</p>
+                <h2 className="text-2xl font-bold">{t('profilePage.notFound')}</h2>
+                <p className="text-muted-foreground mb-4">{t('profilePage.notFoundDesc')}</p>
                 <Button onClick={handleSave} disabled={isSaving}>
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create Profile
+                    {t('profilePage.create')}
                 </Button>
             </div>
         );
@@ -160,13 +162,13 @@ export default function ProfilePage() {
     return (
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
             <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Profile</h2>
+                <h2 className="text-3xl font-bold tracking-tight">{t('profilePage.title')}</h2>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Current Balance</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('profilePage.currentBalance')}</CardTitle>
                         <Wallet className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -174,13 +176,13 @@ export default function ProfilePage() {
                             {formatCurrency(player.balance || 0)}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Available credit
+                            {t('profilePage.availableCredit')}
                         </p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Unpaid Penalties</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('profilePage.unpaidPenalties')}</CardTitle>
                         <AlertCircle className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -188,13 +190,13 @@ export default function ProfilePage() {
                             {formatCurrency(player.totalUnpaidPenalties || 0)}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Outstanding amount
+                            {t('profilePage.outstandingAmount')}
                         </p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('profilePage.totalPaid')}</CardTitle>
                         <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -202,7 +204,7 @@ export default function ProfilePage() {
                             {formatCurrency(player.totalPaidPenalties || 0)}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Lifetime contribution
+                            {t('profilePage.lifetimeContribution')}
                         </p>
                     </CardContent>
                 </Card>
@@ -212,9 +214,9 @@ export default function ProfilePage() {
                 <div className="col-span-4 md:col-span-3 space-y-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Your Avatar</CardTitle>
+                            <CardTitle>{t('profilePage.avatar')}</CardTitle>
                             <CardDescription>
-                                This is how you appear to others.
+                                {t('profilePage.avatarDesc')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center space-y-4">
@@ -231,15 +233,15 @@ export default function ProfilePage() {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Security</CardTitle>
+                            <CardTitle>{t('profilePage.security')}</CardTitle>
                             <CardDescription>
-                                Manage your password.
+                                {t('profilePage.managePassword')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleChangePassword} className="space-y-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="new-password">New Password</Label>
+                                    <Label htmlFor="new-password">{t('profilePage.newPassword')}</Label>
                                     <Input
                                         id="new-password"
                                         type="password"
@@ -249,7 +251,7 @@ export default function ProfilePage() {
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                                    <Label htmlFor="confirm-password">{t('profilePage.confirmPassword')}</Label>
                                     <Input
                                         id="confirm-password"
                                         type="password"
@@ -261,7 +263,7 @@ export default function ProfilePage() {
                                 <Button type="submit" variant="outline" className="w-full" disabled={isChangingPassword || !newPassword}>
                                     {isChangingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     {!isChangingPassword && <Lock className="mr-2 h-4 w-4" />}
-                                    Update Password
+                                    {t('profilePage.updatePassword')}
                                 </Button>
                             </form>
                         </CardContent>
@@ -270,15 +272,15 @@ export default function ProfilePage() {
 
                 <Card className="col-span-4">
                     <CardHeader>
-                        <CardTitle>Edit Profile</CardTitle>
+                        <CardTitle>{t('profilePage.edit')}</CardTitle>
                         <CardDescription>
-                            Update your personal information.
+                            {t('profilePage.editDesc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSave} className="space-y-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Full Name</Label>
+                                <Label htmlFor="name">{t('profilePage.fullName')}</Label>
                                 <Input
                                     id="name"
                                     value={name}
@@ -287,7 +289,7 @@ export default function ProfilePage() {
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="nickname">Nickname</Label>
+                                <Label htmlFor="nickname">{t('profilePage.nickname')}</Label>
                                 <Input
                                     id="nickname"
                                     value={nickname}
@@ -296,7 +298,7 @@ export default function ProfilePage() {
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="phone">Phone Number</Label>
+                                <Label htmlFor="phone">{t('profilePage.phone')}</Label>
                                 <Input
                                     id="phone"
                                     value={phone}
@@ -305,7 +307,7 @@ export default function ProfilePage() {
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="photoUrl">Avatar URL</Label>
+                                <Label htmlFor="photoUrl">{t('profilePage.avatarUrl')}</Label>
                                 <Input
                                     id="photoUrl"
                                     value={photoUrl}
@@ -313,23 +315,23 @@ export default function ProfilePage() {
                                     placeholder="https://example.com/avatar.jpg"
                                 />
                                 <p className="text-[0.8rem] text-muted-foreground">
-                                    Enter a direct link to an image file.
+                                    {t('profilePage.avatarUrlDesc')}
                                 </p>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="notes">Notes</Label>
+                                <Label htmlFor="notes">{t('profilePage.notes')}</Label>
                                 <Textarea
                                     id="notes"
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
-                                    placeholder="Add some notes about yourself..."
+                                    placeholder={t('profilePage.notesPlaceholder')}
                                     className="min-h-[100px]"
                                 />
                             </div>
                             <Button type="submit" disabled={isSaving}>
                                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {!isSaving && <Save className="mr-2 h-4 w-4" />}
-                                Save Changes
+                                {t('profilePage.saveChanges')}
                             </Button>
                         </form>
                     </CardContent>

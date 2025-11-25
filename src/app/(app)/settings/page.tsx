@@ -37,8 +37,10 @@ import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 import { generateId } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { useI18n } from "@/components/i18n-provider";
+import { useTranslation } from 'react-i18next';
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { showLanguageName, setShowLanguageName } = useI18n();
   const firebase = useFirebaseOptional();
@@ -183,7 +185,7 @@ export default function SettingsPage() {
         });
       } else {
         toast({
-          title: "Import successful",
+          title: t('settingsPage.importSuccess'),
           description: `${csvType} data imported to Firestore successfully`,
         });
       }
@@ -200,8 +202,9 @@ export default function SettingsPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setUploadResult(`Error: ${errorMessage}`);
+      setUploadResult(`Error: ${errorMessage}`);
       toast({
-        title: "Import failed",
+        title: t('settingsPage.importFailed'),
         description: errorMessage,
         variant: "destructive"
       });
@@ -274,15 +277,16 @@ export default function SettingsPage() {
       await batch.commit();
 
       toast({
-        title: "Erfolgreich zurückgesetzt",
-        description: `Alle ${transactionCount} Transaktionen wurden als bezahlt markiert. Alle Guthaben sind jetzt 0€.`,
+        title: t('settingsPage.resetDialog.title'), // Reusing title or generic success
+        description: `Alle ${transactionCount} Transaktionen wurden als bezahlt markiert. Alle Guthaben sind jetzt 0€.`, // Keep dynamic part or use generic
       });
 
       setShowResetDialog(false);
     } catch (error) {
       console.error('Error resetting balances:', error);
+      console.error('Error resetting balances:', error);
       toast({
-        title: "Fehler beim Zurücksetzen",
+        title: t('settingsPage.error'),
         description: error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten",
         variant: "destructive"
       });
@@ -356,15 +360,16 @@ export default function SettingsPage() {
       totalDeleted += deletedDues + deletedBeverages + deletedUsers;
 
       toast({
-        title: "Alle Daten gelöscht",
+        title: t('settingsPage.deleteAllData'),
         description: `Insgesamt ${totalDeleted} Dokumente gelöscht. Details: Fines ${deletedFines}, Payments ${deletedPayments}, DuePayments ${deletedDuePayments}, BeverageConsumptions ${deletedConsumptions}, Dues ${deletedDues}, Beverages ${deletedBeverages}, Users ${deletedUsers}.`,
       });
 
       setShowDeleteDialog(false);
     } catch (error) {
       console.error('Error deleting all data:', error);
+      console.error('Error deleting all data:', error);
       toast({
-        title: "Fehler beim Löschen",
+        title: t('settingsPage.error'),
         description: error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten",
         variant: "destructive"
       });
@@ -504,28 +509,28 @@ export default function SettingsPage() {
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="grid gap-4">
-        <h1 className="font-headline text-3xl font-bold">Settings</h1>
+        <h1 className="font-headline text-3xl font-bold">{t('settingsPage.title')}</h1>
 
         <Card>
           <CardHeader>
-            <CardTitle>Team Management</CardTitle>
-            <CardDescription>General team settings.</CardDescription>
+            <CardTitle>{t('settingsPage.teamManagement')}</CardTitle>
+            <CardDescription>{t('settingsPage.teamManagementDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">Team settings will be available here.</p>
+            <p className="text-sm text-muted-foreground">{t('settingsPage.teamSettingsPlaceholder')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Language Settings</CardTitle>
-            <CardDescription>Customize your language preferences.</CardDescription>
+            <CardTitle>{t('settingsPage.languageSettings')}</CardTitle>
+            <CardDescription>{t('settingsPage.languageSettingsDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="show-language-name">Show Language Name</Label>
+              <Label htmlFor="show-language-name">{t('settingsPage.showLanguageName')}</Label>
               <p className="text-sm text-muted-foreground">
-                Display the language name next to the flag in the header.
+                {t('settingsPage.showLanguageNameDesc')}
               </p>
             </div>
             <Switch
@@ -538,15 +543,14 @@ export default function SettingsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Data Import</CardTitle>
+            <CardTitle>{t('settingsPage.dataImport')}</CardTitle>
             <CardDescription>
-              Upload existing data from a file. Please use a CSV file with the correct format.
-              File name must contain "dues", "transaction", or "punishment" to detect the type.
+              {t('settingsPage.dataImportDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="import-file">CSV File</Label>
+              <Label htmlFor="import-file">{t('settingsPage.csvFile')}</Label>
               <Input
                 id="import-file"
                 type="file"
@@ -566,12 +570,12 @@ export default function SettingsPage() {
               disabled={!selectedFile || uploading || !isMounted || !isFirebaseAvailable}
             >
               {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {uploading ? 'Importing...' : 'Import Data'}
+              {uploading ? t('settingsPage.importing') : t('settingsPage.importData')}
             </Button>
             {uploading && importTotal > 0 && (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Processing rows...</span>
+                  <span>{t('settingsPage.processing')}</span>
                   <span>{importProgress} / {importTotal}</span>
                 </div>
                 <Progress value={(importProgress / importTotal) * 100} />
@@ -589,7 +593,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2 text-amber-800 font-medium">
                       <AlertCircle className="h-5 w-5" />
-                      <span>Skipped Items ({skippedItems.length})</span>
+                      <span>{t('settingsPage.skippedItems')} ({skippedItems.length})</span>
                     </div>
                     <Button
                       variant="outline"
@@ -603,7 +607,7 @@ export default function SettingsPage() {
                       ) : (
                         <Check className="mr-2 h-4 w-4" />
                       )}
-                      Force Import Selected ({selectedSkippedItems.size})
+                      {t('settingsPage.forceImport')} ({selectedSkippedItems.size})
                     </Button>
                   </div>
 
@@ -658,12 +662,12 @@ export default function SettingsPage() {
         {/* Data Quality & Freshness */}
         <Card>
           <CardHeader>
-            <CardTitle>Data Quality & Freshness</CardTitle>
-            <CardDescription>Run-time checks on imported legacy data</CardDescription>
+            <CardTitle>{t('settingsPage.dataQuality')}</CardTitle>
+            <CardDescription>{t('settingsPage.dataQualityDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="mb-4 text-xs text-muted-foreground">
-              Last data update: {(() => {
+              {t('settingsPage.lastUpdate')}: {(() => {
                 const d = maxDateFromCollections([payments, fines, duePayments, beverageConsumptions]);
                 return d ? <SafeLocaleDate dateString={d} /> : 'Unknown';
               })()}
@@ -695,8 +699,8 @@ export default function SettingsPage() {
         {/* Catalog Overviews */}
         <Card>
           <CardHeader>
-            <CardTitle>Catalogs</CardTitle>
-            <CardDescription>Dues and Beverages overview</CardDescription>
+            <CardTitle>{t('settingsPage.catalogs')}</CardTitle>
+            <CardDescription>{t('settingsPage.catalogsDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 md:grid-cols-2">
@@ -712,7 +716,7 @@ export default function SettingsPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No dues configured.</p>
+                  <p className="text-sm text-muted-foreground">{t('settingsPage.noDues')}</p>
                 )}
               </div>
               <div>
@@ -727,7 +731,7 @@ export default function SettingsPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No beverages configured.</p>
+                  <p className="text-sm text-muted-foreground">{t('settingsPage.noBeverages')}</p>
                 )}
               </div>
             </div>
@@ -737,8 +741,8 @@ export default function SettingsPage() {
         {/* Price Consistency Check */}
         <Card>
           <CardHeader>
-            <CardTitle>Price Consistency</CardTitle>
-            <CardDescription>Average consumed price per beverage vs. catalog price</CardDescription>
+            <CardTitle>{t('settingsPage.priceConsistency')}</CardTitle>
+            <CardDescription>{t('settingsPage.priceConsistencyDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {(() => {
@@ -777,7 +781,7 @@ export default function SettingsPage() {
 
               return (
                 <div className="space-y-3">
-                  <div className={`text-2xl font-bold ${deviations.length > 0 ? 'text-amber-700' : 'text-positive'}`}>{deviations.length} mismatch{deviations.length === 1 ? '' : 'es'}</div>
+                  <div className={`text-2xl font-bold ${deviations.length > 0 ? 'text-amber-700' : 'text-positive'}`}>{deviations.length} {t('settingsPage.mismatches')}</div>
                   {top.length > 0 && (
                     <ul className="space-y-2">
                       {top.map(d => (
@@ -789,7 +793,7 @@ export default function SettingsPage() {
                     </ul>
                   )}
                   {byIdAvg.size === 0 && (
-                    <p className="text-sm text-muted-foreground">No beverage consumptions to analyze.</p>
+                    <p className="text-sm text-muted-foreground">{t('settingsPage.noConsumptions')}</p>
                   )}
                 </div>
               );
@@ -799,8 +803,8 @@ export default function SettingsPage() {
 
         <Card className="border-destructive/50">
           <CardHeader>
-            <CardTitle className="text-destructive">Danger Zone</CardTitle>
-            <CardDescription>These actions are irreversible.</CardDescription>
+            <CardTitle className="text-destructive">{t('settingsPage.dangerZone')}</CardTitle>
+            <CardDescription>{t('settingsPage.dangerZoneDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-start gap-4">
             <div className="space-y-4 w-full">
@@ -823,9 +827,9 @@ export default function SettingsPage() {
                   )}
                 </Button>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Reset All Balances</p>
+                  <p className="text-sm font-medium">{t('settingsPage.resetBalances')}</p>
                   <p className="text-sm text-muted-foreground">
-                    Marks all transactions as paid. Players remain but all debts are cleared to 0€.
+                    {t('settingsPage.resetBalancesDesc')}
                   </p>
                 </div>
               </div>
@@ -850,17 +854,16 @@ export default function SettingsPage() {
                   )}
                 </Button>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Delete All Data</p>
+                  <p className="text-sm font-medium">{t('settingsPage.deleteAllData')}</p>
                   <p className="text-sm text-muted-foreground">
-                    Permanently deletes ALL players and ALL transactions. Cannot be undone!
+                    {t('settingsPage.deleteAllDataDesc')}
                   </p>
                 </div>
               </div>
 
               {isMounted && !isFirebaseAvailable && (
                 <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
-                  ⚠️ Firebase ist derzeit nicht verfügbar. Diese Funktionen benötigen eine aktive Datenbankverbindung.
-                  Bitte setze NEXT_PUBLIC_USE_FIREBASE=true in .env.local und starte den Server neu.
+                  {t('settingsPage.firebaseUnavailable')}
                 </div>
               )}
             </div>
@@ -872,24 +875,23 @@ export default function SettingsPage() {
       <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Alle Guthaben zurücksetzen?</AlertDialogTitle>
+            <AlertDialogTitle>{t('settingsPage.resetDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2">
                 <p>
-                  Diese Aktion wird alle offenen Transaktionen (Strafen, Beiträge, Getränke) als bezahlt markieren.
-                  Alle Spieler-Guthaben werden auf 0€ gesetzt.
+                  {t('settingsPage.resetDialog.desc')}
                 </p>
                 <p>
-                  <strong>Die Spieler und die Transaction-History bleiben erhalten.</strong>
+                  <strong>{t('settingsPage.resetDialog.desc2')}</strong>
                 </p>
                 <p>
-                  Diese Aktion kann nicht rückgängig gemacht werden.
+                  {t('settingsPage.resetDialog.desc3')}
                 </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isResetting}>Abbrechen</AlertDialogCancel>
+            <AlertDialogCancel disabled={isResetting}>{t('settingsPage.resetDialog.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleResetBalances}
               disabled={isResetting}
@@ -898,10 +900,10 @@ export default function SettingsPage() {
               {isResetting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Wird zurückgesetzt...
+                  {t('settingsPage.resetting')}
                 </>
               ) : (
-                "Ja, alle Guthaben zurücksetzen"
+                t('settingsPage.resetDialog.confirm')
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -912,28 +914,24 @@ export default function SettingsPage() {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-destructive">⚠️ Alle Daten löschen?</AlertDialogTitle>
+            <AlertDialogTitle className="text-destructive">{t('settingsPage.deleteDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div>
-                <strong className="text-destructive">ACHTUNG: Diese Aktion löscht PERMANENT:</strong>
+                <strong className="text-destructive">{t('settingsPage.deleteDialog.desc')}</strong>
                 <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Alle Spieler</li>
-                  <li>Alle Strafen</li>
-                  <li>Alle Zahlungen</li>
-                  <li>Alle Beiträge</li>
-                  <li>Alle Getränke-Konsumierungen</li>
+                  <li>{t('settingsPage.deleteDialog.list')}</li>
                 </ul>
                 <div className="mt-2">
-                  <strong className="text-destructive">Die Datenbank wird komplett geleert!</strong>
+                  <strong className="text-destructive">{t('settingsPage.deleteDialog.desc2')}</strong>
                 </div>
                 <div className="mt-2">
-                  Diese Aktion kann <strong>NICHT</strong> rückgängig gemacht werden.
+                  {t('settingsPage.deleteDialog.desc3')}
                 </div>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Abbrechen</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t('settingsPage.deleteDialog.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAllData}
               disabled={isDeleting}
@@ -942,10 +940,10 @@ export default function SettingsPage() {
               {isDeleting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Wird gelöscht...
+                  {t('settingsPage.deleting')}
                 </>
               ) : (
-                "Ja, ALLES löschen"
+                t('settingsPage.deleteDialog.confirm')
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
