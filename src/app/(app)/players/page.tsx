@@ -65,12 +65,12 @@ export default function PlayersPage() {
     return playersData.map(player => ({
       ...player,
       balance: balanceBreakdownByUser.get(player.id)?.balance || 0
-    }));
+    })).sort((a, b) => a.balance - b.balance);
   }, [playersData, balanceBreakdownByUser]);
 
   // Determine overall loading state
   const isLoading = playersLoading || finesLoading || paymentsLoading ||
-                    duePaymentsLoading || consumptionsLoading;
+    duePaymentsLoading || consumptionsLoading;
 
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -230,7 +230,7 @@ export default function PlayersPage() {
             <h1 className="font-headline text-3xl font-bold">
               {t('playersPage.title')}
             </h1>
-             <Button onClick={handleAddClick}>
+            <Button onClick={handleAddClick}>
               <PlusCircle className="mr-2 h-4 w-4" />
               {t('playersPage.addPlayer')}
             </Button>
