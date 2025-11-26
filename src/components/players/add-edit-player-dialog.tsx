@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Player } from '@/lib/types';
+import { useTranslation } from 'react-i18next';
 
 const playerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters long.'),
@@ -40,6 +41,7 @@ type AddEditPlayerDialogProps = {
 };
 
 export function AddEditPlayerDialog({ isOpen, setOpen, onSave, player }: AddEditPlayerDialogProps) {
+  const { t } = useTranslation();
   const form = useForm<z.infer<typeof playerSchema>>({
     resolver: zodResolver(playerSchema),
     defaultValues: {
@@ -72,8 +74,12 @@ export function AddEditPlayerDialog({ isOpen, setOpen, onSave, player }: AddEdit
     });
   };
   
-  const dialogTitle = player ? 'Edit Player' : 'Add New Player';
-  const dialogDescription = player ? `Update the details for ${player.name}.` : 'Enter the details for the new player.';
+  const dialogTitle = player
+    ? t('playersPage.addEditDialog.titleEdit')
+    : t('playersPage.addEditDialog.titleAdd');
+  const dialogDescription = player
+    ? t('playersPage.addEditDialog.descEdit', { name: player.name })
+    : t('playersPage.addEditDialog.descAdd');
 
   return (
     <Dialog open={isOpen} onOpenChange={setOpen}>
@@ -91,9 +97,9 @@ export function AddEditPlayerDialog({ isOpen, setOpen, onSave, player }: AddEdit
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>{t('playersPage.form.fullNameLabel')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Max Mustermann" {...field} />
+                    <Input placeholder={t('playersPage.form.fullNamePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -104,9 +110,9 @@ export function AddEditPlayerDialog({ isOpen, setOpen, onSave, player }: AddEdit
               name="nickname"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nickname</FormLabel>
+                  <FormLabel>{t('playersPage.form.nicknameLabel')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Maxi" {...field} />
+                    <Input placeholder={t('playersPage.form.nicknamePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,19 +123,19 @@ export function AddEditPlayerDialog({ isOpen, setOpen, onSave, player }: AddEdit
               name="photoUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Photo URL</FormLabel>
+                  <FormLabel>{t('playersPage.form.photoUrlLabel')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://example.com/photo.jpg" {...field} />
+                    <Input placeholder={t('playersPage.form.photoUrlPlaceholder')} {...field} />
                   </FormControl>
                    <FormDescription>
-                    Leave blank to use a random placeholder image.
+                    {t('playersPage.form.photoUrlDescription')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save Player</Button>
+              <Button type="submit">{t('playersPage.form.saveButton')}</Button>
             </DialogFooter>
           </form>
         </Form>

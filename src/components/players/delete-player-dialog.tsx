@@ -12,6 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
+import { useTranslation } from 'react-i18next';
 
 type DeletePlayerDialogProps = {
   isOpen: boolean;
@@ -21,23 +22,23 @@ type DeletePlayerDialogProps = {
 };
 
 export function DeletePlayerDialog({ isOpen, setOpen, onConfirm, playerName }: DeletePlayerDialogProps) {
+  const { t } = useTranslation();
   return (
     <AlertDialog open={isOpen} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogTitle>{t('playersPage.deleteDialog.title')}</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the
-            player <span className="font-semibold">{playerName || '...'}</span> and all associated data.
+            {t('playersPage.deleteDialog.desc', { name: playerName || '...' })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('playersPage.deleteDialog.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Yes, delete player
+            {t('playersPage.deleteDialog.confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

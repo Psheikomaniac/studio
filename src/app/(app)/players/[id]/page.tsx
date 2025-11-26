@@ -19,6 +19,7 @@ import { usePlayerConsumptions } from "@/services/beverages.service";
 import { formatEuro } from "@/lib/csv-utils";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { groupPaymentsByDay } from "@/lib/stats";
+import { useTranslation } from 'react-i18next';
 
 // A small helper to format currency consistently
 function formatCurrency(value: number): string {
@@ -35,6 +36,7 @@ type ActivityItem = {
 };
 
 export default function PlayerDetailsPage() {
+  const { t } = useTranslation();
   const params = useParams<{ id: string }>();
   const playerId = params?.id;
 
@@ -131,7 +133,9 @@ export default function PlayerDetailsPage() {
       items.push({
         id: `due-${d.id}`,
         date: d.createdAt,
-        description: d.userName ? `Due payment (${d.userName})` : "Due payment",
+        description: d.userName
+          ? t('playerDetailPage.duePaymentWithName', { name: d.userName })
+          : t('playerDetailPage.duePayment'),
         type: "due",
         amount: -d.amountDue,
         paid: !!d.paid,
@@ -142,7 +146,7 @@ export default function PlayerDetailsPage() {
       items.push({
         id: `bev-${c.id}`,
         date: c.date,
-        description: c.beverageName || "Beverage",
+        description: c.beverageName || t('playerDetailPage.beveragePlaceholder'),
         type: "beverage",
         amount: -c.amount,
         paid: !!c.paid,
@@ -152,7 +156,7 @@ export default function PlayerDetailsPage() {
     return items
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 10);
-  }, [fines, payments, duePayments, consumptions]);
+  }, [fines, payments, duePayments, consumptions, t]);
 
   // Build timeline series for last 90 days
   const end90 = useMemo(() => new Date(), []);
@@ -186,9 +190,9 @@ export default function PlayerDetailsPage() {
     return (
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <Alert variant="destructive">
-          <AlertTitle>Fehler beim Laden</AlertTitle>
+          <AlertTitle>{t('playerDetailPage.errorLoadingTitle')}</AlertTitle>
           <AlertDescription>
-            {(anyError as Error)?.message || "Spielerdaten konnten nicht geladen werden."}
+            {(anyError as Error)?.message || t('playerDetailPage.errorLoadingDesc')}
           </AlertDescription>
         </Alert>
       </main>
@@ -215,7 +219,7 @@ export default function PlayerDetailsPage() {
               <div className="relative h-16 w-16 overflow-hidden rounded-full">
                 <Image
                   src={player.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=64&background=94a3b8&color=fff`}
-                  alt={`Photo of ${player.name}`}
+                  alt={player.name}
                   fill
                   className="object-cover"
                 />
@@ -225,14 +229,16 @@ export default function PlayerDetailsPage() {
                 <p className="text-muted-foreground">"{player.nickname}"</p>
               </div>
             </div>
-            <Link href="/players" className="text-sm text-muted-foreground hover:underline">Zurück zu Players</Link>
+            <Link href="/players" className="text-sm text-muted-foreground hover:underline">
+              {t('playerDetailPage.backToPlayers')}
+            </Link>
           </div>
 
           {/* Overview cards */}
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">Kontostand</CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">{t('playerDetailPage.balanceTitle')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className={`text-2xl font-bold ${player.balance < 0 ? 'text-destructive' : 'text-positive'}`}>{formatCurrency(player.balance)}</div>
@@ -240,8 +246,8 @@ export default function PlayerDetailsPage() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">Gesamt Schulden</CardTitle>
-                <CardDescription>Fines, Dues, Getränke</CardDescription>
+                <CardTitle className="text-sm text-muted-foreground">{t('playerDetailPage.totalDebtTitle')}</CardTitle>
+                <CardDescription>{t('playerDetailPage.totalDebtDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-destructive">{formatCurrency(-(stats.finesTotal + stats.duesTotal + stats.beveragesTotal))}</div>
@@ -249,7 +255,7 @@ export default function PlayerDetailsPage() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">Gesamt Gutschriften</CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">{t('playerDetailPage.totalCreditTitle')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-positive">{formatCurrency(stats.paymentsTotal)}</div>
@@ -261,7 +267,7 @@ export default function PlayerDetailsPage() {
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader>
-                <CardTitle>Zahlungen je Tag (90d)</CardTitle>
+                <CardTitle>{t('playerDetailPage.paymentsByDayTitle')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {paymentsSeries.length > 0 ? (
@@ -272,18 +278,25 @@ export default function PlayerDetailsPage() {
                         <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
                         <YAxis tickFormatter={(v) => `€${v}`} />
                         <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
-                        <Line type="monotone" dataKey="value" name="Revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                        <Line
+                          type="monotone"
+                          dataKey="value"
+                          name={t('playerDetailPage.paymentsSeriesName')}
+                          stroke="hsl(var(--primary))"
+                          strokeWidth={2}
+                          dot={false}
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Keine Zahlungen vorhanden.</p>
+                  <p className="text-sm text-muted-foreground">{t('playerDetailPage.noPayments')}</p>
                 )}
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Strafen je Tag (90d)</CardTitle>
+                <CardTitle>{t('playerDetailPage.finesByDayTitle')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {finesSeries.length > 0 ? (
@@ -294,18 +307,23 @@ export default function PlayerDetailsPage() {
                         <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
                         <YAxis tickFormatter={(v) => `€${v}`} />
                         <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
-                        <Bar dataKey="value" name="Fines" fill="hsl(var(--destructive))" radius={[4,4,0,0]} />
+                        <Bar
+                          dataKey="value"
+                          name={t('playerDetailPage.finesSeriesName')}
+                          fill="hsl(var(--destructive))"
+                          radius={[4,4,0,0]}
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Keine Strafen vorhanden.</p>
+                  <p className="text-sm text-muted-foreground">{t('playerDetailPage.noFines')}</p>
                 )}
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Getränke je Tag (90d)</CardTitle>
+                <CardTitle>{t('playerDetailPage.beveragesByDayTitle')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {beveragesSeries.length > 0 ? (
@@ -316,12 +334,17 @@ export default function PlayerDetailsPage() {
                         <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} />
                         <YAxis tickFormatter={(v) => `€${v}`} />
                         <Tooltip formatter={(v:number) => formatEuro(v as number)} labelFormatter={(l) => new Date(l as string).toLocaleDateString()} />
-                        <Bar dataKey="value" name="Beverages" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
+                        <Bar
+                          dataKey="value"
+                          name={t('playerDetailPage.beveragesSeriesName')}
+                          fill="hsl(var(--primary))"
+                          radius={[4,4,0,0]}
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Keine Getränke-Buchungen vorhanden.</p>
+                  <p className="text-sm text-muted-foreground">{t('playerDetailPage.noBeverages')}</p>
                 )}
               </CardContent>
             </Card>
@@ -331,21 +354,21 @@ export default function PlayerDetailsPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Fines</CardTitle>
-                <CardDescription>Bezahlt vs. offen</CardDescription>
+                <CardTitle>{t('playerDetailPage.finesStatsTitle')}</CardTitle>
+                <CardDescription>{t('playerDetailPage.paidVsOpen')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm text-muted-foreground">Gesamt</div>
+                    <div className="text-sm text-muted-foreground">{t('playerDetailPage.totalLabel')}</div>
                     <div className="text-lg font-bold">{formatCurrency(-stats.finesTotal)}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-muted-foreground">Bezahlt</div>
+                    <div className="text-sm text-muted-foreground">{t('playerDetailPage.paidLabel')}</div>
                     <div className="text-lg font-bold text-positive">{formatCurrency(stats.finesPaid)}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-muted-foreground">Offen</div>
+                    <div className="text-sm text-muted-foreground">{t('playerDetailPage.openLabel')}</div>
                     <div className="text-lg font-bold text-destructive">{formatCurrency(-stats.finesUnpaid)}</div>
                   </div>
                 </div>
@@ -354,47 +377,49 @@ export default function PlayerDetailsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Mitgliedsbeiträge</CardTitle>
-                <CardDescription>Bezahlt vs. offen</CardDescription>
+                <CardTitle>{t('playerDetailPage.duesStatsTitle')}</CardTitle>
+                <CardDescription>{t('playerDetailPage.paidVsOpen')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm text-muted-foreground">Gesamt</div>
+                    <div className="text-sm text-muted-foreground">{t('playerDetailPage.totalLabel')}</div>
                     <div className="text-lg font-bold">{formatCurrency(-stats.duesTotal)}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-muted-foreground">Bezahlt</div>
+                    <div className="text-sm text-muted-foreground">{t('playerDetailPage.paidLabel')}</div>
                     <div className="text-lg font-bold text-positive">{formatCurrency(stats.duesPaid)}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-muted-foreground">Offen</div>
+                    <div className="text-sm text-muted-foreground">{t('playerDetailPage.openLabel')}</div>
                     <div className="text-lg font-bold text-destructive">{formatCurrency(-stats.duesUnpaid)}</div>
                   </div>
                 </div>
                 {stats.duesExemptCount > 0 && (
-                  <div className="mt-3 text-xs text-muted-foreground">{stats.duesExemptCount}x exempt</div>
+                  <div className="mt-3 text-xs text-muted-foreground">
+                    {t('playerDetailPage.exemptCount', { count: stats.duesExemptCount })}
+                  </div>
                 )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Getränke</CardTitle>
-                <CardDescription>Bezahlt vs. offen</CardDescription>
+                <CardTitle>{t('playerDetailPage.beveragesStatsTitle')}</CardTitle>
+                <CardDescription>{t('playerDetailPage.paidVsOpen')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm text-muted-foreground">Gesamt</div>
+                    <div className="text-sm text-muted-foreground">{t('playerDetailPage.totalLabel')}</div>
                     <div className="text-lg font-bold">{formatCurrency(-stats.beveragesTotal)}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-muted-foreground">Bezahlt</div>
+                    <div className="text-sm text-muted-foreground">{t('playerDetailPage.paidLabel')}</div>
                     <div className="text-lg font-bold text-positive">{formatCurrency(stats.beveragesPaid)}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-muted-foreground">Offen</div>
+                    <div className="text-sm text-muted-foreground">{t('playerDetailPage.openLabel')}</div>
                     <div className="text-lg font-bold text-destructive">{formatCurrency(-stats.beveragesUnpaid)}</div>
                   </div>
                 </div>
@@ -403,13 +428,13 @@ export default function PlayerDetailsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Guthaben</CardTitle>
-                <CardDescription>Einzahlungen</CardDescription>
+                <CardTitle>{t('playerDetailPage.creditStatsTitle')}</CardTitle>
+                <CardDescription>{t('playerDetailPage.creditStatsDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm text-muted-foreground">Gesamt</div>
+                    <div className="text-sm text-muted-foreground">{t('playerDetailPage.totalLabel')}</div>
                     <div className="text-lg font-bold text-positive">{formatCurrency(stats.paymentsTotal)}</div>
                   </div>
                 </div>
@@ -421,8 +446,8 @@ export default function PlayerDetailsPage() {
           <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Strafen</CardTitle>
-              <CardDescription>Alle Strafen dieses Spielers</CardDescription>
+              <CardTitle>{t('playerDetailPage.finesTableTitle')}</CardTitle>
+              <CardDescription>{t('playerDetailPage.finesTableDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               {finesTotalCount > 0 ? (
@@ -430,9 +455,9 @@ export default function PlayerDetailsPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Datum</TableHead>
-                        <TableHead className="text-right">Betrag</TableHead>
-                        <TableHead>Beschreibung</TableHead>
+                        <TableHead>{t('playerDetailPage.dateColumn')}</TableHead>
+                        <TableHead className="text-right">{t('playerDetailPage.amountColumn')}</TableHead>
+                        <TableHead>{t('playerDetailPage.descriptionColumn')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -453,7 +478,11 @@ export default function PlayerDetailsPage() {
                   {finesTotalCount > FINES_PAGE_SIZE && (
                     <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-sm text-muted-foreground">
-                        Zeige {finesPageStart + 1}-{finesPageEnd} von {finesTotalCount}
+                        {t('playerDetailPage.paginationSummary', {
+                          from: finesPageStart + 1,
+                          to: finesPageEnd,
+                          total: finesTotalCount,
+                        })}
                       </p>
                       <div className="flex items-center gap-2">
                         <Button
@@ -462,10 +491,10 @@ export default function PlayerDetailsPage() {
                           onClick={() => setFinesPage((p) => Math.max(1, p - 1))}
                           disabled={finesPage <= 1}
                         >
-                          Zurück
+                          {t('playerDetailPage.prevPage')}
                         </Button>
                         <span className="text-sm text-muted-foreground">
-                          Seite {finesPage} von {finesTotalPages}
+                          {t('playerDetailPage.paginationLabel', { page: finesPage, pages: finesTotalPages })}
                         </span>
                         <Button
                           variant="outline"
@@ -473,14 +502,14 @@ export default function PlayerDetailsPage() {
                           onClick={() => setFinesPage((p) => Math.min(finesTotalPages, p + 1))}
                           disabled={finesPage >= finesTotalPages}
                         >
-                          Weiter
+                          {t('playerDetailPage.nextPage')}
                         </Button>
                       </div>
                     </div>
                   )}
                 </>
               ) : (
-                <div className="text-center p-8 text-muted-foreground">Keine Strafen gefunden.</div>
+                <div className="text-center p-8 text-muted-foreground">{t('playerDetailPage.noFinesFound')}</div>
               )}
             </CardContent>
           </Card>
@@ -488,17 +517,17 @@ export default function PlayerDetailsPage() {
           {/* Recent activity */}
           <Card>
             <CardHeader>
-              <CardTitle>Aktivitäten</CardTitle>
-              <CardDescription>Letzte 10 Vorgänge</CardDescription>
+              <CardTitle>{t('playerDetailPage.activityTitle')}</CardTitle>
+              <CardDescription>{t('playerDetailPage.activityDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               {recentActivity.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Datum</TableHead>
-                      <TableHead className="text-right">Betrag</TableHead>
-                      <TableHead>Beschreibung</TableHead>
+                      <TableHead>{t('playerDetailPage.dateColumn')}</TableHead>
+                      <TableHead className="text-right">{t('playerDetailPage.amountColumn')}</TableHead>
+                      <TableHead>{t('playerDetailPage.descriptionColumn')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -514,7 +543,7 @@ export default function PlayerDetailsPage() {
                   </TableBody>
                 </Table>
               ) : (
-                <div className="text-center p-8 text-muted-foreground">Keine Aktivitäten gefunden.</div>
+                <div className="text-center p-8 text-muted-foreground">{t('playerDetailPage.noActivity')}</div>
               )}
             </CardContent>
           </Card>
