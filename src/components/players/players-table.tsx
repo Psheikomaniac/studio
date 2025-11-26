@@ -14,6 +14,7 @@ import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 import { PlayerSparkline } from './player-sparkline';
 import { BalanceTooltip } from './balance-tooltip';
 import { PlayerActions } from './player-actions';
+import { useToast } from "@/hooks/use-toast";
 
 interface PlayersTableProps {
   players: Player[];
@@ -38,6 +39,28 @@ export function PlayersTable({
   onToggleStatus,
   emptyMessage = "No players."
 }: PlayersTableProps) {
+  const { toast } = useToast();
+
+  const handleNicknameDoubleClick = async (e: React.MouseEvent, name: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      await navigator.clipboard.writeText(name);
+      toast({
+        title: "Kopiert",
+        description: `"${name}" wurde in die Zwischenablage kopiert.`,
+      });
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: "Konnte nicht kopiert werden.",
+      });
+    }
+  };
+
   if (players.length === 0) {
     return (
       <div className="text-center p-8 text-muted-foreground">
@@ -96,7 +119,13 @@ export function PlayersTable({
                   )}
                 </div>
               </TableCell>
-              <TableCell>{player.nickname}</TableCell>
+              <TableCell
+                className="cursor-copy select-none"
+                onDoubleClick={(e) => handleNicknameDoubleClick(e, player.name)}
+                title="Doppelklick zum Kopieren des vollständigen Namens"
+              >
+                {player.nickname}
+              </TableCell>
               <TableCell>
                 {lastActivity ? <SafeLocaleDate dateString={lastActivity} /> : '-'}
               </TableCell>
@@ -105,13 +134,12 @@ export function PlayersTable({
                 <PlayerSparkline data={paymentSparklineByUser.get(player.id) || []} />
               </TableCell>
               <TableCell
-                className={`text-right font-semibold ${
-                  balance > 0
+                className={`text-right font-semibold ${balance > 0
                     ? 'text-positive'
                     : balance < 0
                       ? 'text-destructive'
                       : 'text-foreground'
-                }`}
+                  }`}
               >
                 <BalanceTooltip
                   breakdown={balanceBreakdownByUser.get(player.id)}
