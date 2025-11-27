@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, AlertCircle } from 'lucide-react';
+import { PlusCircle, AlertCircle, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,6 +21,7 @@ import { usePlayerBalances } from '@/hooks/use-player-balances';
 import { usePlayerStats } from '@/hooks/use-player-stats';
 import { dues as staticDues } from '@/lib/static-data';
 import { useTranslation } from 'react-i18next';
+import { formatEuro } from '@/lib/csv-utils';
 
 export default function PlayersPage() {
   const { t } = useTranslation();
@@ -175,6 +176,43 @@ export default function PlayersPage() {
     }
   };
 
+  const handleCopyDebtorsClick = async () => {
+    try {
+      const allPlayers = players ?? [];
+      // Nur Spieler mit offenem Betrag (Schulden) berücksichtigen: balance < 0
+      const debtors = allPlayers.filter((p) => (p.balance ?? 0) < 0);
+
+      if (debtors.length === 0) {
+        toast({
+          title: 'Keine Schulden',
+          description: 'Es gibt aktuell keine Spieler mit offenem Betrag.',
+        });
+        return;
+      }
+
+      const lines = debtors.map((p) => {
+        const amount = Math.abs(p.balance ?? 0);
+        return `${p.name}: ${formatEuro(amount)}!`;
+      });
+
+      const text = lines.join('\n');
+
+      await navigator.clipboard.writeText(text);
+
+      toast({
+        title: 'Kopiert',
+        description: 'Übersicht der offenen Beträge wurde in die Zwischenablage kopiert.',
+      });
+    } catch (err) {
+      console.error('Failed to copy debtors summary:', err);
+      toast({
+        variant: 'destructive',
+        title: 'Fehler',
+        description: 'Konnte die Übersicht nicht in die Zwischenablage kopieren.',
+      });
+    }
+  };
+
 
   const activePlayers = (players ?? []).filter((p) => p.active !== false);
   const inactivePlayers = (players ?? []).filter((p) => p.active === false);
@@ -236,8 +274,17 @@ export default function PlayersPage() {
             </Button>
           </div>
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between gap-2">
               <CardTitle>{t('playersPage.activePlayers')}</CardTitle>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleCopyDebtorsClick}
+                title="Alle Spieler mit offenen Beträgen in die Zwischenablage kopieren"
+              >
+                <ClipboardList className="h-4 w-4" />
+                <span className="sr-only">Offene Beträge kopieren</span>
+              </Button>
             </CardHeader>
             <CardContent>
               <PlayersTable
