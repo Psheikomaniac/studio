@@ -22,6 +22,10 @@ import { usePlayerStats } from '@/hooks/use-player-stats';
 import { dues as staticDues } from '@/lib/static-data';
 import { useTranslation } from 'react-i18next';
 import { formatEuro } from '@/lib/csv-utils';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+type PlayerSortKey = 'balanceAsc' | 'balanceDesc' | 'nameAsc' | 'lastActivityDesc';
 
 export default function PlayersPage() {
   const { t } = useTranslation();
@@ -59,15 +63,48 @@ export default function PlayersPage() {
     dues
   );
 
-  // Update players with correct calculated balances from balanceBreakdownByUser
+  const [sortKey, setSortKey] = useState<PlayerSortKey>('balanceAsc');
+
+  // Update players with correct calculated balances from balanceBreakdownByUser and apply selected sorting
   const players = useMemo(() => {
     if (!playersData) return [];
 
-    return playersData.map(player => ({
+    const withBalance = playersData.map(player => ({
       ...player,
       balance: balanceBreakdownByUser.get(player.id)?.balance || 0
-    })).sort((a, b) => a.balance - b.balance);
-  }, [playersData, balanceBreakdownByUser]);
+    }));
+
+    const sorted = [...withBalance];
+
+    sorted.sort((a, b) => {
+      switch (sortKey) {
+        case 'balanceAsc':
+          // Schulden zuerst (negativ → positiv)
+          return a.balance - b.balance;
+        case 'balanceDesc':
+          // Guthaben zuerst (positiv → negativ)
+          return b.balance - a.balance;
+        case 'nameAsc':
+          return a.name.localeCompare(b.name, 'de', { sensitivity: 'base' });
+        case 'lastActivityDesc': {
+          const aLast = lastActivityByUser.get(a.id);
+          const bLast = lastActivityByUser.get(b.id);
+
+          if (!aLast && !bLast) return 0;
+          if (!aLast) return 1;
+          if (!bLast) return -1;
+
+          const aTime = new Date(aLast).getTime();
+          const bTime = new Date(bLast).getTime();
+          return bTime - aTime;
+        }
+        default:
+          return a.balance - b.balance;
+      }
+    });
+
+    return sorted;
+  }, [playersData, balanceBreakdownByUser, sortKey, lastActivityByUser]);
 
   // Determine overall loading state
   const isLoading = playersLoading || finesLoading || paymentsLoading ||
@@ -274,17 +311,38 @@ export default function PlayersPage() {
             </Button>
           </div>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-2">
+            <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle>{t('playersPage.activePlayers')}</CardTitle>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleCopyDebtorsClick}
-                title="Alle Spieler mit offenen Beträgen in die Zwischenablage kopieren"
-              >
-                <ClipboardList className="h-4 w-4" />
-                <span className="sr-only">Offene Beträge kopieren</span>
-              </Button>
+              <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="players-sort" className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+                    {t('playersPage.sort.label')}
+                  </Label>
+                  <Select
+                    value={sortKey}
+                    onValueChange={(value) => setSortKey(value as PlayerSortKey)}
+                  >
+                    <SelectTrigger id="players-sort" className="h-8 w-[210px]" suppressHydrationWarning>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="balanceAsc">{t('playersPage.sort.balanceAsc')}</SelectItem>
+                      <SelectItem value="balanceDesc">{t('playersPage.sort.balanceDesc')}</SelectItem>
+                      <SelectItem value="nameAsc">{t('playersPage.sort.nameAsc')}</SelectItem>
+                      <SelectItem value="lastActivityDesc">{t('playersPage.sort.lastActivityDesc')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleCopyDebtorsClick}
+                  title="Alle Spieler mit offenen Beträgen in die Zwischenablage kopieren"
+                >
+                  <ClipboardList className="h-4 w-4" />
+                  <span className="sr-only">Offene Beträge kopieren</span>
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <PlayersTable

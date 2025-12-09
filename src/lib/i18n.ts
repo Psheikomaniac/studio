@@ -253,6 +253,13 @@ const resources = {
                 "addPlayer": "Add Player",
                 "activePlayers": "Active Players",
                 "inactivePlayers": "Inactive Players",
+                "sort": {
+                    "label": "Sorting",
+                    "balanceAsc": "Balance (debtors first)",
+                    "balanceDesc": "Balance (creditors first)",
+                    "nameAsc": "Name (A–Z)",
+                    "lastActivityDesc": "Last activity (newest first)"
+                },
                 "errorLoadingTitle": "Error Loading Players",
                 "errorLoadingDesc": "Failed to load players. Please try again later.",
                 "emptyActive": "No active players.",
@@ -593,6 +600,13 @@ const resources = {
                 "addPlayer": "Spieler hinzufügen",
                 "activePlayers": "Aktive Spieler",
                 "inactivePlayers": "Inaktive Spieler",
+                "sort": {
+                    "label": "Sortierung",
+                    "balanceAsc": "Kontostand (Schulden zuerst)",
+                    "balanceDesc": "Kontostand (Guthaben zuerst)",
+                    "nameAsc": "Name (A–Z)",
+                    "lastActivityDesc": "Letzte Aktivität (neueste zuerst)"
+                },
                 "errorLoadingTitle": "Fehler beim Laden der Spieler",
                 "errorLoadingDesc": "Spieler konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
                 "emptyActive": "Keine aktiven Spieler.",
