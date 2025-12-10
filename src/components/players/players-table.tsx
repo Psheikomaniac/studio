@@ -1,3 +1,4 @@
+import React from 'react';
 import Image from 'next/image';
 import {
   Table,
@@ -15,6 +16,7 @@ import { PlayerSparkline } from './player-sparkline';
 import { BalanceTooltip } from './balance-tooltip';
 import { PlayerActions } from './player-actions';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export type PlayersTableSortableColumn =
   | 'name'
@@ -59,6 +61,7 @@ export function PlayersTable({
   onSortChange,
 }: PlayersTableProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const renderSortIndicator = (column: PlayersTableSortableColumn) => {
     if (!sortState) return null;
@@ -79,15 +82,15 @@ export function PlayersTable({
     try {
       await navigator.clipboard.writeText(name);
       toast({
-        title: "Kopiert",
-        description: `"${name}" wurde in die Zwischenablage kopiert.`,
+        title: t('playersPage.nicknameCopyToast.title'),
+        description: t('playersPage.nicknameCopyToast.description', { name }),
       });
     } catch (err) {
       console.error('Failed to copy:', err);
       toast({
         variant: "destructive",
-        title: "Fehler",
-        description: "Konnte nicht kopiert werden.",
+        title: t('playersPage.nicknameCopyToast.errorTitle'),
+        description: t('playersPage.nicknameCopyToast.errorDesc'),
       });
     }
   };
@@ -105,7 +108,7 @@ export function PlayersTable({
       <TableHeader>
         <TableRow>
           <TableHead className="hidden w-[100px] sm:table-cell">
-            <span className="sr-only">Image</span>
+            <span className="sr-only">{t('playersPage.table.image')}</span>
           </TableHead>
           <TableHead>
             <button
@@ -113,7 +116,7 @@ export function PlayersTable({
               className="flex items-center gap-1 cursor-pointer select-none"
               onClick={() => onSortChange && onSortChange('name')}
             >
-              <span>Name</span>
+              <span>{t('playersPage.table.name')}</span>
               {renderSortIndicator('name')}
             </button>
           </TableHead>
@@ -123,7 +126,7 @@ export function PlayersTable({
               className="flex items-center gap-1 cursor-pointer select-none"
               onClick={() => onSortChange && onSortChange('nickname')}
             >
-              <span>Nickname</span>
+              <span>{t('playersPage.table.nickname')}</span>
               {renderSortIndicator('nickname')}
             </button>
           </TableHead>
@@ -133,7 +136,7 @@ export function PlayersTable({
               className="flex items-center gap-1 cursor-pointer select-none"
               onClick={() => onSortChange && onSortChange('lastActivity')}
             >
-              <span>Last Activity</span>
+              <span>{t('playersPage.table.lastActivity')}</span>
               {renderSortIndicator('lastActivity')}
             </button>
           </TableHead>
@@ -143,7 +146,7 @@ export function PlayersTable({
               className="flex items-center gap-1 cursor-pointer select-none"
               onClick={() => onSortChange && onSortChange('beverages')}
             >
-              <span>Beverages</span>
+              <span>{t('playersPage.table.beverages')}</span>
               {renderSortIndicator('beverages')}
             </button>
           </TableHead>
@@ -153,7 +156,7 @@ export function PlayersTable({
               className="flex items-center gap-1 cursor-pointer select-none"
               onClick={() => onSortChange && onSortChange('payments')}
             >
-              <span>Payments (6m)</span>
+              <span>{t('playersPage.table.payments')}</span>
               {renderSortIndicator('payments')}
             </button>
           </TableHead>
@@ -166,12 +169,12 @@ export function PlayersTable({
               className="flex items-center justify-end gap-1 w-full cursor-pointer select-none"
               onClick={() => onSortChange && onSortChange('balance')}
             >
-              <span>Balance</span>
+              <span>{t('playersPage.table.balance')}</span>
               {renderSortIndicator('balance')}
             </button>
           </TableHead>
           <TableHead className="w-[140px] text-right">
-            <span className="sr-only">Actions</span>
+            <span className="sr-only">{t('playersPage.table.actions')}</span>
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -200,10 +203,14 @@ export function PlayersTable({
                 <div className="flex items-center gap-2">
                   <a href={`/players/${player.id}`} className="hover:underline">{player.name}</a>
                   {showInactiveBadge && (
-                    <Badge variant="outline" className="bg-zinc-100 text-zinc-700 border-zinc-300">Inaktiv</Badge>
+                    <Badge variant="outline" className="bg-zinc-100 text-zinc-700 border-zinc-300">
+                      {t('playersPage.table.inactiveBadge')}
+                    </Badge>
                   )}
                   {balance < -50 && (
-                    <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300">Risiko</Badge>
+                    <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300">
+                      {t('playersPage.table.riskBadge')}
+                    </Badge>
                   )}
                 </div>
               </TableCell>

@@ -288,8 +288,8 @@ export default function PlayersPage() {
 
       if (debtors.length === 0) {
         toast({
-          title: 'Keine Schulden',
-          description: 'Es gibt aktuell keine Spieler mit offenem Betrag.',
+          title: t('playersPage.copyDebtorsToast.noDebtorsTitle'),
+          description: t('playersPage.copyDebtorsToast.noDebtorsDesc'),
         });
         return;
       }
@@ -304,15 +304,15 @@ export default function PlayersPage() {
       await navigator.clipboard.writeText(text);
 
       toast({
-        title: 'Kopiert',
-        description: 'Übersicht der offenen Beträge wurde in die Zwischenablage kopiert.',
+        title: t('playersPage.copyDebtorsToast.successTitle'),
+        description: t('playersPage.copyDebtorsToast.successDesc'),
       });
     } catch (err) {
       console.error('Failed to copy debtors summary:', err);
       toast({
         variant: 'destructive',
-        title: 'Fehler',
-        description: 'Konnte die Übersicht nicht in die Zwischenablage kopieren.',
+        title: t('playersPage.copyDebtorsToast.errorTitle'),
+        description: t('playersPage.copyDebtorsToast.errorDesc'),
       });
     }
   };
@@ -384,10 +384,10 @@ export default function PlayersPage() {
                 variant="outline"
                 size="icon"
                 onClick={handleCopyDebtorsClick}
-                title="Alle Spieler mit offenen Beträgen in die Zwischenablage kopieren"
+                title={t('playersPage.copyDebtorsTitle')}
               >
                 <ClipboardList className="h-4 w-4" />
-                <span className="sr-only">Offene Beträge kopieren</span>
+                <span className="sr-only">{t('playersPage.copyDebtorsSrOnly')}</span>
               </Button>
             </CardHeader>
             <CardContent>

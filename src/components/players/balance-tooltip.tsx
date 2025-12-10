@@ -1,7 +1,8 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { formatEuro } from "@/lib/csv-utils";
+import { formatEuro } from '@/lib/csv-utils';
 import { BalanceBreakdown } from '@/hooks/use-player-balances';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 interface BalanceTooltipProps {
   breakdown?: BalanceBreakdown;
@@ -10,6 +11,7 @@ interface BalanceTooltipProps {
 
 export function BalanceTooltip({ breakdown, balance }: BalanceTooltipProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const g = breakdown?.guthaben ?? 0;
   const gr = breakdown?.guthabenRest ?? 0;
   const f = breakdown?.fines ?? 0;
@@ -23,15 +25,15 @@ export function BalanceTooltip({ breakdown, balance }: BalanceTooltipProps) {
     try {
       await navigator.clipboard.writeText(formatEuro(Math.abs(balance)));
       toast({
-        title: "Kopiert",
-        description: "Kontostand wurde in die Zwischenablage kopiert.",
+        title: t('playersPage.balanceTooltip.copyToast.title'),
+        description: t('playersPage.balanceTooltip.copyToast.description'),
       });
     } catch (err) {
       console.error('Failed to copy:', err);
       toast({
         variant: "destructive",
-        title: "Fehler",
-        description: "Konnte nicht kopiert werden.",
+        title: t('playersPage.balanceTooltip.copyToast.errorTitle'),
+        description: t('playersPage.balanceTooltip.copyToast.errorDesc'),
       });
     }
   };
@@ -49,12 +51,12 @@ export function BalanceTooltip({ breakdown, balance }: BalanceTooltipProps) {
         </TooltipTrigger>
         <TooltipContent side="top" align="end">
           <div className="text-xs">
-            <div className="font-medium mb-1">Berechnung</div>
-            <div className="mb-1">(offene Guthaben + offener Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)</div>
-            <div className="text-muted-foreground mb-1">Es werden nur offene (unbezahlte) Guthaben/Guthaben Rest sowie offene Restbeträge berücksichtigt.</div>
+            <div className="font-medium mb-1">{t('playersPage.balanceTooltip.title')}</div>
+            <div className="mb-1">{t('playersPage.balanceTooltip.formula')}</div>
+            <div className="text-muted-foreground mb-1">{t('playersPage.balanceTooltip.explanation')}</div>
             <div className="font-mono">
-              Guthaben (offen): {formatEuro(g)} • Guthaben Rest (offen): {formatEuro(gr)}<br />
-              Strafen (offen): {formatEuro(f)} • Beiträge (offen): {formatEuro(d)} • Getränke (offen): {formatEuro(b)}
+              {t('playersPage.balanceTooltip.guthabenOpen')}: {formatEuro(g)} • {t('playersPage.balanceTooltip.guthabenRestOpen')}: {formatEuro(gr)}<br />
+              {t('playersPage.balanceTooltip.finesOpen')}: {formatEuro(f)} • {t('playersPage.balanceTooltip.duesOpen')}: {formatEuro(d)} • {t('playersPage.balanceTooltip.beveragesOpen')}: {formatEuro(b)}
             </div>
           </div>
         </TooltipContent>

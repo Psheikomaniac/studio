@@ -282,6 +282,51 @@ const resources = {
                 "statusDeactivatedDesc": "{{name}} is now inactive.",
                 "statusErrorTitle": "Error",
                 "statusErrorDesc": "Failed to update player status.",
+                "copyDebtorsTitle": "Copy open balances to clipboard",
+                "copyDebtorsSrOnly": "Copy open balances",
+                "copyDebtorsToast": {
+                    "noDebtorsTitle": "No open balances",
+                    "noDebtorsDesc": "There are currently no players with open balances.",
+                    "successTitle": "Copied",
+                    "successDesc": "Overview of open balances has been copied to your clipboard.",
+                    "errorTitle": "Error",
+                    "errorDesc": "Could not copy the overview to your clipboard."
+                },
+                "nicknameCopyToast": {
+                    "title": "Copied",
+                    "description": "\"{{name}}\" has been copied to your clipboard.",
+                    "errorTitle": "Error",
+                    "errorDesc": "Could not copy the name to your clipboard."
+                },
+                "balanceTooltip": {
+                    "title": "Calculation",
+                    "formula": "(open credits + open remaining credits) - (open fines + open dues + open beverages)",
+                    "explanation": "Only open (unpaid) credits/remaining credits and open amounts are considered.",
+                    "guthabenOpen": "Credits (open)",
+                    "guthabenRestOpen": "Remaining credits (open)",
+                    "finesOpen": "Fines (open)",
+                    "duesOpen": "Dues (open)",
+                    "beveragesOpen": "Beverages (open)",
+                    "copyToast": {
+                        "title": "Copied",
+                        "description": "Balance has been copied to your clipboard.",
+                        "errorTitle": "Error",
+                        "errorDesc": "Could not copy balance to your clipboard."
+                    }
+                },
+                "table": {
+                    "image": "Image",
+                    "name": "Name",
+                    "nickname": "Nickname",
+                    "lastActivity": "Last Activity",
+                    "beverages": "Beverages",
+                    "payments": "Payments (6m)",
+                    "balance": "Balance",
+                    "actions": "Actions",
+                    "inactiveBadge": "Inactive",
+                    "riskBadge": "Risk",
+                    "empty": "No players."
+                },
                 "addEditDialog": {
                     "titleAdd": "Add New Player",
                     "titleEdit": "Edit Player",
@@ -629,6 +674,51 @@ const resources = {
                 "statusDeactivatedDesc": "{{name}} ist jetzt inaktiv.",
                 "statusErrorTitle": "Fehler",
                 "statusErrorDesc": "Spielerstatus konnte nicht aktualisiert werden.",
+                "copyDebtorsTitle": "Alle Spieler mit offenen Beträgen in die Zwischenablage kopieren",
+                "copyDebtorsSrOnly": "Offene Beträge kopieren",
+                "copyDebtorsToast": {
+                    "noDebtorsTitle": "Keine Schulden",
+                    "noDebtorsDesc": "Es gibt aktuell keine Spieler mit offenem Betrag.",
+                    "successTitle": "Kopiert",
+                    "successDesc": "Übersicht der offenen Beträge wurde in die Zwischenablage kopiert.",
+                    "errorTitle": "Fehler",
+                    "errorDesc": "Konnte die Übersicht nicht in die Zwischenablage kopieren."
+                },
+                "nicknameCopyToast": {
+                    "title": "Kopiert",
+                    "description": "\"{{name}}\" wurde in die Zwischenablage kopiert.",
+                    "errorTitle": "Fehler",
+                    "errorDesc": "Konnte Namen nicht kopieren."
+                },
+                "balanceTooltip": {
+                    "title": "Berechnung",
+                    "formula": "(offene Guthaben + offener Guthabenrest) - (offene Strafen + offene Beiträge + offene Getränke)",
+                    "explanation": "Es werden nur offene (unbezahlte) Guthaben/Guthabenreste sowie offene Restbeträge berücksichtigt.",
+                    "guthabenOpen": "Guthaben (offen)",
+                    "guthabenRestOpen": "Guthabenrest (offen)",
+                    "finesOpen": "Strafen (offen)",
+                    "duesOpen": "Beiträge (offen)",
+                    "beveragesOpen": "Getränke (offen)",
+                    "copyToast": {
+                        "title": "Kopiert",
+                        "description": "Kontostand wurde in die Zwischenablage kopiert.",
+                        "errorTitle": "Fehler",
+                        "errorDesc": "Konnte Kontostand nicht kopieren."
+                    }
+                },
+                "table": {
+                    "image": "Bild",
+                    "name": "Name",
+                    "nickname": "Spitzname",
+                    "lastActivity": "Letzte Aktivität",
+                    "beverages": "Getränke",
+                    "payments": "Zahlungen (6M)",
+                    "balance": "Kontostand",
+                    "actions": "Aktionen",
+                    "inactiveBadge": "Inaktiv",
+                    "riskBadge": "Risiko",
+                    "empty": "Keine Spieler."
+                },
                 "addEditDialog": {
                     "titleAdd": "Neuen Spieler hinzufügen",
                     "titleEdit": "Spieler bearbeiten",
