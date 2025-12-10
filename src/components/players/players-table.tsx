@@ -14,7 +14,22 @@ import { SafeLocaleDate } from '@/components/shared/safe-locale-date';
 import { PlayerSparkline } from './player-sparkline';
 import { BalanceTooltip } from './balance-tooltip';
 import { PlayerActions } from './player-actions';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from '@/hooks/use-toast';
+
+export type PlayersTableSortableColumn =
+  | 'name'
+  | 'nickname'
+  | 'lastActivity'
+  | 'beverages'
+  | 'payments'
+  | 'balance';
+
+export type PlayersTableSortDirection = 'asc' | 'desc';
+
+export interface PlayersTableSortState {
+  column: PlayersTableSortableColumn | 'id';
+  direction: PlayersTableSortDirection;
+}
 
 interface PlayersTableProps {
   players: Player[];
@@ -26,6 +41,8 @@ interface PlayersTableProps {
   onDelete: (player: Player) => void;
   onToggleStatus: (player: Player) => void;
   emptyMessage?: string;
+  sortState?: PlayersTableSortState | null;
+  onSortChange?: (column: PlayersTableSortableColumn) => void;
 }
 
 export function PlayersTable({
@@ -37,9 +54,23 @@ export function PlayersTable({
   onEdit,
   onDelete,
   onToggleStatus,
-  emptyMessage = "No players."
+  emptyMessage = 'No players.',
+  sortState,
+  onSortChange,
 }: PlayersTableProps) {
   const { toast } = useToast();
+
+  const renderSortIndicator = (column: PlayersTableSortableColumn) => {
+    if (!sortState) return null;
+    if (sortState.column === 'id') return null;
+    if (sortState.column !== column) return null;
+
+    return (
+      <span className="ml-1 text-xs" aria-hidden="true">
+        {sortState.direction === 'asc' ? '▲' : '▼'}
+      </span>
+    );
+  };
 
   const handleNicknameDoubleClick = async (e: React.MouseEvent, name: string) => {
     e.preventDefault();
@@ -76,12 +107,69 @@ export function PlayersTable({
           <TableHead className="hidden w-[100px] sm:table-cell">
             <span className="sr-only">Image</span>
           </TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Nickname</TableHead>
-          <TableHead>Last Activity</TableHead>
-          <TableHead>Beverages</TableHead>
-          <TableHead>Payments (6m)</TableHead>
-          <TableHead className="text-right" title="(offene Guthaben + offener Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)">Balance</TableHead>
+          <TableHead>
+            <button
+              type="button"
+              className="flex items-center gap-1 cursor-pointer select-none"
+              onClick={() => onSortChange && onSortChange('name')}
+            >
+              <span>Name</span>
+              {renderSortIndicator('name')}
+            </button>
+          </TableHead>
+          <TableHead>
+            <button
+              type="button"
+              className="flex items-center gap-1 cursor-pointer select-none"
+              onClick={() => onSortChange && onSortChange('nickname')}
+            >
+              <span>Nickname</span>
+              {renderSortIndicator('nickname')}
+            </button>
+          </TableHead>
+          <TableHead>
+            <button
+              type="button"
+              className="flex items-center gap-1 cursor-pointer select-none"
+              onClick={() => onSortChange && onSortChange('lastActivity')}
+            >
+              <span>Last Activity</span>
+              {renderSortIndicator('lastActivity')}
+            </button>
+          </TableHead>
+          <TableHead>
+            <button
+              type="button"
+              className="flex items-center gap-1 cursor-pointer select-none"
+              onClick={() => onSortChange && onSortChange('beverages')}
+            >
+              <span>Beverages</span>
+              {renderSortIndicator('beverages')}
+            </button>
+          </TableHead>
+          <TableHead>
+            <button
+              type="button"
+              className="flex items-center gap-1 cursor-pointer select-none"
+              onClick={() => onSortChange && onSortChange('payments')}
+            >
+              <span>Payments (6m)</span>
+              {renderSortIndicator('payments')}
+            </button>
+          </TableHead>
+          <TableHead
+            className="text-right"
+            title="(offene Guthaben + offener Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)"
+          >
+            <button
+              type="button"
+              className="flex items-center justify-end gap-1 w-full cursor-pointer select-none"
+              onClick={() => onSortChange && onSortChange('balance')}
+            >
+              <span>Balance</span>
+              {renderSortIndicator('balance')}
+            </button>
+          </TableHead>
           <TableHead className="w-[140px] text-right">
             <span className="sr-only">Actions</span>
           </TableHead>

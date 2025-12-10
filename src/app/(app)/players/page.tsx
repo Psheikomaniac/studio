@@ -14,18 +14,18 @@ import { Player } from '@/lib/types';
 import { usePlayers, usePlayersService } from '@/services/players.service';
 import { AddEditPlayerDialog } from '@/components/players/add-edit-player-dialog';
 import { DeletePlayerDialog } from '@/components/players/delete-player-dialog';
-import { useToast } from "@/hooks/use-toast";
-import { PlayersTable } from '@/components/players/players-table';
+import { useToast } from '@/hooks/use-toast';
+import {
+  PlayersTable,
+  PlayersTableSortState,
+  PlayersTableSortableColumn,
+} from '@/components/players/players-table';
 import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
 import { usePlayerBalances } from '@/hooks/use-player-balances';
 import { usePlayerStats } from '@/hooks/use-player-stats';
 import { dues as staticDues } from '@/lib/static-data';
 import { useTranslation } from 'react-i18next';
 import { formatEuro } from '@/lib/csv-utils';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-type PlayerSortKey = 'balanceAsc' | 'balanceDesc' | 'nameAsc' | 'lastActivityDesc';
 
 export default function PlayersPage() {
   const { t } = useTranslation();
@@ -63,7 +63,27 @@ export default function PlayersPage() {
     dues
   );
 
-  const [sortKey, setSortKey] = useState<PlayerSortKey>('balanceAsc');
+  const [sortState, setSortState] = useState<PlayersTableSortState>({
+    column: 'balance',
+    direction: 'asc',
+  });
+
+  const handleTableSortChange = (column: PlayersTableSortableColumn) => {
+    setSortState((prev) => {
+      if (!prev || prev.column !== column) {
+        // First click on a column -> sort ascending by that column
+        return { column, direction: 'asc' };
+      }
+
+      if (prev.direction === 'asc') {
+        // Second click on the same column -> sort descending
+        return { column, direction: 'desc' };
+      }
+
+      // Third click -> reset to ID sorting (base order)
+      return { column: 'id', direction: 'asc' };
+    });
+  };
 
   // Update players with correct calculated balances from balanceBreakdownByUser and apply selected sorting
   const players = useMemo(() => {
@@ -76,35 +96,82 @@ export default function PlayersPage() {
 
     const sorted = [...withBalance];
 
+    const currentSort = sortState ?? { column: 'balance', direction: 'asc' };
+
     sorted.sort((a, b) => {
-      switch (sortKey) {
-        case 'balanceAsc':
-          // Schulden zuerst (negativ → positiv)
-          return a.balance - b.balance;
-        case 'balanceDesc':
-          // Guthaben zuerst (positiv → negativ)
-          return b.balance - a.balance;
-        case 'nameAsc':
-          return a.name.localeCompare(b.name, 'de', { sensitivity: 'base' });
-        case 'lastActivityDesc': {
+      switch (currentSort.column) {
+        case 'name':
+          return currentSort.direction === 'asc'
+            ? a.name.localeCompare(b.name, 'de', { sensitivity: 'base' })
+            : b.name.localeCompare(a.name, 'de', { sensitivity: 'base' });
+        case 'nickname': {
+          const aNick = a.nickname || '';
+          const bNick = b.nickname || '';
+          return currentSort.direction === 'asc'
+            ? aNick.localeCompare(bNick, 'de', { sensitivity: 'base' })
+            : bNick.localeCompare(aNick, 'de', { sensitivity: 'base' });
+        }
+        case 'lastActivity': {
           const aLast = lastActivityByUser.get(a.id);
           const bLast = lastActivityByUser.get(b.id);
 
           if (!aLast && !bLast) return 0;
-          if (!aLast) return 1;
-          if (!bLast) return -1;
+          if (!aLast) return currentSort.direction === 'asc' ? 1 : -1;
+          if (!bLast) return currentSort.direction === 'asc' ? -1 : 1;
 
           const aTime = new Date(aLast).getTime();
           const bTime = new Date(bLast).getTime();
-          return bTime - aTime;
+
+          if (aTime === bTime) return 0;
+
+          return currentSort.direction === 'asc'
+            ? aTime - bTime
+            : bTime - aTime;
         }
+        case 'beverages': {
+          const aCount = beverageCountByUser.get(a.id) ?? 0;
+          const bCount = beverageCountByUser.get(b.id) ?? 0;
+
+          if (aCount === bCount) return 0;
+
+          return currentSort.direction === 'asc'
+            ? aCount - bCount
+            : bCount - aCount;
+        }
+        case 'payments': {
+          const aSeries = paymentSparklineByUser.get(a.id) || [];
+          const bSeries = paymentSparklineByUser.get(b.id) || [];
+
+          const aSum = aSeries.reduce((sum, value) => sum + value, 0);
+          const bSum = bSeries.reduce((sum, value) => sum + value, 0);
+
+          if (aSum === bSum) return 0;
+
+          return currentSort.direction === 'asc'
+            ? aSum - bSum
+            : bSum - aSum;
+        }
+        case 'balance': {
+          if (a.balance === b.balance) return 0;
+          return currentSort.direction === 'asc'
+            ? a.balance - b.balance
+            : b.balance - a.balance;
+        }
+        case 'id':
         default:
-          return a.balance - b.balance;
+          return a.id.localeCompare(b.id, 'de', { sensitivity: 'base' });
       }
     });
 
     return sorted;
-  }, [playersData, balanceBreakdownByUser, sortKey, lastActivityByUser]);
+  }, [
+    playersData,
+    balanceBreakdownByUser,
+    sortState,
+    lastActivityByUser,
+    beverageCountByUser,
+    paymentSparklineByUser,
+  ]);
 
   // Determine overall loading state
   const isLoading = playersLoading || finesLoading || paymentsLoading ||
@@ -311,38 +378,17 @@ export default function PlayersPage() {
             </Button>
           </div>
           <Card>
-            <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <CardHeader className="flex flex-row items-center justify-between gap-2">
               <CardTitle>{t('playersPage.activePlayers')}</CardTitle>
-              <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="players-sort" className="whitespace-nowrap text-xs font-medium text-muted-foreground">
-                    {t('playersPage.sort.label')}
-                  </Label>
-                  <Select
-                    value={sortKey}
-                    onValueChange={(value) => setSortKey(value as PlayerSortKey)}
-                  >
-                    <SelectTrigger id="players-sort" className="h-8 w-[210px]" suppressHydrationWarning>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="balanceAsc">{t('playersPage.sort.balanceAsc')}</SelectItem>
-                      <SelectItem value="balanceDesc">{t('playersPage.sort.balanceDesc')}</SelectItem>
-                      <SelectItem value="nameAsc">{t('playersPage.sort.nameAsc')}</SelectItem>
-                      <SelectItem value="lastActivityDesc">{t('playersPage.sort.lastActivityDesc')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleCopyDebtorsClick}
-                  title="Alle Spieler mit offenen Beträgen in die Zwischenablage kopieren"
-                >
-                  <ClipboardList className="h-4 w-4" />
-                  <span className="sr-only">Offene Beträge kopieren</span>
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleCopyDebtorsClick}
+                title="Alle Spieler mit offenen Beträgen in die Zwischenablage kopieren"
+              >
+                <ClipboardList className="h-4 w-4" />
+                <span className="sr-only">Offene Beträge kopieren</span>
+              </Button>
             </CardHeader>
             <CardContent>
               <PlayersTable
@@ -355,6 +401,8 @@ export default function PlayersPage() {
                 onDelete={handleDeleteClick}
                 onToggleStatus={handleToggleStatus}
                 emptyMessage={t('playersPage.emptyActive')}
+                sortState={sortState}
+                onSortChange={handleTableSortChange}
               />
             </CardContent>
           </Card>
@@ -374,6 +422,8 @@ export default function PlayersPage() {
                 onDelete={handleDeleteClick}
                 onToggleStatus={handleToggleStatus}
                 emptyMessage={t('playersPage.emptyInactive')}
+                sortState={sortState}
+                onSortChange={handleTableSortChange}
               />
             </CardContent>
           </Card>
