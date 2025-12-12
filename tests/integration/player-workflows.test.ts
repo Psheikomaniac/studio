@@ -14,6 +14,7 @@ import {
   clearCollection,
   seedTeamFine,
   seedTeamPayment,
+  seedTeam,
 } from './helpers/seed-data';
 import { createPlayer, createFine, createPayment } from './helpers/test-builders';
 import { getDocs, collection } from 'firebase/firestore';
@@ -31,6 +32,9 @@ describe('Integration: Player Workflows', () => {
 
     // Clean up before each test
     await clearCollection(firestore, 'teams');
+
+    // Ensure parent team doc exists so cleanup can reliably delete nested data in the in-memory mock.
+    await seedTeam(firestore, TEAM_ID);
   });
 
   describe('Player Creation Workflow', () => {

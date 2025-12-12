@@ -158,7 +158,8 @@ Jane Smith;Wasser;250;18-10-2024;STATUS_UNPAID`;
 
       // Verify beverages collection
       const beveragesSnapshot = await getDocs(collection(firestore, 'beverages'));
-      expect(beveragesSnapshot.size).toBe(2); // Beer and Wasser
+      // Beverages are normalized to categories (e.g. Beer + Wasser -> "Beer/Lemonade")
+      expect(beveragesSnapshot.size).toBe(1);
     });
 
     it('should import "Guthaben" as payment (credit)', async () => {
