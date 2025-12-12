@@ -15,6 +15,9 @@ export function TeamGuard({ children }: { children: React.ReactNode }) {
     if (!teamId && pathname !== '/onboarding') {
       router.push('/onboarding');
     }
+    if (teamId && pathname === '/onboarding') {
+      router.push('/dashboard');
+    }
   }, [isTeamLoading, teamId, pathname, router]);
 
   if (isTeamLoading) {
