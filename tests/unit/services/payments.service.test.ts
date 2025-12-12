@@ -4,7 +4,7 @@
  *
  * CRITICAL BUSINESS LOGIC TESTED:
  * - All payments are created with paid=true (they represent credits)
- * - Payments are stored in nested collections: /users/{userId}/payments/{paymentId}
+ * - Payments are stored in nested collections: /teams/{teamId}/players/{playerId}/payments/{paymentId}
  * - Transaction integrity for payment creation
  */
 
@@ -29,13 +29,14 @@ vi.mock('firebase/firestore', async () => {
 describe('PaymentsService', () => {
   let mockFirestore: Firestore;
   let service: PaymentsService;
-  const TEST_USER_ID = 'test-user-123';
+  const TEAM_ID = 'team-1';
+  const PLAYER_ID = 'player-1';
 
   beforeEach(() => {
     clearMockDocuments();
     vi.clearAllMocks();
     mockFirestore = createMockFirestore();
-    service = new PaymentsService(mockFirestore, TEST_USER_ID);
+    service = new PaymentsService(mockFirestore, TEAM_ID, PLAYER_ID);
   });
 
   afterEach(() => {
@@ -43,19 +44,21 @@ describe('PaymentsService', () => {
   });
 
   describe('Constructor', () => {
-    it('should initialize with firestore and userId for nested collection (Given-When-Then)', () => {
-      // Given: A mock Firestore instance and user ID
+    it('should initialize with firestore, teamId and playerId for nested collection (Given-When-Then)', () => {
+      // Given: A mock Firestore instance, teamId and playerId
       const firestore = createMockFirestore();
-      const userId = 'user-456';
+      const teamId = 'team-456';
+      const playerId = 'player-456';
 
       // When: Creating a new PaymentsService
-      const paymentsService = new PaymentsService(firestore, userId);
+      const paymentsService = new PaymentsService(firestore, teamId, playerId);
 
       // Then: Service should be initialized with correct nested collection path
       expect(paymentsService).toBeInstanceOf(PaymentsService);
       expect(paymentsService['firestore']).toBe(firestore);
-      expect(paymentsService['collectionName']).toBe(`users/${userId}/payments`);
-      expect(paymentsService['userId']).toBe(userId);
+      expect(paymentsService['collectionName']).toBe(`teams/${teamId}/players/${playerId}/payments`);
+      expect((paymentsService as any).teamId).toBe(teamId);
+      expect((paymentsService as any).playerId).toBe(playerId);
     });
   });
 
@@ -63,7 +66,7 @@ describe('PaymentsService', () => {
     it('should create payment with paid=true and paidAt timestamp (Given-When-Then)', async () => {
       // Given: Payment data without paid field
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 50,
         reason: 'Membership fee',
         date: '2024-01-15',
@@ -84,7 +87,7 @@ describe('PaymentsService', () => {
     it('should use runTransaction for payment creation to ensure atomicity (Given-When-Then)', async () => {
       // Given: Payment data
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 100,
         reason: 'Season payment',
         date: '2024-01-20',
@@ -101,7 +104,7 @@ describe('PaymentsService', () => {
     it('should create payment with custom ID when provided (Given-When-Then)', async () => {
       // Given: Payment data and custom ID
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 75,
         reason: 'Custom payment',
         date: '2024-01-25',
@@ -120,7 +123,7 @@ describe('PaymentsService', () => {
     it('should include createdBy and updatedBy when userId provided (Given-When-Then)', async () => {
       // Given: Payment data and userId option
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 60,
         reason: 'Tracked payment',
         date: '2024-01-30',
@@ -139,7 +142,7 @@ describe('PaymentsService', () => {
     it('should set paidAt to same timestamp as createdAt (Given-When-Then)', async () => {
       // Given: Payment data
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 45,
         reason: 'Timestamp test',
         date: '2024-02-01',
@@ -163,7 +166,7 @@ describe('PaymentsService', () => {
       mockFirestoreFunctions.runTransaction.mockRejectedValueOnce(error);
 
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 50,
         reason: 'Error payment',
         date: '2024-02-05',
@@ -181,7 +184,7 @@ describe('PaymentsService', () => {
     it('should handle various payment amounts including decimals (Given-When-Then)', async () => {
       // Given: Payment with decimal amount
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 123.45,
         reason: 'Decimal payment',
         date: '2024-02-10',
@@ -199,7 +202,7 @@ describe('PaymentsService', () => {
     it('should handle zero amount payments (Given-When-Then)', async () => {
       // Given: Payment with zero amount
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 0,
         reason: 'Zero payment',
         date: '2024-02-15',
@@ -219,7 +222,7 @@ describe('PaymentsService', () => {
     it('should create payment non-blocking with paid=true and return ID (Given-When-Then)', () => {
       // Given: Payment data
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 80,
         reason: 'Quick payment',
         date: '2024-02-20',
@@ -237,7 +240,7 @@ describe('PaymentsService', () => {
     it('should use custom ID for non-blocking create when provided (Given-When-Then)', () => {
       // Given: Payment data and custom ID
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 90,
         reason: 'Custom non-blocking',
         date: '2024-02-25',
@@ -254,7 +257,7 @@ describe('PaymentsService', () => {
     it('should set paid=true and paidAt in non-blocking create (Given-When-Then)', () => {
       // Given: Payment data
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 55,
         reason: 'Non-blocking paid',
         date: '2024-03-01',
@@ -270,7 +273,7 @@ describe('PaymentsService', () => {
     it('should include audit fields in non-blocking create when userId provided (Given-When-Then)', () => {
       // Given: Payment data and userId
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 65,
         reason: 'Tracked non-blocking',
         date: '2024-03-05',
@@ -294,9 +297,9 @@ describe('PaymentsService', () => {
         amount: 120,
       };
 
-      setMockDocument(`users/${TEST_USER_ID}/payments/${paymentId}`, {
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}/payments/${paymentId}`, {
           id: paymentId,
-          userId: TEST_USER_ID,
+          userId: PLAYER_ID,
           amount: 100,
           reason: 'Original reason',
           paid: true,
@@ -318,7 +321,7 @@ describe('PaymentsService', () => {
       };
       const userId = 'admin-update-789';
 
-      setMockDocument(`users/${TEST_USER_ID}/payments/${paymentId}`, {
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}/payments/${paymentId}`, {
           id: paymentId,
           amount: 100,
       });
@@ -385,10 +388,10 @@ describe('PaymentsService', () => {
       // Given: Payment ID to delete
       const paymentId = 'payment-hard-delete';
 
-      setMockDocument(`users/${TEST_USER_ID}/payments/${paymentId}`, {
-          id: paymentId,
-          amount: 100,
-          paid: true
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}/payments/${paymentId}`, {
+        id: paymentId,
+        amount: 100,
+        paid: true,
       });
 
       // When: Hard deleting payment
@@ -403,10 +406,10 @@ describe('PaymentsService', () => {
       // Given: Payment ID to soft delete
       const paymentId = 'payment-soft-delete';
 
-      setMockDocument(`users/${TEST_USER_ID}/payments/${paymentId}`, {
-          id: paymentId,
-          amount: 100,
-          paid: true,
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}/payments/${paymentId}`, {
+        id: paymentId,
+        amount: 100,
+        paid: true,
       });
 
       // When: Soft deleting payment
@@ -422,7 +425,7 @@ describe('PaymentsService', () => {
       const paymentId = 'payment-tracked-delete';
       const userId = 'admin-deleter';
 
-      setMockDocument(`users/${TEST_USER_ID}/payments/${paymentId}`, {
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}/payments/${paymentId}`, {
           id: paymentId,
           amount: 75,
       });
@@ -471,19 +474,19 @@ describe('PaymentsService', () => {
       // Then: Should return DocumentReference
       expect(paymentRef).toBeDefined();
       expect(paymentRef.id).toBe(paymentId);
-      expect(paymentRef.path).toContain(`users/${TEST_USER_ID}/payments`);
+      expect(paymentRef.path).toContain(`teams/${TEAM_ID}/players/${PLAYER_ID}/payments`);
     });
   });
 
   describe('getPaymentsCollectionRef', () => {
-    it('should return CollectionReference for user payments (Given-When-Then)', () => {
+    it('should return CollectionReference for player payments (Given-When-Then)', () => {
       // Given: PaymentsService instance
       // When: Getting collection reference
       const collectionRef = service.getPaymentsCollectionRef();
 
       // Then: Should return CollectionReference for nested collection
       expect(collectionRef).toBeDefined();
-      expect(collectionRef.path).toBe(`users/${TEST_USER_ID}/payments`);
+      expect(collectionRef.path).toBe(`teams/${TEAM_ID}/players/${PLAYER_ID}/payments`);
     });
   });
 
@@ -491,7 +494,7 @@ describe('PaymentsService', () => {
     it('should handle very large payment amounts (Given-When-Then)', async () => {
       // Given: Payment with very large amount
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 999999.99,
         reason: 'Large payment',
         date: '2024-03-10',
@@ -509,7 +512,7 @@ describe('PaymentsService', () => {
     it('should handle special characters in payment reason (Given-When-Then)', async () => {
       // Given: Payment with special characters
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 50,
         reason: 'Payment für Saison 2024/25 - Überweisung',
         date: '2024-03-15',
@@ -527,7 +530,7 @@ describe('PaymentsService', () => {
     it('should handle empty reason string (Given-When-Then)', async () => {
       // Given: Payment with empty reason
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 25,
         reason: '',
         date: '2024-03-20',
@@ -544,7 +547,7 @@ describe('PaymentsService', () => {
     it('should handle different date formats in payment (Given-When-Then)', async () => {
       // Given: Payment with ISO date string
       const paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt'> = {
-        userId: TEST_USER_ID,
+        userId: PLAYER_ID,
         amount: 35,
         reason: 'Date test',
         date: '2024-12-31T23:59:59.999Z',

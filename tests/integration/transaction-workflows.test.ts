@@ -10,12 +10,12 @@ import { PaymentsService } from '@/services/payments.service';
 import { BalanceService } from '@/services/balance.service';
 import { BeveragesService } from '@/services/beverages.service';
 import {
-  seedPlayer,
+  seedTeamPlayer,
   clearCollection,
-  seedPayment,
-  seedFine,
+  seedTeamPayment,
+  seedTeamFine,
   seedBeverage,
-  seedBeverageConsumption,
+  seedTeamBeverageConsumption,
 } from './helpers/seed-data';
 import {
   createPlayer,
@@ -29,6 +29,7 @@ import { getDocs, collection, runTransaction } from 'firebase/firestore';
 describe('Integration: Transaction Workflows', () => {
   let firestore: ReturnType<typeof getTestFirestore>;
   let balanceService: BalanceService;
+  const TEAM_ID = 'team-integration-1';
   const testPlayerId = 'test-player-1';
 
   beforeEach(async () => {
@@ -36,18 +37,18 @@ describe('Integration: Transaction Workflows', () => {
     balanceService = new BalanceService();
 
     // Clean up
-    await clearCollection(firestore, 'users');
+    await clearCollection(firestore, 'teams');
     await clearCollection(firestore, 'beverages');
 
     // Seed test player
     const player = createPlayer(testPlayerId).withName('Transaction Test Player').build();
-    await seedPlayer(firestore, player);
+    await seedTeamPlayer(firestore, TEAM_ID, player);
   });
 
   describe('Fine Creation with Auto-Payment', () => {
     it('should create unpaid fine when player has zero balance (Given-When-Then)', async () => {
       // Given: Player with zero balance
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
 
       // When: Creating a fine
       const result = await finesService.createFine(
@@ -69,7 +70,7 @@ describe('Integration: Transaction Workflows', () => {
 
     it('should auto-pay fine when player has sufficient balance', async () => {
       // Given: Player with balance of 100
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
 
       // When: Creating a fine of 10
       const result = await finesService.createFine(
@@ -91,7 +92,7 @@ describe('Integration: Transaction Workflows', () => {
 
     it('should partially pay fine when player has insufficient balance', async () => {
       // Given: Player with balance of 5
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
 
       // When: Creating a fine of 10
       const result = await finesService.createFine(
@@ -115,7 +116,7 @@ describe('Integration: Transaction Workflows', () => {
   describe('Payment Creation Workflow', () => {
     it('should create payment as always paid (credit)', async () => {
       // Given: Payment service for player
-      const paymentsService = new PaymentsService(firestore, testPlayerId);
+      const paymentsService = new PaymentsService(firestore, TEAM_ID, testPlayerId);
 
       // When: Creating a payment
       const result = await paymentsService.createPayment({
@@ -133,7 +134,7 @@ describe('Integration: Transaction Workflows', () => {
 
       // Verify in Firestore
       const paymentsSnapshot = await getDocs(
-        collection(firestore, `users/${testPlayerId}/payments`)
+        collection(firestore, `teams/${TEAM_ID}/players/${testPlayerId}/payments`)
       );
       expect(paymentsSnapshot.size).toBe(1);
       const paymentData = paymentsSnapshot.docs[0].data();
@@ -142,7 +143,7 @@ describe('Integration: Transaction Workflows', () => {
 
     it('should create multiple payments and retrieve them', async () => {
       // Given: Multiple payments
-      const paymentsService = new PaymentsService(firestore, testPlayerId);
+      const paymentsService = new PaymentsService(firestore, TEAM_ID, testPlayerId);
 
       await paymentsService.createPayment({
         userId: testPlayerId,
@@ -171,9 +172,9 @@ describe('Integration: Transaction Workflows', () => {
   describe('Fine Payment Status Toggle', () => {
     it('should toggle fine from unpaid to paid', async () => {
       // Given: An unpaid fine
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
       const fine = createFine(testPlayerId).withAmount(20).build();
-      await seedFine(firestore, testPlayerId, fine);
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine, teamId: TEAM_ID, userId: testPlayerId });
 
       // When: Toggling to paid
       const result = await finesService.toggleFinePaid(fine.id, true);
@@ -187,9 +188,9 @@ describe('Integration: Transaction Workflows', () => {
 
     it('should toggle fine from paid to unpaid', async () => {
       // Given: A paid fine
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
       const fine = createFine(testPlayerId).withAmount(20).paid().build();
-      await seedFine(firestore, testPlayerId, fine);
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine, teamId: TEAM_ID, userId: testPlayerId });
 
       // When: Toggling to unpaid
       const result = await finesService.toggleFinePaid(fine.id, false);
@@ -204,9 +205,9 @@ describe('Integration: Transaction Workflows', () => {
   describe('Fine Update Payment Status', () => {
     it('should apply additional payment to partially paid fine', async () => {
       // Given: A partially paid fine (10 EUR, 3 EUR already paid)
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
       const fine = createFine(testPlayerId).withAmount(10).partiallyPaid(3).build();
-      await seedFine(firestore, testPlayerId, fine);
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine, teamId: TEAM_ID, userId: testPlayerId });
 
       // When: Applying additional 4 EUR payment
       const result = await finesService.updateFinePayment(fine.id, 4);
@@ -220,9 +221,9 @@ describe('Integration: Transaction Workflows', () => {
 
     it('should mark fine as paid when additional payment completes it', async () => {
       // Given: A partially paid fine (10 EUR, 7 EUR already paid)
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
       const fine = createFine(testPlayerId).withAmount(10).partiallyPaid(7).build();
-      await seedFine(firestore, testPlayerId, fine);
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine, teamId: TEAM_ID, userId: testPlayerId });
 
       // When: Applying additional 5 EUR payment (more than remaining)
       const result = await finesService.updateFinePayment(fine.id, 5);
@@ -240,24 +241,24 @@ describe('Integration: Transaction Workflows', () => {
       // Given: Player with payments, fines, and beverages
       const payment1 = createPayment(testPlayerId).withAmount(100).build();
       const payment2 = createPayment(testPlayerId).withAmount(50).build();
-      await seedPayment(firestore, testPlayerId, payment1);
-      await seedPayment(firestore, testPlayerId, payment2);
+      await seedTeamPayment(firestore, TEAM_ID, testPlayerId, { ...payment1, teamId: TEAM_ID, userId: testPlayerId });
+      await seedTeamPayment(firestore, TEAM_ID, testPlayerId, { ...payment2, teamId: TEAM_ID, userId: testPlayerId });
 
       const fine1 = createFine(testPlayerId).withAmount(15).build(); // unpaid
       const fine2 = createFine(testPlayerId).withAmount(10).partiallyPaid(5).build(); // 5 remaining
-      await seedFine(firestore, testPlayerId, fine1);
-      await seedFine(firestore, testPlayerId, fine2);
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine1, teamId: TEAM_ID, userId: testPlayerId });
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine2, teamId: TEAM_ID, userId: testPlayerId });
 
       const beverage = createBeverage('bev1').withName('Beer').withPrice(3.5).build();
       await seedBeverage(firestore, beverage);
       const consumption = createBeverageConsumption(testPlayerId, beverage.id, beverage.name)
         .withAmount(3.5)
         .build();
-      await seedBeverageConsumption(firestore, testPlayerId, consumption);
+      await seedTeamBeverageConsumption(firestore, TEAM_ID, testPlayerId, { ...consumption, teamId: TEAM_ID, userId: testPlayerId });
 
       // When: Calculating balance
-      const paymentsService = new PaymentsService(firestore, testPlayerId);
-      const finesService = new FinesService(firestore, testPlayerId);
+      const paymentsService = new PaymentsService(firestore, TEAM_ID, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
 
       const paymentsResult = await paymentsService.getAll();
       const finesResult = await finesService.getAll();
@@ -277,14 +278,14 @@ describe('Integration: Transaction Workflows', () => {
     it('should calculate negative balance when debits exceed credits', async () => {
       // Given: Small payment and large fine
       const payment = createPayment(testPlayerId).withAmount(10).build();
-      await seedPayment(firestore, testPlayerId, payment);
+      await seedTeamPayment(firestore, TEAM_ID, testPlayerId, { ...payment, teamId: TEAM_ID, userId: testPlayerId });
 
       const fine = createFine(testPlayerId).withAmount(50).build();
-      await seedFine(firestore, testPlayerId, fine);
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine, teamId: TEAM_ID, userId: testPlayerId });
 
       // When: Calculating balance
-      const paymentsService = new PaymentsService(firestore, testPlayerId);
-      const finesService = new FinesService(firestore, testPlayerId);
+      const paymentsService = new PaymentsService(firestore, TEAM_ID, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
 
       const paymentsResult = await paymentsService.getAll();
       const finesResult = await finesService.getAll();
@@ -305,9 +306,9 @@ describe('Integration: Transaction Workflows', () => {
   describe('Transaction Integrity with Firestore Transactions', () => {
     it('should rollback on transaction failure', async () => {
       // Given: Initial state
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
       const initialFine = createFine(testPlayerId).withAmount(10).build();
-      await seedFine(firestore, testPlayerId, initialFine);
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...initialFine, teamId: TEAM_ID, userId: testPlayerId });
 
       // When: Attempting a transaction that will fail
       try {
@@ -333,11 +334,11 @@ describe('Integration: Transaction Workflows', () => {
 
     it('should commit all changes in successful transaction', async () => {
       // Given: Two fines to update
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
       const fine1 = createFine(testPlayerId, 'fine1').withAmount(10).build();
       const fine2 = createFine(testPlayerId, 'fine2').withAmount(15).build();
-      await seedFine(firestore, testPlayerId, fine1);
-      await seedFine(firestore, testPlayerId, fine2);
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine1, teamId: TEAM_ID, userId: testPlayerId });
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine2, teamId: TEAM_ID, userId: testPlayerId });
 
       // When: Updating both in a transaction
       await runTransaction(firestore, async (transaction) => {
@@ -360,9 +361,9 @@ describe('Integration: Transaction Workflows', () => {
   describe('Fine Deletion Workflow', () => {
     it('should soft delete a fine', async () => {
       // Given: An existing fine
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
       const fine = createFine(testPlayerId).withAmount(10).build();
-      await seedFine(firestore, testPlayerId, fine);
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine, teamId: TEAM_ID, userId: testPlayerId });
 
       // When: Soft deleting
       const result = await finesService.deleteFine(fine.id, { soft: true });
@@ -376,9 +377,9 @@ describe('Integration: Transaction Workflows', () => {
 
     it('should hard delete a fine', async () => {
       // Given: An existing fine
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
       const fine = createFine(testPlayerId).withAmount(10).build();
-      await seedFine(firestore, testPlayerId, fine);
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine, teamId: TEAM_ID, userId: testPlayerId });
 
       // When: Hard deleting
       const result = await finesService.deleteFine(fine.id, { soft: false });
@@ -394,7 +395,7 @@ describe('Integration: Transaction Workflows', () => {
   describe('Error Scenarios', () => {
     it('should handle updating non-existent fine', async () => {
       // Given: Non-existent fine ID
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
 
       // When: Attempting to update
       const result = await finesService.toggleFinePaid('non-existent', true);
@@ -406,7 +407,7 @@ describe('Integration: Transaction Workflows', () => {
 
     it('should handle applying payment to non-existent fine', async () => {
       // Given: Non-existent fine ID
-      const finesService = new FinesService(firestore, testPlayerId);
+      const finesService = new FinesService(firestore, TEAM_ID, testPlayerId);
 
       // When: Attempting to apply payment
       const result = await finesService.updateFinePayment('non-existent', 10);

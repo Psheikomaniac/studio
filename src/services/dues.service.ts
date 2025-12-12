@@ -382,11 +382,19 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
              throw new Error('Due payment not found');
         }
         const duePayment = docSnap.data() as DuePayment;
-        
-        transaction.delete(docRef);
-        
+
+        if (options.soft) {
+          transaction.update(docRef, {
+            deleted: true,
+            deletedAt: this.timestamp(),
+            ...(options.userId && { deletedBy: options.userId }),
+          } as any);
+        } else {
+          transaction.delete(docRef);
+        }
+
         if (!duePayment.exempt) {
-            transaction.update(userRef, { balance: increment(duePayment.amountDue) });
+          transaction.update(userRef, { balance: increment(duePayment.amountDue) });
         }
       });
       

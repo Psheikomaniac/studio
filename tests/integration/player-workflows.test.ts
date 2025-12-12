@@ -10,10 +10,10 @@ import { FinesService } from '@/services/fines.service';
 import { PaymentsService } from '@/services/payments.service';
 import { BalanceService } from '@/services/balance.service';
 import {
-  seedPlayer,
+  seedTeamPlayer,
   clearCollection,
-  seedFine,
-  seedPayment,
+  seedTeamFine,
+  seedTeamPayment,
 } from './helpers/seed-data';
 import { createPlayer, createFine, createPayment } from './helpers/test-builders';
 import { getDocs, collection } from 'firebase/firestore';
@@ -22,14 +22,15 @@ describe('Integration: Player Workflows', () => {
   let firestore: ReturnType<typeof getTestFirestore>;
   let playersService: PlayersService;
   let balanceService: BalanceService;
+  const TEAM_ID = 'team-integration-1';
 
   beforeEach(async () => {
     firestore = getTestFirestore();
-    playersService = new PlayersService(firestore);
+    playersService = new PlayersService(firestore, TEAM_ID);
     balanceService = new BalanceService();
 
     // Clean up before each test
-    await clearCollection(firestore, 'users');
+    await clearCollection(firestore, 'teams');
   });
 
   describe('Player Creation Workflow', () => {
@@ -55,9 +56,9 @@ describe('Integration: Player Workflows', () => {
       expect(result.data?.active).toBe(true); // Default value
 
       // Verify in Firestore
-      const usersSnapshot = await getDocs(collection(firestore, 'users'));
-      expect(usersSnapshot.size).toBe(1);
-      const userData = usersSnapshot.docs[0].data();
+      const playersSnapshot = await getDocs(collection(firestore, `teams/${TEAM_ID}/players`));
+      expect(playersSnapshot.size).toBe(1);
+      const userData = playersSnapshot.docs[0].data();
       expect(userData.name).toBe('John Doe');
       expect(userData.active).toBe(true);
     });
@@ -127,7 +128,7 @@ describe('Integration: Player Workflows', () => {
     it('should update player information', async () => {
       // Given: An existing player
       const player = createPlayer('player1').withName('Old Name').build();
-      await seedPlayer(firestore, player);
+      await seedTeamPlayer(firestore, TEAM_ID, player);
 
       // When: Updating the player's name
       const result = await playersService.updatePlayer(player.id, {
@@ -147,7 +148,7 @@ describe('Integration: Player Workflows', () => {
     it('should mark player as inactive', async () => {
       // Given: An active player
       const player = createPlayer('player1').withName('Active Player').build();
-      await seedPlayer(firestore, player);
+      await seedTeamPlayer(firestore, TEAM_ID, player);
 
       // When: Marking player as inactive
       const result = await playersService.updatePlayer(player.id, {
@@ -164,7 +165,7 @@ describe('Integration: Player Workflows', () => {
     it('should soft delete a player', async () => {
       // Given: An existing player
       const player = createPlayer('player1').withName('To Delete').build();
-      await seedPlayer(firestore, player);
+      await seedTeamPlayer(firestore, TEAM_ID, player);
 
       // When: Soft deleting the player
       const result = await playersService.deletePlayer(player.id, { soft: true });
@@ -181,7 +182,7 @@ describe('Integration: Player Workflows', () => {
     it('should hard delete a player', async () => {
       // Given: An existing player
       const player = createPlayer('player1').withName('To Delete Hard').build();
-      await seedPlayer(firestore, player);
+      await seedTeamPlayer(firestore, TEAM_ID, player);
 
       // When: Hard deleting the player
       const result = await playersService.deletePlayer(player.id, { soft: false });
@@ -210,14 +211,14 @@ describe('Integration: Player Workflows', () => {
       const playerId = createResult.data!.id;
 
       // When: Add a payment (credit)
-      const paymentsService = new PaymentsService(firestore, playerId);
+      const paymentsService = new PaymentsService(firestore, TEAM_ID, playerId);
       const payment = createPayment(playerId).withAmount(100).build();
-      await seedPayment(firestore, playerId, payment);
+      await seedTeamPayment(firestore, TEAM_ID, playerId, { ...payment, teamId: TEAM_ID, userId: playerId });
 
       // When: Add a fine (debit)
-      const finesService = new FinesService(firestore, playerId);
+      const finesService = new FinesService(firestore, TEAM_ID, playerId);
       const fine = createFine(playerId).withAmount(15).build();
-      await seedFine(firestore, playerId, fine);
+      await seedTeamFine(firestore, TEAM_ID, playerId, { ...fine, teamId: TEAM_ID, userId: playerId });
 
       // Then: Calculate balance
       const fines = await finesService.getAll();
@@ -268,7 +269,7 @@ describe('Integration: Player Workflows', () => {
     it('should handle concurrent updates to the same player', async () => {
       // Given: An existing player
       const player = createPlayer('player1').withName('Original').build();
-      await seedPlayer(firestore, player);
+      await seedTeamPlayer(firestore, TEAM_ID, player);
 
       // When: Multiple concurrent updates
       const updatePromises = [

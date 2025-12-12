@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { getTestFirestore } from './setup';
 import { onSnapshot, collection, query, orderBy } from 'firebase/firestore';
-import { seedPlayer, seedFine, clearCollection } from './helpers/seed-data';
+import { seedTeamPlayer, seedTeamFine, clearCollection } from './helpers/seed-data';
 import { createPlayer, createFine } from './helpers/test-builders';
 import { PlayersService } from '@/services/players.service';
 import { FinesService } from '@/services/fines.service';
@@ -14,19 +14,20 @@ import { FinesService } from '@/services/fines.service';
 describe('Integration: Real-time Sync', () => {
   let firestore: ReturnType<typeof getTestFirestore>;
   const testPlayerId = 'test-player-1';
+  const TEAM_ID = 'team-integration-1';
 
   beforeEach(async () => {
     firestore = getTestFirestore();
 
     // Clean up
-    await clearCollection(firestore, 'users');
+    await clearCollection(firestore, 'teams');
   });
 
   describe('Firestore Snapshot Listeners', () => {
     it('should receive real-time updates when player is added (Given-When-Then)', async () => {
       return new Promise<void>(async (resolve, reject) => {
         // Given: Listening to players collection
-        const playersQuery = query(collection(firestore, 'users'), orderBy('name', 'asc'));
+        const playersQuery = query(collection(firestore, `teams/${TEAM_ID}/players`), orderBy('name', 'asc'));
         let updateCount = 0;
 
         const unsubscribe = onSnapshot(
@@ -58,7 +59,7 @@ describe('Integration: Real-time Sync', () => {
           const player = createPlayer(testPlayerId)
             .withName('Real-time Test Player')
             .build();
-          await seedPlayer(firestore, player);
+          await seedTeamPlayer(firestore, TEAM_ID, player);
         }, 100);
 
         // Timeout to prevent hanging
@@ -73,10 +74,10 @@ describe('Integration: Real-time Sync', () => {
       return new Promise<void>(async (resolve, reject) => {
         // Given: Existing player and listener
         const player = createPlayer(testPlayerId).withName('Original Name').build();
-        await seedPlayer(firestore, player);
+        await seedTeamPlayer(firestore, TEAM_ID, player);
 
-        const playersService = new PlayersService(firestore);
-        const playersQuery = query(collection(firestore, 'users'));
+        const playersService = new PlayersService(firestore, TEAM_ID);
+        const playersQuery = query(collection(firestore, `teams/${TEAM_ID}/players`));
         let updateCount = 0;
 
         const unsubscribe = onSnapshot(
@@ -123,10 +124,10 @@ describe('Integration: Real-time Sync', () => {
       return new Promise<void>(async (resolve, reject) => {
         // Given: Existing player
         const player = createPlayer(testPlayerId).withName('To Delete').build();
-        await seedPlayer(firestore, player);
+        await seedTeamPlayer(firestore, TEAM_ID, player);
 
-        const playersService = new PlayersService(firestore);
-        const playersQuery = query(collection(firestore, 'users'));
+        const playersService = new PlayersService(firestore, TEAM_ID);
+        const playersQuery = query(collection(firestore, `teams/${TEAM_ID}/players`));
         let updateCount = 0;
 
         const unsubscribe = onSnapshot(
@@ -169,10 +170,10 @@ describe('Integration: Real-time Sync', () => {
       return new Promise<void>(async (resolve, reject) => {
         // Given: Player and listening to fines
         const player = createPlayer(testPlayerId).withName('Fines Test').build();
-        await seedPlayer(firestore, player);
+        await seedTeamPlayer(firestore, TEAM_ID, player);
 
         const finesQuery = query(
-          collection(firestore, `users/${testPlayerId}/fines`),
+          collection(firestore, `teams/${TEAM_ID}/players/${testPlayerId}/fines`),
           orderBy('date', 'desc')
         );
         let updateCount = 0;
@@ -204,7 +205,7 @@ describe('Integration: Real-time Sync', () => {
         // When: Adding a fine
         setTimeout(async () => {
           const fine = createFine(testPlayerId).withReason('Test Fine').build();
-          await seedFine(firestore, testPlayerId, fine);
+          await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine, teamId: TEAM_ID, userId: testPlayerId });
         }, 100);
 
         setTimeout(() => {
@@ -218,10 +219,10 @@ describe('Integration: Real-time Sync', () => {
       return new Promise<void>(async (resolve, reject) => {
         // Given: Two listeners on different collections
         const player = createPlayer(testPlayerId).withName('Multi Listener Test').build();
-        await seedPlayer(firestore, player);
+        await seedTeamPlayer(firestore, TEAM_ID, player);
 
-        const playersQuery = query(collection(firestore, 'users'));
-        const finesQuery = query(collection(firestore, `users/${testPlayerId}/fines`));
+        const playersQuery = query(collection(firestore, `teams/${TEAM_ID}/players`));
+        const finesQuery = query(collection(firestore, `teams/${TEAM_ID}/players/${testPlayerId}/fines`));
 
         let playersUpdates = 0;
         let finesUpdates = 0;
@@ -247,7 +248,7 @@ describe('Integration: Real-time Sync', () => {
         // When: Adding a fine
         setTimeout(async () => {
           const fine = createFine(testPlayerId).withAmount(10).build();
-          await seedFine(firestore, testPlayerId, fine);
+          await seedTeamFine(firestore, TEAM_ID, testPlayerId, { ...fine, teamId: TEAM_ID, userId: testPlayerId });
         }, 100);
 
         setTimeout(() => {
@@ -263,7 +264,7 @@ describe('Integration: Real-time Sync', () => {
     it('should stop receiving updates after unsubscribe', async () => {
       return new Promise<void>(async (resolve, reject) => {
         // Given: Listener that will be unsubscribed
-        const playersQuery = query(collection(firestore, 'users'));
+        const playersQuery = query(collection(firestore, `teams/${TEAM_ID}/players`));
         let updateCount = 0;
 
         const unsubscribe = onSnapshot(playersQuery, (snapshot) => {
@@ -279,7 +280,7 @@ describe('Integration: Real-time Sync', () => {
             // Then: Add a player - should not trigger callback
             setTimeout(async () => {
               const player = createPlayer('test').withName('Test').build();
-              await seedPlayer(firestore, player);
+              await seedTeamPlayer(firestore, TEAM_ID, player);
 
               // Wait a bit to ensure no callback
               setTimeout(() => {
@@ -305,7 +306,7 @@ describe('Integration: Real-time Sync', () => {
       return new Promise<void>((resolve, reject) => {
         // Given: Listener with invalid query (non-existent field)
         const invalidQuery = query(
-          collection(firestore, 'users'),
+          collection(firestore, `teams/${TEAM_ID}/players`),
           orderBy('nonExistentField')
         );
 
