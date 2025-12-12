@@ -3,7 +3,6 @@
 
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/components/theme-provider";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { I18nProvider } from "@/components/i18n-provider";
 import { cn } from '@/lib/utils'; // Keep cn for body class

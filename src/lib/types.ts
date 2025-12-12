@@ -1,4 +1,20 @@
+export type TeamRole = 'owner' | 'admin' | 'member';
 
+export interface Team {
+  id: string;
+  name: string;
+  ownerUid: string;
+  inviteCode?: string;
+  archived?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TeamMember {
+  uid: string;
+  role: TeamRole;
+  joinedAt: string;
+}
 
 export interface Player {
   id: string;
@@ -12,11 +28,17 @@ export interface Player {
   totalPaidPenalties: number;
   active?: boolean; // if false, player is inactive and should be hidden from assignment pickers
   notes?: string;
+  // Multi-tenancy
+  teamId?: string;
+  // Audit timestamps
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Fine {
   id: string;
   userId: string;
+  teamId?: string;
   reason: string;
   amount: number;
   date: string; // ISO string
@@ -42,12 +64,15 @@ export enum PaymentCategory {
 export interface Payment {
   id: string;
   userId: string;
+  teamId?: string;
   reason: string;
   category?: PaymentCategory;
   amount: number;
   date: string; // ISO string
   paid: boolean;
   paidAt?: string | null; // ISO string
+  createdAt?: string; // ISO string
+  updatedAt?: string; // ISO string
 }
 
 export interface Beverage {
@@ -59,6 +84,7 @@ export interface Beverage {
 export interface BeverageConsumption {
   id: string;
   userId: string;
+  teamId?: string;
   beverageId: string;
   beverageName: string;
   amount: number;           // Price of beverage
@@ -67,6 +93,7 @@ export interface BeverageConsumption {
   paidAt?: string | null;          // ISO string
   amountPaid?: number | null;      // Amount already paid (for partial payments)
   createdAt: string;        // ISO string
+  updatedAt?: string;       // ISO string
 }
 
 export interface Transaction {
@@ -92,6 +119,7 @@ export interface AuditLog {
 
 export interface Due {
   id: string;
+  teamId?: string;
   name: string;              // "Saison2526", "Meistershi", etc.
   amount: number;            // In EUR (converted from cents)
   createdAt: string;         // ISO string
@@ -103,6 +131,7 @@ export interface DuePayment {
   id: string;
   dueId: string;            // Links to Due.id
   userId: string;           // Links to Player.id
+  teamId?: string;
   userName: string;         // Player display name
   amountDue: number;
   paid: boolean;
@@ -110,4 +139,5 @@ export interface DuePayment {
   amountPaid?: number | null;      // Amount already paid (for partial payments)
   exempt: boolean;          // STATUS_EXEMPT from CSV
   createdAt: string;        // ISO string
+  updatedAt?: string;       // ISO string
 }

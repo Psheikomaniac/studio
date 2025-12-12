@@ -46,6 +46,10 @@ Siehe test-results/ für automatische Responsive‑Snapshots.
 - Standard‑Landing leitet auf /dashboard um.
 - Umgebungsvariablen: .env.local (siehe vorhandene Beispiel‑Keys).
 
+## Dokumentation
+
+- Mandantenfähigkeit (Teams) – Architektur & Datenschema, Security‑Rules‑Skizze, Migrationsplan: docs/PRD-Team-Tenancy.md
+
 ## Darkmode & Theme
 
 - Drei Modi: light, dark, system (Standard ist system).
