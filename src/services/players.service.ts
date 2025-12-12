@@ -27,8 +27,11 @@ import { setDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlo
  * Extends BaseFirebaseService to provide player-specific operations
  */
 export class PlayersService extends BaseFirebaseService<Player> {
-  constructor(firestore: Firestore) {
-    super(firestore, 'users');
+  constructor(
+    firestore: Firestore,
+    private teamId: string
+  ) {
+    super(firestore, `teams/${teamId}/players`);
   }
 
   /**
@@ -155,7 +158,7 @@ export class PlayersService extends BaseFirebaseService<Player> {
    * @returns DocumentReference for the player
    */
   getPlayerRef(playerId: string): DocumentReference {
-    return doc(this.firestore, 'users', playerId);
+    return doc(this.firestore, 'teams', this.teamId, 'players', playerId);
   }
 
   /**
@@ -163,7 +166,7 @@ export class PlayersService extends BaseFirebaseService<Player> {
    * @returns CollectionReference for players
    */
   getPlayersCollectionRef(): CollectionReference {
-    return collection(this.firestore, 'users');
+    return collection(this.firestore, `teams/${this.teamId}/players`);
   }
 }
 
@@ -176,12 +179,12 @@ export class PlayersService extends BaseFirebaseService<Player> {
  *   await playersService.createPlayer({ name: 'John Doe', ... });
  * }
  */
-export function usePlayersService(): PlayersService | null {
+export function usePlayersService(teamId: string | null | undefined): PlayersService | null {
   const firebase = useFirebaseOptional();
   return useMemo(() => {
-    if (!firebase?.firestore) return null;
-    return new PlayersService(firebase.firestore);
-  }, [firebase?.firestore]);
+    if (!firebase?.firestore || !teamId) return null;
+    return new PlayersService(firebase.firestore, teamId);
+  }, [firebase?.firestore, teamId]);
 }
 
 /**
@@ -190,14 +193,14 @@ export function usePlayersService(): PlayersService | null {
  * @example
  * const { data: players, isLoading, error } = usePlayers();
  */
-export function usePlayers() {
+export function usePlayers(teamId: string | null | undefined) {
   const firebase = useFirebaseOptional();
 
   const playersQuery = useMemoFirebase(() => {
-    if (!firebase?.firestore) return null;
-    const playersCol = collection(firebase.firestore, 'users');
+    if (!firebase?.firestore || !teamId) return null;
+    const playersCol = collection(firebase.firestore, `teams/${teamId}/players`);
     return query(playersCol, orderBy('name', 'asc'));
-  }, [firebase?.firestore]);
+  }, [firebase?.firestore, teamId]);
 
   return useCollection<Player>(playersQuery);
 }
@@ -209,13 +212,13 @@ export function usePlayers() {
  * @example
  * const { data: player, isLoading, error } = usePlayer(playerId);
  */
-export function usePlayer(playerId: string | null | undefined) {
+export function usePlayer(teamId: string | null | undefined, playerId: string | null | undefined) {
   const firebase = useFirebaseOptional();
 
   const playerRef = useMemoFirebase(() => {
-    if (!playerId || !firebase?.firestore) return null;
-    return doc(firebase.firestore, 'users', playerId);
-  }, [firebase?.firestore, playerId]);
+    if (!teamId || !playerId || !firebase?.firestore) return null;
+    return doc(firebase.firestore, 'teams', teamId, 'players', playerId);
+  }, [firebase?.firestore, teamId, playerId]);
 
   return useDoc<Player>(playerRef);
 }

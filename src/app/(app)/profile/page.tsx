@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '@/firebase/provider';
 import { usePlayer, usePlayersService } from '@/services/players.service';
+import { useTeam } from '@/team';
 import { updatePassword } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,8 +19,9 @@ import { formatCurrency } from '@/lib/utils';
 export default function ProfilePage() {
     const { t } = useTranslation();
     const { user: authUser } = useUser();
-    const { data: player, isLoading: isPlayerLoading } = usePlayer(authUser?.uid);
-    const playersService = usePlayersService();
+    const { teamId } = useTeam();
+    const { data: player, isLoading: isPlayerLoading } = usePlayer(teamId, authUser?.uid);
+    const playersService = usePlayersService(teamId);
     const { toast } = useToast();
 
     const [name, setName] = useState('');

@@ -1,6 +1,6 @@
 /**
  * PlayersService Unit Tests
- * Comprehensive tests for player CRUD operations with 100% coverage
+ * Comprehensive tests for player CRUD operations
  *
  * Test Strategy:
  * - All CRUD methods (create, read, update, delete)
@@ -30,12 +30,13 @@ vi.mock('firebase/firestore', async () => {
 describe('PlayersService', () => {
   let mockFirestore: Firestore;
   let service: PlayersService;
+  const teamId = 'team_1';
 
   beforeEach(() => {
     clearMockDocuments();
     vi.clearAllMocks();
     mockFirestore = createMockFirestore();
-    service = new PlayersService(mockFirestore);
+    service = new PlayersService(mockFirestore, teamId);
   });
 
   afterEach(() => {
@@ -48,12 +49,12 @@ describe('PlayersService', () => {
       const firestore = createMockFirestore();
 
       // When: Creating a new PlayersService
-      const playersService = new PlayersService(firestore);
+      const playersService = new PlayersService(firestore, teamId);
 
       // Then: Service should be initialized with correct collection
       expect(playersService).toBeInstanceOf(PlayersService);
       expect(playersService['firestore']).toBe(firestore);
-      expect(playersService['collectionName']).toBe('users');
+      expect(playersService['collectionName']).toBe(`teams/${teamId}/players`);
     });
   });
 
@@ -419,7 +420,8 @@ describe('PlayersService', () => {
 
       // Then: Should return CollectionReference
       expect(collectionRef).toBeDefined();
-      expect(collectionRef.id).toBe('users');
+      expect(collectionRef.id).toBe('players');
+      expect(collectionRef.path).toBe(`teams/${teamId}/players`);
     });
   });
 

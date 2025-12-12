@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Player } from '@/lib/types';
 import { usePlayers, usePlayersService } from '@/services/players.service';
+import { useTeam } from '@/team';
 import { AddEditPlayerDialog } from '@/components/players/add-edit-player-dialog';
 import { DeletePlayerDialog } from '@/components/players/delete-player-dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -29,10 +30,11 @@ import { formatEuro } from '@/lib/csv-utils';
 
 export default function PlayersPage() {
   const { t } = useTranslation();
+  const { teamId } = useTeam();
 
   // Firebase hooks for real-time data
-  const { data: playersData, isLoading: playersLoading, error } = usePlayers();
-  const playersService = usePlayersService();
+  const { data: playersData, isLoading: playersLoading, error } = usePlayers(teamId);
+  const playersService = usePlayersService(teamId);
 
   // Load all transaction data
   const { data: finesData, isLoading: finesLoading } = useAllFines();

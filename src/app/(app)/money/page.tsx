@@ -12,6 +12,7 @@ import { PlusCircle, Receipt, Wallet, Beer, Search, X, AlertCircle } from "lucid
 import { useToast } from "@/hooks/use-toast";
 import type { Player, Fine, Payment, Due, DuePayment, BeverageConsumption, PredefinedFine, Beverage } from "@/lib/types";
 import { usePlayers } from '@/services/players.service';
+import { useTeam } from '@/team';
 import { useMemoFirebase, useCollection } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
@@ -57,6 +58,7 @@ interface UnifiedTransaction {
 
 export default function MoneyPage() {
   const { t } = useTranslation();
+  const { teamId } = useTeam();
 
   // Get Firebase instance (optional - may be null during SSR or if Firebase is disabled)
   const firebase = useFirebaseOptional();
@@ -67,7 +69,7 @@ export default function MoneyPage() {
   const [pageSize, setPageSize] = useState<number>(20);
 
   // Fetch all players and their transactions from Firebase (no per-page limits)
-  const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
+  const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers(teamId);
   const { data: finesData, isLoading: finesLoading } = useAllFines();
   const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments();
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();

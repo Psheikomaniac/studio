@@ -13,6 +13,7 @@ import type { Player, Fine, Payment, Due, DuePayment, BeverageConsumption, Prede
 import { Stats } from '@/components/dashboard/stats';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { usePlayers } from '@/services/players.service';
+import { useTeam } from '@/team';
 import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
 import {
   dues as staticDues,
@@ -49,8 +50,9 @@ interface UnifiedTransaction {
 
 export default function DashboardPage() {
   const { t } = useTranslation();
+  const { teamId } = useTeam();
   // Fetch all players and their transactions from Firebase
-  const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
+  const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers(teamId);
   const { data: finesData, isLoading: finesLoading } = useAllFines();
   const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments();
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();

@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SafeLocaleDate } from "@/components/shared/safe-locale-date";
 import type { Fine, Payment, DuePayment, BeverageConsumption } from "@/lib/types";
 import { usePlayer } from "@/services/players.service";
+import { useTeam } from "@/team";
 import { usePlayerFines } from "@/services/fines.service";
 import { usePlayerPayments } from "@/services/payments.service";
 import { usePlayerDuePayments } from "@/services/dues.service";
@@ -37,10 +38,11 @@ type ActivityItem = {
 
 export default function PlayerDetailsPage() {
   const { t } = useTranslation();
+  const { teamId } = useTeam();
   const params = useParams<{ id: string }>();
   const playerId = params?.id;
 
-  const { data: player, isLoading: playerLoading, error: playerError } = usePlayer(playerId);
+  const { data: player, isLoading: playerLoading, error: playerError } = usePlayer(teamId, playerId);
   const { data: fines, isLoading: finesLoading, error: finesError } = usePlayerFines(playerId);
   const { data: payments, isLoading: paymentsLoading, error: paymentsError } = usePlayerPayments(playerId);
   const { data: duePayments, isLoading: dueLoading, error: dueError } = usePlayerDuePayments(playerId);

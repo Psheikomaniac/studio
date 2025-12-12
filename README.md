@@ -45,6 +45,9 @@ Siehe test-results/ für automatische Responsive‑Snapshots.
 
 - Standard‑Landing leitet auf /dashboard um.
 - Umgebungsvariablen: .env.local (siehe vorhandene Beispiel‑Keys).
+- Mandantenfähigkeit (Teams): Spieler liegen nicht mehr global unter `/users`, sondern team‑scoped unter `/teams/{teamId}/players`.
+  - `teamId` wird im Client vom `TeamProvider` bereitgestellt (Persistenz via localStorage Key `currentTeamId`).
+  - Neue Nutzer:innen müssen das Onboarding (/onboarding) durchlaufen (Team erstellen oder per Invite‑Code beitreten).
 
 ## Dokumentation
 
