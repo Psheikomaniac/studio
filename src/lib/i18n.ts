@@ -325,7 +325,8 @@ const resources = {
                     "actions": "Actions",
                     "inactiveBadge": "Inactive",
                     "riskBadge": "Risk",
-                    "empty": "No players."
+                    "empty": "No players.",
+                    "imageAlt": "Avatar of {{name}}"
                 },
                 "addEditDialog": {
                     "titleAdd": "Add New Player",
@@ -717,7 +718,8 @@ const resources = {
                     "actions": "Aktionen",
                     "inactiveBadge": "Inaktiv",
                     "riskBadge": "Risiko",
-                    "empty": "Keine Spieler."
+                    "empty": "Keine Spieler.",
+                    "imageAlt": "Avatar von {{name}}"
                 },
                 "addEditDialog": {
                     "titleAdd": "Neuen Spieler hinzufügen",

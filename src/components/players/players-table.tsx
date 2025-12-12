@@ -42,6 +42,10 @@ interface PlayersTableProps {
   onEdit: (player: Player) => void;
   onDelete: (player: Player) => void;
   onToggleStatus: (player: Player) => void;
+  /**
+   * Optional leer-Text, wenn keine Spieler vorhanden sind.
+   * Falls nicht gesetzt, wird eine lokalisierte Standardnachricht verwendet.
+   */
   emptyMessage?: string;
   sortState?: PlayersTableSortState | null;
   onSortChange?: (column: PlayersTableSortableColumn) => void;
@@ -56,12 +60,14 @@ export function PlayersTable({
   onEdit,
   onDelete,
   onToggleStatus,
-  emptyMessage = 'No players.',
+  emptyMessage,
   sortState,
   onSortChange,
 }: PlayersTableProps) {
   const { toast } = useToast();
   const { t } = useTranslation();
+
+  const effectiveEmptyMessage = emptyMessage ?? t('playersPage.table.empty');
 
   const renderSortIndicator = (column: PlayersTableSortableColumn) => {
     if (!sortState) return null;
@@ -98,7 +104,7 @@ export function PlayersTable({
   if (players.length === 0) {
     return (
       <div className="text-center p-8 text-muted-foreground">
-        {emptyMessage}
+        {effectiveEmptyMessage}
       </div>
     );
   }
@@ -162,7 +168,7 @@ export function PlayersTable({
           </TableHead>
           <TableHead
             className="text-right"
-            title="(offene Guthaben + offener Guthaben Rest) - (offene Strafen + offene Beiträge + offene Getränke)"
+            title={t('playersPage.balanceTooltip.formula')}
           >
             <button
               type="button"
@@ -191,10 +197,15 @@ export function PlayersTable({
               <TableCell className="hidden sm:table-cell">
                 <a href={`/players/${player.id}`} className="inline-block">
                   <Image
-                    alt="Player image"
+                    alt={t('playersPage.table.imageAlt', { name: player.name })}
                     className="aspect-square rounded-full object-cover"
                     height="40"
-                    src={player.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=40&background=94a3b8&color=fff`}
+                    src={
+                      player.photoUrl ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        player.name,
+                      )}&size=40&background=94a3b8&color=fff`
+                    }
                     width="40"
                   />
                 </a>
