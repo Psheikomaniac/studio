@@ -38,8 +38,10 @@ import { generateId } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { useI18n } from "@/components/i18n-provider";
 import { useTranslation } from 'react-i18next';
+import { useTeam } from '@/team';
 
 export default function SettingsPage() {
+  const { teamId } = useTeam();
   const { t } = useTranslation();
   const { toast } = useToast();
   const { showLanguageName, setShowLanguageName } = useI18n();
@@ -56,10 +58,10 @@ export default function SettingsPage() {
   const firestore = firebase?.firestore ?? null;
 
   // Collection-group data for data quality & freshness
-  const { data: finesData } = useAllFines();
-  const { data: paymentsData } = useAllPayments();
+  const { data: finesData } = useAllFines({ teamId });
+  const { data: paymentsData } = useAllPayments({ teamId });
   const { data: duePaymentsData } = useAllDuePayments();
-  const { data: consumptionsData } = useAllBeverageConsumptions();
+  const { data: consumptionsData } = useAllBeverageConsumptions({ teamId });
 
   const fines = finesData || [];
   const payments = paymentsData || [];

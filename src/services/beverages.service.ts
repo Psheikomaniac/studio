@@ -3,7 +3,7 @@
  * Handles CRUD operations for beverage consumption with auto-payment logic and real-time hooks
  *
  * CRITICAL BUSINESS LOGIC:
- * - Beverage consumptions are stored in nested collections: /users/{userId}/beverageConsumptions/{consumptionId}
+ * - Beverage consumptions are stored in nested collections: /teams/{teamId}/players/{playerId}/beverageConsumptions/{consumptionId}
  * - Auto-payment logic applies player balance to new consumptions
  * - Supports partial payments via amountPaid field
  */
@@ -42,8 +42,12 @@ interface ConsumptionCreateOptions extends CreateOptions {
  * Provides consumption-specific operations with auto-payment logic
  */
 export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
-  constructor(firestore: Firestore, private userId: string) {
-    super(firestore, `users/${userId}/beverageConsumptions`);
+  constructor(
+    firestore: Firestore,
+    private teamId: string,
+    private playerId: string
+  ) {
+    super(firestore, `teams/${teamId}/players/${playerId}/beverageConsumptions`);
   }
 
   /**
@@ -89,6 +93,8 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
 
       const fullData = {
         ...consumptionData,
+        userId: this.playerId,
+        teamId: this.teamId,
         id,
         paid,
         paidAt,
@@ -98,11 +104,11 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
       } as BeverageConsumption;
 
       const docRef = this.getDocRef(id);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const playerRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
 
       await runTransaction(this.firestore, async (transaction) => {
         transaction.set(docRef, fullData);
-        transaction.update(userRef, { balance: increment(-fullData.amount) });
+        transaction.update(playerRef, { balance: increment(-fullData.amount) });
       });
 
       return {
@@ -151,6 +157,8 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
 
     const fullData = {
       ...consumptionData,
+      userId: this.playerId,
+      teamId: this.teamId,
       id,
       paid,
       paidAt,
@@ -180,7 +188,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
   ): Promise<ServiceResult<BeverageConsumption>> {
     try {
       const docRef = this.getDocRef(consumptionId);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const playerRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
       const now = this.timestamp();
 
       const updatedConsumption = await runTransaction(this.firestore, async (transaction) => {
@@ -203,7 +211,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
         };
 
         transaction.update(docRef, updateData);
-        transaction.update(userRef, { balance: increment(additionalPayment) });
+        transaction.update(playerRef, { balance: increment(additionalPayment) });
 
         return { ...currentConsumption, ...updateData };
       });
@@ -235,7 +243,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
   ): Promise<ServiceResult<BeverageConsumption>> {
     try {
       const docRef = this.getDocRef(consumptionId);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const playerRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
       const now = this.timestamp();
 
       const updatedConsumption = await runTransaction(this.firestore, async (transaction) => {
@@ -261,7 +269,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
 
         transaction.update(docRef, updateData);
         if (balanceChange !== 0) {
-             transaction.update(userRef, { balance: increment(balanceChange) });
+             transaction.update(playerRef, { balance: increment(balanceChange) });
         }
 
         return { ...currentConsumption, ...updateData };
@@ -354,7 +362,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
   ): Promise<ServiceResult<void>> {
     try {
       const docRef = this.getDocRef(consumptionId);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const playerRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
 
       await runTransaction(this.firestore, async (transaction) => {
         const docSnap = await transaction.get(docRef);
@@ -364,7 +372,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
         const consumption = docSnap.data() as BeverageConsumption;
         
         transaction.delete(docRef);
-        transaction.update(userRef, { balance: increment(consumption.amount) });
+        transaction.update(playerRef, { balance: increment(consumption.amount) });
       });
       
       return { success: true, data: undefined };
@@ -402,7 +410,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
    * @returns DocumentReference for the consumption
    */
   getConsumptionRef(consumptionId: string): DocumentReference {
-    return doc(this.firestore, `users/${this.userId}/beverageConsumptions`, consumptionId);
+    return doc(this.firestore, 'teams', this.teamId, 'players', this.playerId, 'beverageConsumptions', consumptionId);
   }
 
   /**
@@ -411,7 +419,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
    * @returns CollectionReference for user's consumptions
    */
   getConsumptionsCollectionRef(): CollectionReference {
-    return collection(this.firestore, `users/${this.userId}/beverageConsumptions`);
+    return collection(this.firestore, `teams/${this.teamId}/players/${this.playerId}/beverageConsumptions`);
   }
 }
 
@@ -426,13 +434,16 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
  *   await beveragesService.createConsumption({ beverageId: 'beer1', amount: 2.5, ... });
  * }
  */
-export function useBeveragesService(userId: string | null | undefined): BeveragesService | null {
+export function useBeveragesService(
+  teamId: string | null | undefined,
+  playerId: string | null | undefined
+): BeveragesService | null {
   const firebase = useFirebaseOptional();
 
   return useMemo(() => {
-    if (!userId || !firebase?.firestore) return null;
-    return new BeveragesService(firebase.firestore, userId);
-  }, [firebase?.firestore, userId]);
+    if (!teamId || !playerId || !firebase?.firestore) return null;
+    return new BeveragesService(firebase.firestore, teamId, playerId);
+  }, [firebase?.firestore, teamId, playerId]);
 }
 
 /**
@@ -443,14 +454,14 @@ export function useBeveragesService(userId: string | null | undefined): Beverage
  * @example
  * const { data: consumptions, isLoading, error } = usePlayerConsumptions(playerId);
  */
-export function usePlayerConsumptions(userId: string | null | undefined) {
+export function usePlayerConsumptions(teamId: string | null | undefined, playerId: string | null | undefined) {
   const firebase = useFirebaseOptional();
 
   const consumptionsQuery = useMemoFirebase(() => {
-    if (!userId || !firebase?.firestore) return null;
-    const consumptionsCol = collection(firebase.firestore, `users/${userId}/beverageConsumptions`);
+    if (!teamId || !playerId || !firebase?.firestore) return null;
+    const consumptionsCol = collection(firebase.firestore, `teams/${teamId}/players/${playerId}/beverageConsumptions`);
     return query(consumptionsCol, orderBy('date', 'desc'));
-  }, [firebase?.firestore, userId]);
+  }, [firebase?.firestore, teamId, playerId]);
 
   return useCollection<BeverageConsumption>(consumptionsQuery);
 }

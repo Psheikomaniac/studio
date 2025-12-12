@@ -70,10 +70,10 @@ export default function MoneyPage() {
 
   // Fetch all players and their transactions from Firebase (no per-page limits)
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers(teamId);
-  const { data: finesData, isLoading: finesLoading } = useAllFines();
-  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments();
+  const { data: finesData, isLoading: finesLoading } = useAllFines({ teamId });
+  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();
-  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions();
+  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ teamId });
 
   // Keep static data for catalogs (dues, predefined fines, beverages)
   const [dues] = useState<Due[]>(staticDues);
@@ -87,7 +87,7 @@ export default function MoneyPage() {
   const beverageConsumptions = consumptionsData || [];
 
   // Load dues metadata to filter archived/inactive dues
-  const duesQuery = useMemoFirebase(() => {
+const duesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'dues');
   }, [firestore]);
@@ -409,7 +409,8 @@ export default function MoneyPage() {
       // Update based on transaction type using Firebase services
       switch (transaction.type) {
         case 'fine': {
-          const finesService = new FinesService(firestore, transaction.userId);
+          if (!teamId) throw new Error('Team is not set');
+          const finesService = new FinesService(firestore, teamId, transaction.userId);
           await finesService.toggleFinePaid(transaction.id, newStatus);
           break;
         }
@@ -421,13 +422,15 @@ export default function MoneyPage() {
         }
 
         case 'beverage': {
-          const beveragesService = new BeveragesService(firestore, transaction.userId);
+          if (!teamId) throw new Error('Team is not set');
+          const beveragesService = new BeveragesService(firestore, teamId, transaction.userId);
           await beveragesService.toggleConsumptionPaid(transaction.id, newStatus);
           break;
         }
 
         case 'payment': {
-          const paymentsService = new PaymentsService(firestore, transaction.userId);
+          if (!teamId) throw new Error('Team is not set');
+          const paymentsService = new PaymentsService(firestore, teamId, transaction.userId);
           await paymentsService.togglePaymentPaid(transaction.id, newStatus);
           break;
         }

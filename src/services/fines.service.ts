@@ -42,8 +42,12 @@ interface FineCreateOptions extends CreateOptions {
  * Provides fine-specific operations with auto-payment logic
  */
 export class FinesService extends BaseFirebaseService<Fine> {
-  constructor(firestore: Firestore, private userId: string) {
-    super(firestore, `users/${userId}/fines`);
+  constructor(
+    firestore: Firestore,
+    private teamId: string,
+    private playerId: string
+  ) {
+    super(firestore, `teams/${teamId}/players/${playerId}/fines`);
   }
 
   /**
@@ -89,6 +93,8 @@ export class FinesService extends BaseFirebaseService<Fine> {
 
       const fullData = {
         ...fineData,
+        userId: this.playerId,
+        teamId: this.teamId,
         id,
         paid,
         paidAt,
@@ -99,11 +105,11 @@ export class FinesService extends BaseFirebaseService<Fine> {
       } as Fine;
 
       const docRef = this.getDocRef(id);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const playerRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
 
       await runTransaction(this.firestore, async (transaction) => {
         transaction.set(docRef, fullData);
-        transaction.update(userRef, { balance: increment(-fullData.amount) });
+        transaction.update(playerRef, { balance: increment(-fullData.amount) });
       });
 
       return {
@@ -152,6 +158,8 @@ export class FinesService extends BaseFirebaseService<Fine> {
 
     const fullData = {
       ...fineData,
+      userId: this.playerId,
+      teamId: this.teamId,
       id,
       paid,
       paidAt,
@@ -236,7 +244,7 @@ export class FinesService extends BaseFirebaseService<Fine> {
   ): Promise<ServiceResult<Fine>> {
     try {
       const docRef = this.getDocRef(fineId);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const playerRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
       const now = this.timestamp();
 
       const updatedFine = await runTransaction(this.firestore, async (transaction) => {
@@ -265,7 +273,7 @@ export class FinesService extends BaseFirebaseService<Fine> {
         transaction.update(docRef, updateData);
         
         if (balanceChange !== 0) {
-          transaction.update(userRef, { balance: increment(balanceChange) });
+          transaction.update(playerRef, { balance: increment(balanceChange) });
         }
 
         return { ...currentFine, ...updateData };
@@ -390,7 +398,7 @@ export class FinesService extends BaseFirebaseService<Fine> {
    * @returns DocumentReference for the fine
    */
   getFineRef(fineId: string): DocumentReference {
-    return doc(this.firestore, `users/${this.userId}/fines`, fineId);
+    return doc(this.firestore, 'teams', this.teamId, 'players', this.playerId, 'fines', fineId);
   }
 
   /**
@@ -399,7 +407,7 @@ export class FinesService extends BaseFirebaseService<Fine> {
    * @returns CollectionReference for user's fines
    */
   getFinesCollectionRef(): CollectionReference {
-    return collection(this.firestore, `users/${this.userId}/fines`);
+    return collection(this.firestore, `teams/${this.teamId}/players/${this.playerId}/fines`);
   }
 }
 
@@ -414,13 +422,16 @@ export class FinesService extends BaseFirebaseService<Fine> {
  *   await finesService.createFine({ reason: 'Late', amount: 5, ... });
  * }
  */
-export function useFinesService(userId: string | null | undefined): FinesService | null {
+export function useFinesService(
+  teamId: string | null | undefined,
+  playerId: string | null | undefined
+): FinesService | null {
   const firebase = useFirebaseOptional();
 
   return useMemo(() => {
-    if (!userId || !firebase?.firestore) return null;
-    return new FinesService(firebase.firestore, userId);
-  }, [firebase?.firestore, userId]);
+    if (!teamId || !playerId || !firebase?.firestore) return null;
+    return new FinesService(firebase.firestore, teamId, playerId);
+  }, [firebase?.firestore, teamId, playerId]);
 }
 
 /**
@@ -431,14 +442,14 @@ export function useFinesService(userId: string | null | undefined): FinesService
  * @example
  * const { data: fines, isLoading, error } = usePlayerFines(playerId);
  */
-export function usePlayerFines(userId: string | null | undefined) {
+export function usePlayerFines(teamId: string | null | undefined, playerId: string | null | undefined) {
   const firebase = useFirebaseOptional();
 
   const finesQuery = useMemoFirebase(() => {
-    if (!userId || !firebase?.firestore) return null;
-    const finesCol = collection(firebase.firestore, `users/${userId}/fines`);
+    if (!teamId || !playerId || !firebase?.firestore) return null;
+    const finesCol = collection(firebase.firestore, `teams/${teamId}/players/${playerId}/fines`);
     return query(finesCol, orderBy('date', 'desc'));
-  }, [firebase?.firestore, userId]);
+  }, [firebase?.firestore, teamId, playerId]);
 
   return useCollection<Fine>(finesQuery);
 }

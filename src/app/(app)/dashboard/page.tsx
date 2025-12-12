@@ -53,10 +53,10 @@ export default function DashboardPage() {
   const { teamId } = useTeam();
   // Fetch all players and their transactions from Firebase
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers(teamId);
-  const { data: finesData, isLoading: finesLoading } = useAllFines();
-  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments();
+  const { data: finesData, isLoading: finesLoading } = useAllFines({ teamId });
+  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();
-  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions();
+  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ teamId });
 
   // Keep static data for catalogs (dues, predefined fines, beverages)
   const [dues] = useState<Due[]>(staticDues);

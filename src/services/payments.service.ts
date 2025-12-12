@@ -3,7 +3,7 @@
  * Handles CRUD operations for payments with real-time hooks
  *
  * CRITICAL BUSINESS LOGIC:
- * - Payments are stored in nested collections: /users/{userId}/payments/{paymentId}
+ * - Payments are stored in nested collections: /teams/{teamId}/players/{playerId}/payments/{paymentId}
  * - All payments are always created with paid=true (they represent credits added to balance)
  * - Payments are never marked as unpaid
  */
@@ -34,8 +34,12 @@ import { setDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlo
  * Provides payment-specific operations
  */
 export class PaymentsService extends BaseFirebaseService<Payment> {
-  constructor(firestore: Firestore, private userId: string) {
-    super(firestore, `users/${userId}/payments`);
+  constructor(
+    firestore: Firestore,
+    private teamId: string,
+    private playerId: string
+  ) {
+    super(firestore, `teams/${teamId}/players/${playerId}/payments`);
   }
 
   /**
@@ -56,6 +60,8 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
 
       const fullData = {
         ...paymentData,
+        userId: this.playerId,
+        teamId: this.teamId,
         id,
         paid: true, // Payments are always paid (they are credits)
         paidAt: now,
@@ -65,12 +71,12 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
       } as Payment;
 
       const docRef = this.getDocRef(id);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const playerRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
 
       await runTransaction(this.firestore, async (transaction) => {
         transaction.set(docRef, fullData);
         if (fullData.paid) {
-          transaction.update(userRef, { balance: increment(fullData.amount) });
+          transaction.update(playerRef, { balance: increment(fullData.amount) });
         }
       });
 
@@ -103,6 +109,8 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
 
     const fullData = {
       ...paymentData,
+      userId: this.playerId,
+      teamId: this.teamId,
       id,
       paid: true,
       paidAt: now,
@@ -132,7 +140,7 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
   ): Promise<ServiceResult<Payment>> {
     try {
       const docRef = this.getDocRef(paymentId);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const playerRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
       const now = this.timestamp();
 
       const updatedPayment = await runTransaction(this.firestore, async (transaction) => {
@@ -156,7 +164,7 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
 
         transaction.update(docRef, updateData);
         if (diff !== 0) {
-          transaction.update(userRef, { balance: increment(diff) });
+          transaction.update(playerRef, { balance: increment(diff) });
         }
 
         return { ...current, ...updateData } as Payment;
@@ -204,7 +212,7 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
   ): Promise<ServiceResult<void>> {
     try {
       const docRef = this.getDocRef(paymentId);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const playerRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
 
       await runTransaction(this.firestore, async (transaction) => {
         const paymentDoc = await transaction.get(docRef);
@@ -216,7 +224,7 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
         transaction.delete(docRef);
 
         if (payment.paid) {
-          transaction.update(userRef, { balance: increment(-payment.amount) });
+          transaction.update(playerRef, { balance: increment(-payment.amount) });
         }
       });
 
@@ -258,7 +266,7 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
    * @returns DocumentReference for the payment
    */
   getPaymentRef(paymentId: string): DocumentReference {
-    return doc(this.firestore, `users/${this.userId}/payments`, paymentId);
+    return doc(this.firestore, 'teams', this.teamId, 'players', this.playerId, 'payments', paymentId);
   }
 
   /**
@@ -267,7 +275,7 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
    * @returns CollectionReference for user's payments
    */
   getPaymentsCollectionRef(): CollectionReference {
-    return collection(this.firestore, `users/${this.userId}/payments`);
+    return collection(this.firestore, `teams/${this.teamId}/players/${this.playerId}/payments`);
   }
   /**
    * Toggle payment paid status (mark as paid/unpaid)
@@ -284,7 +292,7 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
   ): Promise<ServiceResult<Payment>> {
     try {
       const docRef = this.getDocRef(paymentId);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const playerRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
       const now = this.timestamp();
 
       const updatedPayment = await runTransaction(this.firestore, async (transaction) => {
@@ -314,7 +322,7 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
         const balanceChange = paid ? currentPayment.amount : -currentPayment.amount;
 
         transaction.update(docRef, updateData);
-        transaction.update(userRef, { balance: increment(balanceChange) });
+        transaction.update(playerRef, { balance: increment(balanceChange) });
 
         return { ...currentPayment, ...updateData };
       });
@@ -343,13 +351,16 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
  *   await paymentsService.createPayment({ reason: 'Membership', amount: 50, ... });
  * }
  */
-export function usePaymentsService(userId: string | null | undefined): PaymentsService | null {
+export function usePaymentsService(
+  teamId: string | null | undefined,
+  playerId: string | null | undefined
+): PaymentsService | null {
   const firebase = useFirebaseOptional();
 
   return useMemo(() => {
-    if (!userId || !firebase?.firestore) return null;
-    return new PaymentsService(firebase.firestore, userId);
-  }, [firebase?.firestore, userId]);
+    if (!teamId || !playerId || !firebase?.firestore) return null;
+    return new PaymentsService(firebase.firestore, teamId, playerId);
+  }, [firebase?.firestore, teamId, playerId]);
 }
 
 /**
@@ -360,14 +371,14 @@ export function usePaymentsService(userId: string | null | undefined): PaymentsS
  * @example
  * const { data: payments, isLoading, error } = usePlayerPayments(playerId);
  */
-export function usePlayerPayments(userId: string | null | undefined) {
+export function usePlayerPayments(teamId: string | null | undefined, playerId: string | null | undefined) {
   const firebase = useFirebaseOptional();
 
   const paymentsQuery = useMemoFirebase(() => {
-    if (!userId || !firebase?.firestore) return null;
-    const paymentsCol = collection(firebase.firestore, `users/${userId}/payments`);
+    if (!teamId || !playerId || !firebase?.firestore) return null;
+    const paymentsCol = collection(firebase.firestore, `teams/${teamId}/players/${playerId}/payments`);
     return query(paymentsCol, orderBy('date', 'desc'));
-  }, [firebase?.firestore, userId]);
+  }, [firebase?.firestore, teamId, playerId]);
 
   return useCollection<Payment>(paymentsQuery);
 }

@@ -37,10 +37,10 @@ export default function PlayersPage() {
   const playersService = usePlayersService(teamId);
 
   // Load all transaction data
-  const { data: finesData, isLoading: finesLoading } = useAllFines();
-  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments();
+  const { data: finesData, isLoading: finesLoading } = useAllFines({ teamId });
+  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();
-  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions();
+  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ teamId });
 
   // Use Firebase data or empty arrays while loading
   const fines = finesData || [];
