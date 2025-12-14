@@ -55,7 +55,7 @@ export default function DashboardPage() {
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers(teamId);
   const { data: finesData, isLoading: finesLoading } = useAllFines({ teamId });
   const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
-  const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();
+  const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments({ teamId });
   const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ teamId });
 
   // Keep static data for catalogs (dues, predefined fines, beverages)

@@ -39,7 +39,7 @@ export default function PlayersPage() {
   // Load all transaction data
   const { data: finesData, isLoading: finesLoading } = useAllFines({ teamId });
   const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
-  const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();
+  const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments({ teamId });
   const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ teamId });
 
   // Use Firebase data or empty arrays while loading

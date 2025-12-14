@@ -68,19 +68,19 @@ export function useAllPayments(options?: { limit?: number; teamId?: string | nul
  */
 export function useAllDuePayments(options?: { limit?: number; teamId?: string | null }) {
   const firebase = useFirebaseOptional();
-  // NOTE: DuePayments are moved to team-scope in Arbeitspaket 7.
-  // Until then, we must not filter by teamId here or legacy data will disappear.
+  const teamId = options?.teamId;
 
   const duePaymentsQuery = useMemoFirebase(() => {
     if (!firebase?.firestore) return null;
     // Use collection group query to get all due payments from all users
     const duePaymentsGroup = collectionGroup(firebase.firestore, 'duePayments');
     const constraints = [
+      ...(teamId ? [where('teamId', '==', teamId)] : []),
       firestoreOrderBy('createdAt', 'desc'),
       ...(options?.limit ? [firestoreLimit(options.limit)] : []),
     ];
     return query(duePaymentsGroup, ...constraints);
-  }, [firebase?.firestore, options?.limit]);
+  }, [firebase?.firestore, options?.limit, teamId]);
 
   return useCollection<DuePayment>(duePaymentsQuery);
 }
