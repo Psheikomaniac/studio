@@ -7,6 +7,7 @@ import {
   onSnapshot,
   query,
   where,
+  orderBy,
   type Firestore,
 } from 'firebase/firestore';
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
@@ -56,7 +57,7 @@ function persistClubId(clubId: string | null) {
 function buildMembershipQuery(firestore: Firestore, uid: string) {
   // clubMembers docs are stored at: clubs/{clubId}/clubMembers/{uid}
   const membersGroup = collectionGroup(firestore, 'clubMembers');
-  return query(membersGroup, where('uid', '==', uid));
+  return query(membersGroup, where('uid', '==', uid), orderBy('joinedAt', 'desc'));
 }
 
 export function ClubProvider({ children }: { children: React.ReactNode }) {

@@ -7,6 +7,7 @@ import {
   onSnapshot,
   query,
   where,
+  orderBy,
   type Firestore,
 } from 'firebase/firestore';
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
@@ -59,7 +60,7 @@ function buildMembershipQuery(firestore: Firestore, uid: string) {
   // Note: We must query by 'uid' field, not documentId(), because collectionGroup
   // queries with documentId() require the full path, which we don't have here.
   const membersGroup = collectionGroup(firestore, 'teamMembers');
-  return query(membersGroup, where('uid', '==', uid));
+  return query(membersGroup, where('uid', '==', uid), orderBy('joinedAt', 'desc'));
 }
 
 export function TeamProvider({ children }: { children: React.ReactNode }) {

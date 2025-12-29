@@ -63,6 +63,22 @@
         { "fieldPath": "userId", "order": "ASCENDING" },
         { "fieldPath": "timestamp", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "teamMembers",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "uid", "order": "ASCENDING" },
+        { "fieldPath": "joinedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "clubMembers",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "uid", "order": "ASCENDING" },
+        { "fieldPath": "joinedAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -93,22 +109,6 @@
     {
       "collectionGroup": "duePayments",
       "fieldPath": "createdAt",
-      "indexes": [
-        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" },
-        { "order": "DESCENDING", "queryScope": "COLLECTION_GROUP" }
-      ]
-    },
-    {
-      "collectionGroup": "teamMembers",
-      "fieldPath": "uid",
-      "indexes": [
-        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" },
-        { "order": "DESCENDING", "queryScope": "COLLECTION_GROUP" }
-      ]
-    },
-    {
-      "collectionGroup": "clubMembers",
-      "fieldPath": "uid",
       "indexes": [
         { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" },
         { "order": "DESCENDING", "queryScope": "COLLECTION_GROUP" }
