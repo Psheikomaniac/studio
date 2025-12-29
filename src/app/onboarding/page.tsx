@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { TeamsService } from '@/services/teams.service';
 import { useTeam } from '@/team';
 import { useClub } from '@/club/club-provider';
@@ -21,8 +21,8 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const firebase = useFirebaseOptional();
-  const { teamId, isTeamLoading, setTeamId } = useTeam();
-  const { clubId, isClubLoading, setClubId } = useClub();
+  const { teamId, isTeamLoading, setTeamId, teamError } = useTeam();
+  const { clubId, isClubLoading, setClubId, clubError } = useClub();
   const { toast } = useToast();
 
   const [createClubName, setCreateClubName] = useState('');
@@ -156,6 +156,27 @@ export default function OnboardingPage() {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const error = clubError || teamError;
+  if (error) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center gap-4 bg-muted/40 p-4">
+        <AlertTriangle className="h-12 w-12 text-destructive" />
+        <h2 className="text-xl font-semibold">Ein Fehler ist aufgetreten</h2>
+        <p className="max-w-md text-center text-muted-foreground">
+          {error.message}
+        </p>
+        {error.message.includes('index') && (
+            <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                Datenbank-Index fehlt. Bitte Link in der Browser-Konsole prüfen.
+            </p>
+        )}
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          Neu laden
+        </Button>
       </div>
     );
   }

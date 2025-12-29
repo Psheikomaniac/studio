@@ -133,6 +133,7 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
         setIsTeamLoading(false);
       },
       (error) => {
+        console.error('TeamProvider Error:', error);
         setMemberships([]);
         setTeamIdState(null);
         setTeamError(error);

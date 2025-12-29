@@ -128,6 +128,7 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
         setIsClubLoading(false);
       },
       (error) => {
+        console.error('ClubProvider Error:', error);
         setMemberships([]);
         setClubIdState(null);
         setClubError(error);
