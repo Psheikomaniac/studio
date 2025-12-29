@@ -69,7 +69,8 @@
       "queryScope": "COLLECTION_GROUP",
       "fields": [
         { "fieldPath": "uid", "order": "ASCENDING" },
-        { "fieldPath": "joinedAt", "order": "DESCENDING" }
+        { "fieldPath": "joinedAt", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
       ]
     },
     {
@@ -77,7 +78,8 @@
       "queryScope": "COLLECTION_GROUP",
       "fields": [
         { "fieldPath": "uid", "order": "ASCENDING" },
-        { "fieldPath": "joinedAt", "order": "DESCENDING" }
+        { "fieldPath": "joinedAt", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
       ]
     }
   ],
