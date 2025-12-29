@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useUser } from '@/firebase/provider';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collectionGroup, query, where, limit, getDocs } from 'firebase/firestore';
 import { useFirebase } from '@/firebase/provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,21 +24,40 @@ export default function LoginPage() {
   const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   // Redirect if already logged in (but not if anonymous)
   useEffect(() => {
-    if (user && !isUserLoading) {
+    if (user && !isUserLoading && firestore) {
       if (user.isAnonymous) {
         // If we find an anonymous user on the login page, sign them out
         // This clears the "ghost" session
         signOut(auth).catch(err => console.error("Failed to sign out anonymous user", err));
       } else {
-        router.push('/dashboard');
+        setIsRedirecting(true);
+        const checkAndRedirect = async () => {
+          try {
+            // Check if user has any team membership
+            const q = query(collectionGroup(firestore, 'teamMembers'), where('uid', '==', user.uid), limit(1));
+            const snap = await getDocs(q);
+
+            if (snap.empty) {
+              router.push('/onboarding');
+            } else {
+              router.push('/dashboard');
+            }
+          } catch (error) {
+            console.error("Redirect check failed", error);
+            // Fallback to dashboard
+            router.push('/dashboard');
+          }
+        };
+        checkAndRedirect();
       }
     }
-  }, [user, isUserLoading, router, auth]);
+  }, [user, isUserLoading, router, auth, firestore]);
 
   // Handle auth errors from the provider
   useEffect(() => {
@@ -123,7 +142,7 @@ export default function LoginPage() {
     }
   };
 
-  if (isUserLoading) {
+  if (isUserLoading || isRedirecting) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
