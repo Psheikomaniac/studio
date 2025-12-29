@@ -1,7 +1,23 @@
 export type TeamRole = 'owner' | 'admin' | 'member';
+export type ClubRole = 'owner' | 'admin' | 'member';
+
+export interface Club {
+  id: string;
+  name: string;
+  ownerUid: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClubMember {
+  uid: string;
+  role: ClubRole;
+  joinedAt: string;
+}
 
 export interface Team {
   id: string;
+  clubId?: string;
   name: string;
   ownerUid: string;
   inviteCode?: string;

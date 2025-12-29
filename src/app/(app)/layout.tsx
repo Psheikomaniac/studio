@@ -18,12 +18,14 @@ import { AuthGuard } from "@/components/auth-guard";
 import { InactivityHandler } from "@/components/inactivity-handler";
 import { LanguageSelector } from "@/components/language-selector";
 import { TeamGuard, TeamProvider } from "@/team";
+import { ClubProvider } from "@/club/club-provider";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
-      <TeamProvider>
-        <TeamGuard>
+      <ClubProvider>
+        <TeamProvider>
+          <TeamGuard>
           <InactivityHandler />
           <SidebarProvider>
             <Sidebar>
@@ -58,6 +60,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarProvider>
         </TeamGuard>
       </TeamProvider>
+      </ClubProvider>
     </AuthGuard>
   );
 }

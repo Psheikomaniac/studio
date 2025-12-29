@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 import { TeamsService } from '@/services/teams.service';
 import { useTeam } from '@/team';
+import { useClub } from '@/club/club-provider';
+import { useClubsService } from '@/services/clubs.service';
 import { useToast } from '@/hooks/use-toast';
 
 export default function OnboardingPage() {
@@ -20,8 +22,10 @@ export default function OnboardingPage() {
   const { user, isUserLoading } = useUser();
   const firebase = useFirebaseOptional();
   const { teamId, isTeamLoading, setTeamId } = useTeam();
+  const { clubId, isClubLoading, setClubId } = useClub();
   const { toast } = useToast();
 
+  const [createClubName, setCreateClubName] = useState('');
   const [createTeamName, setCreateTeamName] = useState('');
   const [joinInviteCode, setJoinInviteCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,6 +35,8 @@ export default function OnboardingPage() {
     return new TeamsService(firebase.firestore);
   }, [firebase?.firestore]);
 
+  const clubsService = useClubsService();
+
   useEffect(() => {
     if (isUserLoading) return;
     if (!user || user.isAnonymous) {
@@ -39,15 +45,39 @@ export default function OnboardingPage() {
   }, [isUserLoading, user, router]);
 
   useEffect(() => {
-    if (isUserLoading || isTeamLoading) return;
+    if (isUserLoading || isTeamLoading || isClubLoading) return;
     if (teamId) {
       router.push('/dashboard');
     }
-  }, [isUserLoading, isTeamLoading, teamId, router]);
+  }, [isUserLoading, isTeamLoading, isClubLoading, teamId, router]);
 
   const handleLogout = async () => {
     if (!firebase?.auth) return;
     await signOut(firebase.auth);
+  };
+
+  const handleCreateClub = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!clubsService || !user) return;
+
+    const name = createClubName.trim();
+    if (!name) {
+        toast({ title: 'Name fehlt', description: 'Bitte gib einen Vereinsnamen ein.', variant: 'destructive' });
+        return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await clubsService.createClub({ name, ownerUid: user.uid });
+      if (!result.success || !result.data) throw result.error;
+      
+      setClubId(result.data.club.id);
+      toast({ title: 'Verein erstellt', description: 'Du kannst nun ein Team erstellen.' });
+    } catch (err) {
+      toast({ title: 'Fehler', description: 'Verein konnte nicht erstellt werden.', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCreateTeam = async (e: React.FormEvent) => {
@@ -66,7 +96,11 @@ export default function OnboardingPage() {
 
     setIsSubmitting(true);
     try {
-      const result = await teamsService.createTeam({ name, ownerUid: user.uid });
+      const result = await teamsService.createTeam({ 
+          name, 
+          ownerUid: user.uid,
+          clubId: clubId ?? undefined
+      });
       if (!result.success || !result.data) {
         throw result.error ?? new Error('Team konnte nicht erstellt werden.');
       }
@@ -118,86 +152,126 @@ export default function OnboardingPage() {
     }
   };
 
-  if (isUserLoading || isTeamLoading) {
-    return null;
+  if (isUserLoading || isTeamLoading || isClubLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-4 p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Team einrichten</CardTitle>
-          <CardDescription>
-            Erstelle ein neues Team oder tritt einem bestehenden Team per Invite-Code bei.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <Tabs defaultValue="create" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="create">Team erstellen</TabsTrigger>
-              <TabsTrigger value="join">Team beitreten</TabsTrigger>
-            </TabsList>
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-muted/40 p-4">
+      <div className="absolute right-4 top-4">
+        <Button variant="ghost" onClick={handleLogout}>
+          Abmelden
+        </Button>
+      </div>
 
-            <TabsContent value="create" className="mt-4">
-              <form className="flex flex-col gap-3" onSubmit={handleCreateTeam}>
-                <div className="grid gap-2">
-                  <Label htmlFor="teamName">Teamname</Label>
-                  <Input
+      <div className="w-full max-w-md space-y-4">
+        <div className="flex flex-col items-center space-y-2 text-center">
+          <h1 className="text-3xl font-bold tracking-tighter">Willkommen!</h1>
+          <p className="text-muted-foreground">
+            {clubId 
+                ? 'Erstelle nun deine erste Mannschaft.' 
+                : 'Lass uns deinen Verein einrichten.'}
+          </p>
+        </div>
+
+        {!clubId ? (
+            <Tabs defaultValue="create" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="create">Verein gründen</TabsTrigger>
+                <TabsTrigger value="join">Team beitreten</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="create">
+                <Card>
+                <CardHeader>
+                    <CardTitle>Neuen Verein erstellen</CardTitle>
+                    <CardDescription>
+                    Der Verein ist das Dach für deine Mannschaften.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleCreateClub} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="clubName">Vereinsname</Label>
+                        <Input
+                        id="clubName"
+                        placeholder="z.B. TSV Musterstadt"
+                        value={createClubName}
+                        onChange={(e) => setCreateClubName(e.target.value)}
+                        disabled={isSubmitting}
+                        />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isSubmitting || !createClubName}>
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Verein erstellen
+                    </Button>
+                    </form>
+                </CardContent>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="join">
+                <Card>
+                <CardHeader>
+                    <CardTitle>Einem Team beitreten</CardTitle>
+                    <CardDescription>
+                    Hast du einen Invite-Code? Tritt direkt einem Team bei.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleJoinTeam} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="inviteCode">Invite-Code</Label>
+                        <Input
+                        id="inviteCode"
+                        placeholder="z.B. X7Y9Z2"
+                        value={joinInviteCode}
+                        onChange={(e) => setJoinInviteCode(e.target.value.toUpperCase())}
+                        disabled={isSubmitting}
+                        />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isSubmitting || !joinInviteCode}>
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Team beitreten
+                    </Button>
+                    </form>
+                </CardContent>
+                </Card>
+            </TabsContent>
+            </Tabs>
+        ) : (
+            <Card>
+            <CardHeader>
+                <CardTitle>Mannschaft erstellen</CardTitle>
+                <CardDescription>
+                Füge deinem Verein eine Mannschaft hinzu.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleCreateTeam} className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="teamName">Mannschaftsname</Label>
+                    <Input
                     id="teamName"
+                    placeholder="z.B. 1. Herren"
                     value={createTeamName}
                     onChange={(e) => setCreateTeamName(e.target.value)}
-                    placeholder="z. B. HSG 1. Herren"
-                    autoComplete="off"
-                    disabled={isSubmitting || !teamsService}
-                  />
+                    disabled={isSubmitting}
+                    />
                 </div>
-
-                <Button type="submit" disabled={isSubmitting || !teamsService}>
-                  {isSubmitting ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Erstelle…
-                    </span>
-                  ) : (
-                    'Team erstellen'
-                  )}
+                <Button type="submit" className="w-full" disabled={isSubmitting || !createTeamName}>
+                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Mannschaft erstellen
                 </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="join" className="mt-4">
-              <form className="flex flex-col gap-3" onSubmit={handleJoinTeam}>
-                <div className="grid gap-2">
-                  <Label htmlFor="inviteCode">Invite-Code</Label>
-                  <Input
-                    id="inviteCode"
-                    value={joinInviteCode}
-                    onChange={(e) => setJoinInviteCode(e.target.value)}
-                    placeholder="z. B. 7K9P2QH3"
-                    autoComplete="off"
-                    disabled={isSubmitting || !teamsService}
-                  />
-                </div>
-
-                <Button type="submit" disabled={isSubmitting || !teamsService}>
-                  {isSubmitting ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Trete bei…
-                    </span>
-                  ) : (
-                    'Beitreten'
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-
-          <Button variant="secondary" onClick={handleLogout}>
-            Abmelden
-          </Button>
-        </CardContent>
-      </Card>
+                </form>
+            </CardContent>
+            </Card>
+        )}
+      </div>
     </div>
   );
 }

@@ -61,6 +61,7 @@ export class TeamsService extends BaseFirebaseService<Team> {
     name: string;
     ownerUid: string;
     inviteCode?: string;
+    clubId?: string;
   }): Promise<ServiceResult<{ team: Team; membership: TeamMember }>> {
     try {
       const teamId = this.generateId();
@@ -91,6 +92,10 @@ export class TeamsService extends BaseFirebaseService<Team> {
         createdAt: now,
         updatedAt: now,
       };
+
+      if (params.clubId) {
+        team.clubId = params.clubId;
+      }
 
       const membership: TeamMember = {
         uid: params.ownerUid,

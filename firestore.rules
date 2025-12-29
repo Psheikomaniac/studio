@@ -47,7 +47,61 @@ service cloud.firestore {
              exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
+    function isClubMember(clubId) {
+      return isSignedIn() && exists(/databases/$(database)/documents/clubs/$(clubId)/clubMembers/$(request.auth.uid));
+    }
+
+    function isClubAdmin(clubId) {
+       return isClubMember(clubId) && 
+              get(/databases/$(database)/documents/clubs/$(clubId)/clubMembers/$(request.auth.uid)).data.role in ['owner', 'admin'];
+    }
+
     // No development bypass. All access must satisfy collection-specific rules below.
+
+    // ============================================
+    // CLUBS & TEAMS
+    // ============================================
+    
+    match /clubs/{clubId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isClubAdmin(clubId) || (create && request.auth.uid == request.resource.data.ownerUid);
+      
+      match /clubMembers/{memberUid} {
+        allow read: if isSignedIn();
+        allow create, update, delete: if isClubAdmin(clubId) || (request.auth.uid == memberUid); 
+      }
+    }
+
+    match /teams/{teamId} {
+      allow read: if isSignedIn();
+      // Create: Allowed if standalone OR if part of club (and user is club admin)
+      allow create: if isSignedIn() && (
+        !('clubId' in request.resource.data) || isClubAdmin(request.resource.data.clubId)
+      );
+      
+      // Update: Team Admin OR Club Admin (if linked)
+      allow update: if isTeamAdmin(teamId) || (
+        'clubId' in resource.data && isClubAdmin(resource.data.clubId)
+      );
+      
+      match /teamMembers/{memberUid} {
+         allow read: if isSignedIn();
+         allow create, update, delete: if isTeamAdmin(teamId) || (
+             get(/databases/$(database)/documents/teams/$(teamId)).data.clubId != null && 
+             isClubAdmin(get(/databases/$(database)/documents/teams/$(teamId)).data.clubId)
+         ) || (request.auth.uid == memberUid && request.method == 'delete'); // Allow leaving
+      }
+    }
+
+    function isTeamMember(teamId) {
+      return isSignedIn() && exists(/databases/$(database)/documents/teams/$(teamId)/teamMembers/$(request.auth.uid));
+    }
+
+    function isTeamAdmin(teamId) {
+       return isTeamMember(teamId) && 
+              get(/databases/$(database)/documents/teams/$(teamId)/teamMembers/$(request.auth.uid)).data.role in ['owner', 'admin'];
+    }
 
     // ============================================
     // USERS (Players)
