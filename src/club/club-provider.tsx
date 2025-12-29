@@ -129,6 +129,11 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
       },
       (error) => {
         console.error('ClubProvider Error:', error);
+        if (error.message.includes('index')) {
+          console.error(
+            '🔥 MISSING INDEX: Please run "firebase deploy --only firestore:indexes" to deploy the defined indexes.'
+          );
+        }
         setMemberships([]);
         setClubIdState(null);
         setClubError(error);

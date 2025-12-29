@@ -134,6 +134,11 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
       },
       (error) => {
         console.error('TeamProvider Error:', error);
+        if (error.message.includes('index')) {
+          console.error(
+            '🔥 MISSING INDEX: Please run "firebase deploy --only firestore:indexes" to deploy the defined indexes.'
+          );
+        }
         setMemberships([]);
         setTeamIdState(null);
         setTeamError(error);
