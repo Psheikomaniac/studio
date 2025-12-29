@@ -1,20 +1,6 @@
 {
   "indexes": [
     {
-      "collectionGroup": "clubMembers",
-      "queryScope": "COLLECTION_GROUP",
-      "fields": [
-        { "fieldPath": "uid", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "teamMembers",
-      "queryScope": "COLLECTION_GROUP",
-      "fields": [
-        { "fieldPath": "uid", "order": "ASCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "fines",
       "queryScope": "COLLECTION_GROUP",
       "fields": [
@@ -107,5 +93,34 @@
       ]
     }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    {
+      "collectionGroup": "clubMembers",
+      "fieldPath": "uid",
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        },
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "teamMembers",
+      "fieldPath": "uid",
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        },
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        }
+      ]
+    }
+  ]
 }
