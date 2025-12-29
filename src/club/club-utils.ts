@@ -17,7 +17,9 @@ export function chooseInitialClubId(params: {
 }): string | null {
   const { persistedClubId, availableClubIds } = params;
 
-  if (persistedClubId && availableClubIds.includes(persistedClubId)) {
+  // Optimized for creation flow:
+  // Trust the persisted ID if it exists, even if it's not yet in availableClubIds.
+  if (persistedClubId) {
     return persistedClubId;
   }
 

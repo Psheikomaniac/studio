@@ -17,7 +17,9 @@ export function chooseInitialTeamId(params: {
 }): string | null {
   const { persistedTeamId, availableTeamIds } = params;
 
-  if (persistedTeamId && availableTeamIds.includes(persistedTeamId)) {
+  // Optimized for creation flow:
+  // Trust the persisted ID if it exists, even if it's not yet in availableTeamIds (due to async lag).
+  if (persistedTeamId) {
     return persistedTeamId;
   }
 

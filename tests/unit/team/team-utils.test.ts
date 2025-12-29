@@ -34,13 +34,13 @@ describe('team-utils', () => {
       ).toBe('only');
     });
 
-    it('should return null if multiple teams and no valid persisted team', () => {
+    it('should return persistedId even if not in availableTeamIds (optimistic creation)', () => {
       expect(
         chooseInitialTeamId({
           persistedTeamId: 'missing',
           availableTeamIds: ['t1', 't2'],
         })
-      ).toBeNull();
+      ).toBe('missing');
     });
   });
 });
