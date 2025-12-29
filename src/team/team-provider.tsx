@@ -55,9 +55,11 @@ function persistTeamId(teamId: string | null) {
 
 function buildMembershipQuery(firestore: Firestore, uid: string) {
   // teamMembers docs are stored at: teams/{teamId}/teamMembers/{uid}
-  // We query all teamMembers documents with docId == uid via collectionGroup.
+  // We query all teamMembers documents with uid == uid via collectionGroup.
+  // Note: We must query by 'uid' field, not documentId(), because collectionGroup
+  // queries with documentId() require the full path, which we don't have here.
   const membersGroup = collectionGroup(firestore, 'teamMembers');
-  return query(membersGroup, where(documentId(), '==', uid));
+  return query(membersGroup, where('uid', '==', uid));
 }
 
 export function TeamProvider({ children }: { children: React.ReactNode }) {

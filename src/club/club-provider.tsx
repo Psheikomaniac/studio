@@ -56,7 +56,7 @@ function persistClubId(clubId: string | null) {
 function buildMembershipQuery(firestore: Firestore, uid: string) {
   // clubMembers docs are stored at: clubs/{clubId}/clubMembers/{uid}
   const membersGroup = collectionGroup(firestore, 'clubMembers');
-  return query(membersGroup, where(documentId(), '==', uid));
+  return query(membersGroup, where('uid', '==', uid));
 }
 
 export function ClubProvider({ children }: { children: React.ReactNode }) {
