@@ -50,8 +50,9 @@ export default function LoginPage() {
             }
           } catch (error) {
             console.error("Redirect check failed", error);
-            // Fallback to dashboard
-            router.push('/dashboard');
+            // Fallback to onboarding - new users without team membership should complete onboarding
+            // The TeamGuard will redirect to dashboard if user already has a team
+            router.push('/onboarding');
           }
         };
         checkAndRedirect();
