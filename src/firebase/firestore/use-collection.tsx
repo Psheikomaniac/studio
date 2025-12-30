@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import {
   Query,
   onSnapshot,
+  getDocs,
   DocumentData,
   FirestoreError,
   QuerySnapshot,
@@ -15,6 +16,22 @@ import { Player } from '@/lib/types';
 
 // Debug logging flag (opt-in)
 const DEBUG_LOGS = process.env.NEXT_PUBLIC_FIREBASE_DEBUG_LOGS === 'true';
+const DISABLE_REALTIME_ENV = process.env.NEXT_PUBLIC_FIREBASE_DISABLE_REALTIME === 'true';
+
+function isSafariBrowser(): boolean {
+  try {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent;
+    return /Safari\//.test(ua) && !/Chrome\//.test(ua) && !/Chromium\//.test(ua) && !/Edg\//.test(ua);
+  } catch {
+    return false;
+  }
+}
+
+// Safari DEV has shown rare Firestore watch-stream internal assertion failures (ca9/b815).
+// We fall back to one-shot `getDocs` unless explicitly overridden.
+const DISABLE_REALTIME =
+  DISABLE_REALTIME_ENV || (process.env.NODE_ENV !== 'production' && isSafariBrowser());
 // Track paths we've already warned about to avoid console spam
 const warnedPaths = new Set<string>();
 
@@ -78,7 +95,110 @@ export function useCollection<T = any>(
     setIsLoading(true);
     setError(null);
 
-    // Directly use memoizedTargetRefOrQuery as it's assumed to be the final query
+    const computePath = (): string => {
+      try {
+        if ((memoizedTargetRefOrQuery as any)?.type === 'collection') {
+          return (memoizedTargetRefOrQuery as CollectionReference).path;
+        }
+        const internalQuery = memoizedTargetRefOrQuery as unknown as InternalQuery;
+        return internalQuery._query?.path?.canonicalString() || 'collection-group-query';
+      } catch (e) {
+        if (DEBUG_LOGS) console.warn('[useCollection] Failed to extract path for query:', e);
+        return 'unknown-query-path';
+      }
+    };
+
+    const handleFirestoreError = (error: FirestoreError) => {
+      const path = computePath();
+
+      // 1) Missing index (failed-precondition) → warn and return empty data
+      const isIndexMissing =
+        error.code === 'failed-precondition' || /create_exemption=/.test(error.message) || /index/i.test(error.message);
+      if (isIndexMissing) {
+        if (DEBUG_LOGS && !warnedPaths.has(path)) {
+          const linkMatch = error.message.match(/https?:\/\/\S+/);
+          if (linkMatch) {
+            console.warn(`[useCollection] Missing Firestore index for "${path}". Create it here: ${linkMatch[0]}`);
+          } else {
+            console.warn(
+              `[useCollection] Missing Firestore index for "${path}". Query may be incomplete without the index. Preserving existing data.`
+            );
+          }
+          warnedPaths.add(path);
+        }
+        // Preserve existing data so the UI doesn't flash empty when cache had results
+        setIsLoading(false);
+        return;
+      }
+
+      // 2) Permission denied in development → warn and return empty data
+      if (error.code === 'permission-denied' || /permission/i.test(error.message)) {
+        if (DEBUG_LOGS && !warnedPaths.has('perm:' + path)) {
+          console.warn('[useCollection] ⚠️ Permission denied - preserving existing data');
+          console.warn('[useCollection] Query path:', path);
+          warnedPaths.add('perm:' + path);
+        }
+        // Preserve existing data so UI continues to show cached results
+        setIsLoading(false);
+        return;
+      }
+
+      // 2b) Network/CORS transport issues → preserve existing data
+      const isNetworkOrCors =
+        error.code === 'unavailable' || /network|failed[\s-]?fetch|cors|access control/i.test(error.message);
+      if (isNetworkOrCors) {
+        if (DEBUG_LOGS && !warnedPaths.has('net:' + path)) {
+          console.warn(
+            '[useCollection] Network/CORS issue detected for query. Preserving existing data. Consider enabling long polling.'
+          );
+          console.warn('[useCollection] Query path:', path, '| Error:', error.code, error.message);
+          warnedPaths.add('net:' + path);
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      // 3) Other errors → optionally log; surface contextual error for UI
+      if (DEBUG_LOGS && !warnedPaths.has('err:' + path + ':' + error.code)) {
+        console.error('[useCollection] Firestore error:', error.code, error.message);
+        warnedPaths.add('err:' + path + ':' + error.code);
+      }
+      const contextualError = new FirestorePermissionError({
+        operation: 'list',
+        path,
+      });
+      setError(contextualError);
+      setData(null);
+      setIsLoading(false);
+      errorEmitter.emit('permission-error', contextualError);
+    };
+
+    if (DISABLE_REALTIME) {
+      let cancelled = false;
+
+      (async () => {
+        try {
+          const snapshot = await getDocs(memoizedTargetRefOrQuery as any);
+          if (cancelled) return;
+          const results: ResultItemType[] = [];
+          for (const doc of snapshot.docs) {
+            results.push({ ...(doc.data() as T), id: doc.id });
+          }
+          setData(results);
+          setError(null);
+          setIsLoading(false);
+        } catch (e) {
+          if (cancelled) return;
+          handleFirestoreError(e as FirestoreError);
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    // Default: realtime listener
     const unsubscribe = onSnapshot(
       memoizedTargetRefOrQuery,
       (snapshot: QuerySnapshot<DocumentData>) => {
@@ -91,77 +211,7 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (error: FirestoreError) => {
-        // Compute a useful path for logs/errors
-        let path: string;
-        try {
-          if ((memoizedTargetRefOrQuery as any)?.type === 'collection') {
-            path = (memoizedTargetRefOrQuery as CollectionReference).path;
-          } else {
-            const internalQuery = memoizedTargetRefOrQuery as unknown as InternalQuery;
-            path = internalQuery._query?.path?.canonicalString() || 'collection-group-query';
-          }
-        } catch (e) {
-          if (DEBUG_LOGS) console.warn('[useCollection] Failed to extract path for query:', e);
-          path = 'unknown-query-path';
-        }
-
-        // 1) Missing index (failed-precondition) → warn and return empty data
-        const isIndexMissing =
-          error.code === 'failed-precondition' || /create_exemption=/.test(error.message) || /index/i.test(error.message);
-        if (isIndexMissing) {
-          if (DEBUG_LOGS && !warnedPaths.has(path)) {
-            const linkMatch = error.message.match(/https?:\/\/\S+/);
-            if (linkMatch) {
-              console.warn(`[useCollection] Missing Firestore index for "${path}". Create it here: ${linkMatch[0]}`);
-            } else {
-              console.warn(`[useCollection] Missing Firestore index for "${path}". Query may be incomplete without the index. Preserving existing data.`);
-            }
-            warnedPaths.add(path);
-          }
-          // Preserve existing data so the UI doesn't flash empty when cache had results
-          setIsLoading(false);
-          return;
-        }
-
-        // 2) Permission denied in development → warn and return empty data
-        if (error.code === 'permission-denied' || /permission/i.test(error.message)) {
-          if (DEBUG_LOGS && !warnedPaths.has('perm:'+path)) {
-            console.warn('[useCollection] ⚠️ Permission denied - preserving existing data');
-            console.warn('[useCollection] Query path:', path);
-            warnedPaths.add('perm:'+path);
-          }
-          // Preserve existing data so UI continues to show cached results
-          setIsLoading(false);
-          return;
-        }
-
-        // 2b) Network/CORS transport issues (e.g., Safari WebChannel CORS) → preserve existing data
-        const isNetworkOrCors =
-          error.code === 'unavailable' ||
-          /network|failed[\s-]?fetch|cors|access control/i.test(error.message);
-        if (isNetworkOrCors) {
-          if (DEBUG_LOGS && !warnedPaths.has('net:'+path)) {
-            console.warn('[useCollection] Network/CORS issue detected for query. Preserving existing data. Consider enabling long polling.');
-            console.warn('[useCollection] Query path:', path, '| Error:', error.code, error.message);
-            warnedPaths.add('net:'+path);
-          }
-          setIsLoading(false);
-          return;
-        }
-
-        // 3) Other errors → optionally log; surface contextual error for UI
-        if (DEBUG_LOGS && !warnedPaths.has('err:'+path+':'+error.code)) {
-          console.error('[useCollection] Firestore error:', error.code, error.message);
-          warnedPaths.add('err:'+path+':'+error.code);
-        }
-        const contextualError = new FirestorePermissionError({
-          operation: 'list',
-          path,
-        });
-        setError(contextualError);
-        setData(null);
-        setIsLoading(false);
-        errorEmitter.emit('permission-error', contextualError);
+        handleFirestoreError(error);
       }
     );
 

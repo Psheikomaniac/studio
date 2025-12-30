@@ -6,11 +6,77 @@
 'use client';
 
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
-import { collection, collectionGroup, query, where, orderBy as firestoreOrderBy, limit as firestoreLimit } from 'firebase/firestore';
-import { useMemoFirebase, useCollection } from '@/firebase';
+import { useEffect, useState } from 'react';
+import {
+  collectionGroup,
+  getDocs,
+  query,
+  where,
+  orderBy as firestoreOrderBy,
+  limit as firestoreLimit,
+  type DocumentData,
+  type Query,
+} from 'firebase/firestore';
+import { useMemoFirebase, type UseCollectionResult, type WithId } from '@/firebase';
 import type { Fine, Payment, DuePayment, BeverageConsumption } from '@/lib/types';
 
 const DEBUG_LOGS = process.env.NEXT_PUBLIC_FIREBASE_DEBUG_LOGS === 'true';
+
+/**
+ * One-shot query hook.
+ *
+ * Rationale:
+ * We intentionally avoid `onSnapshot` for these collectionGroup aggregation queries because
+ * Safari/WebChannel watch streams have shown rare internal assertion failures (ca9/b815).
+ *
+ * For dashboard/statistics, a one-time fetch is sufficient and much more stable.
+ */
+function useQueryOnce<T>(
+  memoizedQuery: (Query<DocumentData> & { __memo?: boolean }) | null
+): UseCollectionResult<T> {
+  const [data, setData] = useState<Array<WithId<T>> | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (!memoizedQuery) {
+      setData(null);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoading(true);
+    setError(null);
+
+    (async () => {
+      try {
+        const snapshot = await getDocs(memoizedQuery);
+        if (cancelled) return;
+
+        const results: Array<WithId<T>> = snapshot.docs.map((docSnap) => ({
+          ...(docSnap.data() as T),
+          id: docSnap.id,
+        }));
+
+        setData(results);
+        setIsLoading(false);
+      } catch (e) {
+        if (cancelled) return;
+        setData(null);
+        setError(e as Error);
+        setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [memoizedQuery]);
+
+  return { data, isLoading, error };
+}
 
 /**
  * Hook to get all fines across all players using collection group query
@@ -38,7 +104,7 @@ export function useAllFines(options?: { limit?: number; teamId?: string | null }
   }, [firebase?.firestore, options?.limit, teamId]);
 
   if (DEBUG_LOGS) console.log('[useAllFines] Returning query:', finesQuery);
-  return useCollection<Fine>(finesQuery);
+  return useQueryOnce<Fine>(finesQuery);
 }
 
 /**
@@ -60,7 +126,7 @@ export function useAllPayments(options?: { limit?: number; teamId?: string | nul
     return query(paymentsGroup, ...constraints);
   }, [firebase?.firestore, options?.limit, teamId]);
 
-  return useCollection<Payment>(paymentsQuery);
+  return useQueryOnce<Payment>(paymentsQuery);
 }
 
 /**
@@ -82,7 +148,7 @@ export function useAllDuePayments(options?: { limit?: number; teamId?: string | 
     return query(duePaymentsGroup, ...constraints);
   }, [firebase?.firestore, options?.limit, teamId]);
 
-  return useCollection<DuePayment>(duePaymentsQuery);
+  return useQueryOnce<DuePayment>(duePaymentsQuery);
 }
 
 /**
@@ -104,5 +170,5 @@ export function useAllBeverageConsumptions(options?: { limit?: number; teamId?: 
     return query(consumptionsGroup, ...constraints);
   }, [firebase?.firestore, options?.limit, teamId]);
 
-  return useCollection<BeverageConsumption>(consumptionsQuery);
+  return useQueryOnce<BeverageConsumption>(consumptionsQuery);
 }

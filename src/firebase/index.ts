@@ -115,7 +115,27 @@ export function initializeFirebase() {
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
+  // Ensure stable singleton instances across Next.js Fast Refresh / HMR.
+  // Re-initializing Firestore with different settings can lead to subtle runtime issues,
+  // especially in Safari.
+  const globalAny = globalThis as any;
+  const existing = globalAny.__BALANCEUP_FIREBASE_SDKS__ as
+    | { firebaseApp: FirebaseApp; auth: ReturnType<typeof getAuth>; firestore: ReturnType<typeof getFirestore> }
+    | undefined;
+  if (existing?.firebaseApp) {
+    return existing;
+  }
+
   const auth = getAuth(firebaseApp);
+
+  // Browser detection (best-effort)
+  let isSafari = false;
+  try {
+    if (typeof navigator !== 'undefined') {
+      const ua = navigator.userAgent;
+      isSafari = /Safari\//.test(ua) && !/Chrome\//.test(ua) && !/Chromium\//.test(ua) && !/Edg\//.test(ua);
+    }
+  } catch {}
 
   // Decide on long-polling strategy
   const envForce = process.env.NEXT_PUBLIC_FIREBASE_FORCE_LONG_POLLING;
@@ -127,13 +147,6 @@ export function getSdks(firebaseApp: FirebaseApp) {
   } else {
     // Default heuristics: force long polling only on Safari.
     // In other browsers we prefer WebChannel; auto-detect remains enabled.
-    let isSafari = false;
-    try {
-      if (typeof navigator !== 'undefined') {
-        const ua = navigator.userAgent;
-        isSafari = /Safari\//.test(ua) && !/Chrome\//.test(ua) && !/Chromium\//.test(ua) && !/Edg\//.test(ua);
-      }
-    } catch {}
     forceLongPolling = isSafari;
   }
   if (forceLongPolling) {
@@ -142,7 +155,12 @@ export function getSdks(firebaseApp: FirebaseApp) {
 
   // Initialize Firestore with modern cache API (persistence and network transport configured here)
   let firestore;
-  const usePersistence = shouldEnablePersistence && isBrowserCompatible();
+  // Safari is particularly sensitive to IndexedDB/persistence edge cases.
+  // Prefer memory cache there for stability (persistence can be re-enabled via env if needed).
+  const usePersistence = shouldEnablePersistence && isBrowserCompatible() && !isSafari;
+  if (shouldEnablePersistence && isSafari) {
+    console.info('Firestore persistence: Disabled on Safari for stability (using memory cache).');
+  }
   // Note: experimentalAutoDetectLongPolling and experimentalForceLongPolling are mutually exclusive.
   // When forceLongPolling is true, auto-detect should not be enabled to avoid internal state conflicts.
   const options = usePersistence
@@ -179,11 +197,14 @@ export function getSdks(firebaseApp: FirebaseApp) {
     console.error('Failed to initialize Analytics', err);
   });
 
-  return {
+  const sdks = {
     firebaseApp,
     auth,
     firestore
   };
+
+  globalAny.__BALANCEUP_FIREBASE_SDKS__ = sdks;
+  return sdks;
 }
 
 export * from './provider';

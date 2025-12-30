@@ -4,12 +4,30 @@ import { useState, useEffect } from 'react';
 import {
   DocumentReference,
   onSnapshot,
+  getDoc,
   DocumentData,
   FirestoreError,
   DocumentSnapshot,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+
+const DISABLE_REALTIME_ENV = process.env.NEXT_PUBLIC_FIREBASE_DISABLE_REALTIME === 'true';
+
+function isSafariBrowser(): boolean {
+  try {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent;
+    return /Safari\//.test(ua) && !/Chrome\//.test(ua) && !/Chromium\//.test(ua) && !/Edg\//.test(ua);
+  } catch {
+    return false;
+  }
+}
+
+// Safari DEV has shown rare Firestore watch-stream internal assertion failures (ca9/b815).
+// We fall back to one-shot `getDoc` unless explicitly overridden.
+const DISABLE_REALTIME =
+  DISABLE_REALTIME_ENV || (process.env.NODE_ENV !== 'production' && isSafariBrowser());
 
 /** Utility type to add an 'id' field to a given type T. */
 type WithId<T> = T & { id: string };
@@ -58,6 +76,40 @@ export function useDoc<T = any>(
     setIsLoading(true);
     setError(null);
     // Optional: setData(null); // Clear previous data instantly
+
+    if (DISABLE_REALTIME) {
+      let cancelled = false;
+
+      (async () => {
+        try {
+          const snapshot = await getDoc(memoizedDocRef);
+          if (cancelled) return;
+
+          if (snapshot.exists()) {
+            setData({ ...(snapshot.data() as T), id: snapshot.id });
+          } else {
+            setData(null);
+          }
+          setError(null);
+          setIsLoading(false);
+        } catch (e) {
+          if (cancelled) return;
+          const contextualError = new FirestorePermissionError({
+            operation: 'get',
+            path: memoizedDocRef.path,
+          });
+
+          setError(contextualError);
+          setData(null);
+          setIsLoading(false);
+          errorEmitter.emit('permission-error', contextualError);
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }
 
     const unsubscribe = onSnapshot(
       memoizedDocRef,
