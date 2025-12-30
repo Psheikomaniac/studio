@@ -2,6 +2,8 @@ import {
   collection,
   doc,
   getDocs,
+  limit,
+  orderBy,
   query,
   runTransaction,
   where,
@@ -72,6 +74,37 @@ export class ClubsService extends BaseFirebaseService<Club> {
         success: false,
         error: error as Error,
       };
+    }
+  }
+
+  /**
+   * Search clubs by name prefix.
+   * Note: Firestore prefix search is case-sensitive.
+   */
+  async searchClubsByNamePrefix(params: {
+    prefix: string;
+    limit?: number;
+  }): Promise<ServiceResult<Club[]>> {
+    try {
+      const prefix = (params.prefix ?? '').trim();
+      if (prefix.length < 3) {
+        return { success: true, data: [] };
+      }
+
+      const clubsRef = collection(this.firestore, 'clubs');
+      const q = query(
+        clubsRef,
+        where('name', '>=', prefix),
+        where('name', '<=', `${prefix}\uf8ff`),
+        orderBy('name', 'asc'),
+        limit(params.limit ?? 10)
+      );
+
+      const snapshot = await getDocs(q);
+      const clubs = snapshot.docs.map((d) => d.data() as Club);
+      return { success: true, data: clubs };
+    } catch (error) {
+      return { success: false, error: error as Error };
     }
   }
 

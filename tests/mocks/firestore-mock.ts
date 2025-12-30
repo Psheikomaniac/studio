@@ -97,16 +97,41 @@ function collectDocs(qOrRef: any) {
     }
 
     if (!docRef) return;
-    // Apply where constraints (support '==' only)
+    // Apply where constraints (minimal support)
     let passes = true;
     for (const c of constraints) {
       if (c?.type === 'where') {
         const { field, operator, value } = c;
+        const fieldValue = (data ?? {})[field];
         if (operator === '==') {
-          if ((data ?? {})[field] !== value) {
+          if (fieldValue !== value) {
             passes = false;
             break;
           }
+        } else if (operator === '>=') {
+          if (!(fieldValue >= value)) {
+            passes = false;
+            break;
+          }
+        } else if (operator === '<=') {
+          if (!(fieldValue <= value)) {
+            passes = false;
+            break;
+          }
+        } else if (operator === '>') {
+          if (!(fieldValue > value)) {
+            passes = false;
+            break;
+          }
+        } else if (operator === '<') {
+          if (!(fieldValue < value)) {
+            passes = false;
+            break;
+          }
+        } else {
+          // Unsupported operator in this mock
+          passes = false;
+          break;
         }
       }
     }

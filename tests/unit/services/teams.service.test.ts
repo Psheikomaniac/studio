@@ -8,6 +8,7 @@ import {
   clearMockDocuments,
   createMockFirestore,
   getMockDocument,
+  setMockDocument,
 } from '../../mocks/firestore-mock';
 import { TeamsService, generateInviteCode, normalizeInviteCode } from '@/services/teams.service';
 
@@ -87,6 +88,45 @@ describe('TeamsService', () => {
       expect(memberDoc).toBeDefined();
       expect(memberDoc.uid).toBe('new-user');
       expect(memberDoc.role).toBe('member');
+    });
+  });
+
+  describe('listTeamsByClubId', () => {
+    it('should list teams for a given clubId', async () => {
+      setMockDocument('teams/t1', {
+        id: 't1',
+        clubId: 'club-1',
+        name: '1. Herren',
+        ownerUid: 'o1',
+        inviteCode: 'CODE1',
+        archived: false,
+        createdAt: 't',
+        updatedAt: 't',
+      });
+      setMockDocument('teams/t2', {
+        id: 't2',
+        clubId: 'club-1',
+        name: '2. Herren',
+        ownerUid: 'o2',
+        inviteCode: 'CODE2',
+        archived: false,
+        createdAt: 't',
+        updatedAt: 't',
+      });
+      setMockDocument('teams/t3', {
+        id: 't3',
+        clubId: 'club-2',
+        name: 'Damen',
+        ownerUid: 'o3',
+        inviteCode: 'CODE3',
+        archived: false,
+        createdAt: 't',
+        updatedAt: 't',
+      });
+
+      const res = await service.listTeamsByClubId({ clubId: 'club-1' });
+      expect(res.success).toBe(true);
+      expect(res.data?.map((t) => t.id).sort()).toEqual(['t1', 't2']);
     });
   });
 });

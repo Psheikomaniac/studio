@@ -16,6 +16,14 @@ import { useTeam } from '@/team';
 import { useClub } from '@/club/club-provider';
 import { useClubsService } from '@/services/clubs.service';
 import { useToast } from '@/hooks/use-toast';
+import type { Club, Team } from '@/lib/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -30,12 +38,75 @@ export default function OnboardingPage() {
   const [joinInviteCode, setJoinInviteCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [clubSuggestions, setClubSuggestions] = useState<Club[]>([]);
+  const [isClubSearching, setIsClubSearching] = useState(false);
+
+  const [clubTeams, setClubTeams] = useState<Team[]>([]);
+  const [isClubTeamsLoading, setIsClubTeamsLoading] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+
   const teamsService = useMemo(() => {
     if (!firebase?.firestore) return null;
     return new TeamsService(firebase.firestore);
   }, [firebase?.firestore]);
 
   const clubsService = useClubsService();
+
+  useEffect(() => {
+    if (!clubsService) return;
+
+    const term = createClubName.trim();
+    if (term.length < 3) {
+      setClubSuggestions([]);
+      setIsClubSearching(false);
+      return;
+    }
+
+    let active = true;
+    setIsClubSearching(true);
+
+    const t = setTimeout(async () => {
+      const res = await clubsService.searchClubsByNamePrefix({ prefix: term, limit: 8 });
+      if (!active) return;
+
+      if (res.success) {
+        setClubSuggestions(res.data ?? []);
+      } else {
+        setClubSuggestions([]);
+      }
+      setIsClubSearching(false);
+    }, 250);
+
+    return () => {
+      active = false;
+      clearTimeout(t);
+    };
+  }, [clubsService, createClubName]);
+
+  useEffect(() => {
+    if (!teamsService) return;
+    if (!clubId) return;
+
+    let active = true;
+    setIsClubTeamsLoading(true);
+
+    (async () => {
+      const res = await teamsService.listTeamsByClubId({ clubId, limit: 200 });
+      if (!active) return;
+
+      if (res.success) {
+        const teams = (res.data ?? []).slice().sort((a, b) => a.name.localeCompare(b.name));
+        setClubTeams(teams);
+      } else {
+        setClubTeams([]);
+      }
+      setIsClubTeamsLoading(false);
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [teamsService, clubId]);
 
   useEffect(() => {
     if (isUserLoading) return;
@@ -75,6 +146,60 @@ export default function OnboardingPage() {
       toast({ title: 'Verein erstellt', description: 'Du kannst nun ein Team erstellen.' });
     } catch (err) {
       toast({ title: 'Fehler', description: 'Verein konnte nicht erstellt werden.', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSelectExistingClub = async (club: Club) => {
+    if (!clubsService || !user) return;
+    setIsSubmitting(true);
+    try {
+      const membershipRes = await clubsService.addMember({ clubId: club.id, uid: user.uid, role: 'member' });
+      if (!membershipRes.success) {
+        throw membershipRes.error ?? new Error('Verein konnte nicht ausgewählt werden.');
+      }
+
+      setClubId(club.id);
+      setClubSuggestions([]);
+      toast({ title: 'Verein ausgewählt', description: club.name });
+    } catch (err) {
+      toast({
+        title: 'Fehler',
+        description: err instanceof Error ? err.message : 'Unbekannter Fehler',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSelectExistingTeam = async () => {
+    if (!teamsService || !user) return;
+    if (!selectedTeamId) {
+      toast({
+        title: 'Mannschaft fehlt',
+        description: 'Bitte wähle eine Mannschaft aus.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const memberRes = await teamsService.addMember({ teamId: selectedTeamId, uid: user.uid, role: 'member' });
+      if (!memberRes.success) {
+        throw memberRes.error ?? new Error('Beitritt zur Mannschaft fehlgeschlagen.');
+      }
+
+      setTeamId(selectedTeamId);
+      router.push('/dashboard');
+    } catch (err) {
+      toast({
+        title: 'Fehler',
+        description: err instanceof Error ? err.message : 'Unbekannter Fehler',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -225,6 +350,29 @@ export default function OnboardingPage() {
                         onChange={(e) => setCreateClubName(e.target.value)}
                         disabled={isSubmitting}
                         />
+
+                        {isClubSearching ? (
+                          <p className="text-xs text-muted-foreground">Suche nach bestehenden Vereinen…</p>
+                        ) : null}
+
+                        {clubSuggestions.length > 0 ? (
+                          <div className="rounded-md border bg-background">
+                            <div className="px-3 py-2 text-xs text-muted-foreground">Vorschläge</div>
+                            <div className="max-h-48 overflow-auto">
+                              {clubSuggestions.map((club) => (
+                                <button
+                                  key={club.id}
+                                  type="button"
+                                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted disabled:opacity-50"
+                                  disabled={isSubmitting}
+                                  onClick={() => handleSelectExistingClub(club)}
+                                >
+                                  {club.name}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
                     </div>
                     <Button type="submit" className="w-full" disabled={isSubmitting || !createClubName}>
                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -273,22 +421,57 @@ export default function OnboardingPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleCreateTeam} className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="teamName">Mannschaftsname</Label>
-                    <Input
-                    id="teamName"
-                    placeholder="z.B. 1. Herren"
-                    value={createTeamName}
-                    onChange={(e) => setCreateTeamName(e.target.value)}
-                    disabled={isSubmitting}
-                    />
-                </div>
-                <Button type="submit" className="w-full" disabled={isSubmitting || !createTeamName}>
-                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Mannschaft erstellen
-                </Button>
-                </form>
+                <Tabs defaultValue={clubTeams.length > 0 ? 'select' : 'create'} className="w-full">
+                  {clubTeams.length > 0 ? (
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="select">Auswählen</TabsTrigger>
+                      <TabsTrigger value="create">Neu erstellen</TabsTrigger>
+                    </TabsList>
+                  ) : null}
+
+                  <TabsContent value="select">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Mannschaft auswählen</Label>
+                        <Select value={selectedTeamId} onValueChange={setSelectedTeamId} disabled={isSubmitting || isClubTeamsLoading}>
+                          <SelectTrigger>
+                            <SelectValue placeholder={isClubTeamsLoading ? 'Lade…' : 'Bitte auswählen'} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {clubTeams.map((team) => (
+                              <SelectItem key={team.id} value={team.id}>
+                                {team.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button type="button" className="w-full" disabled={isSubmitting || !selectedTeamId} onClick={handleSelectExistingTeam}>
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Mannschaft auswählen
+                      </Button>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="create">
+                    <form onSubmit={handleCreateTeam} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="teamName">Mannschaftsname</Label>
+                        <Input
+                          id="teamName"
+                          placeholder="z.B. 1. Herren"
+                          value={createTeamName}
+                          onChange={(e) => setCreateTeamName(e.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <Button type="submit" className="w-full" disabled={isSubmitting || !createTeamName}>
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Mannschaft erstellen
+                      </Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
             </CardContent>
             </Card>
         )}

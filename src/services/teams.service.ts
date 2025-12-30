@@ -9,9 +9,14 @@
 'use client';
 
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
+  limit,
+  query,
   runTransaction,
+  where,
   type Firestore,
 } from 'firebase/firestore';
 import { useMemo } from 'react';
@@ -203,6 +208,30 @@ export class TeamsService extends BaseFirebaseService<Team> {
         success: false,
         error: error as Error,
       };
+    }
+  }
+
+  async listTeamsByClubId(params: {
+    clubId: string;
+    limit?: number;
+  }): Promise<ServiceResult<Team[]>> {
+    try {
+      const clubId = (params.clubId ?? '').trim();
+      if (!clubId) {
+        return { success: true, data: [] };
+      }
+
+      const teamsRef = collection(this.firestore, 'teams');
+      const q = query(
+        teamsRef,
+        where('clubId', '==', clubId),
+        limit(params.limit ?? 100)
+      );
+      const snapshot = await getDocs(q);
+      const teams = snapshot.docs.map((d) => d.data() as Team);
+      return { success: true, data: teams };
+    } catch (error) {
+      return { success: false, error: error as Error };
     }
   }
 }
