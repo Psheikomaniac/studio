@@ -3,11 +3,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   collectionGroup,
-  documentId,
   onSnapshot,
   query,
   where,
-  orderBy,
   type Firestore,
 } from 'firebase/firestore';
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
@@ -70,7 +68,7 @@ function persistClubId(uid: string | null, clubId: string | null) {
 function buildMembershipQuery(firestore: Firestore, uid: string) {
   // clubMembers docs are stored at: clubs/{clubId}/clubMembers/{uid}
   const membersGroup = collectionGroup(firestore, 'clubMembers');
-  return query(membersGroup, where('uid', '==', uid), orderBy('joinedAt', 'desc'));
+  return query(membersGroup, where('uid', '==', uid));
 }
 
 export function ClubProvider({ children }: { children: React.ReactNode }) {
@@ -124,6 +122,10 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
             };
           })
           .filter((x): x is ClubMembership => x !== null);
+
+        // Keep a deterministic ordering without relying on server-side orderBy.
+        // joinedAt is stored as ISO string; lexicographic sort works for ISO timestamps.
+        nextMemberships.sort((a, b) => (b.member.joinedAt ?? '').localeCompare(a.member.joinedAt ?? ''));
 
         setMemberships(nextMemberships);
 

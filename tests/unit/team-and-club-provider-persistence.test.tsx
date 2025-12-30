@@ -1,6 +1,7 @@
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { describe, it, afterEach, expect, vi } from 'vitest';
+import { orderBy } from 'firebase/firestore';
 
 import { TeamProvider, useTeam } from '@/team/team-provider';
 import { ClubProvider, useClub } from '@/club/club-provider';
@@ -146,5 +147,31 @@ describe('TeamProvider / ClubProvider persistence', () => {
       await vi.runAllTimersAsync();
     });
     expect(screen.getByTestId('clubId').textContent).toBe('club-manual');
+  });
+
+  it('Providers do not use orderBy in membership collectionGroup queries (avoid watch-stream edge cases)', async () => {
+    mockFirebase = {
+      user: { uid: 'u1', isAnonymous: false },
+      firestore: createMockFirestore(),
+    };
+
+    render(
+      <>
+        <TeamProvider>
+          <TeamIdReader />
+        </TeamProvider>
+        <ClubProvider>
+          <ClubIdReader />
+        </ClubProvider>
+      </>
+    );
+
+    await waitFor(() => {
+      // Both providers should settle to null without memberships.
+      expect(screen.getByTestId('teamId').textContent).toBe('null');
+      expect(screen.getByTestId('clubId').textContent).toBe('null');
+    });
+
+    expect(orderBy).not.toHaveBeenCalled();
   });
 });

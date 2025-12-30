@@ -125,8 +125,8 @@ export function getSdks(firebaseApp: FirebaseApp) {
   } else if (envForce === 'false') {
     forceLongPolling = false;
   } else {
-    // Default heuristics: enable in development or on Safari (WebChannel is flaky with CORS)
-    const isDev = process.env.NODE_ENV !== 'production';
+    // Default heuristics: force long polling only on Safari.
+    // In other browsers we prefer WebChannel; auto-detect remains enabled.
     let isSafari = false;
     try {
       if (typeof navigator !== 'undefined') {
@@ -134,7 +134,7 @@ export function getSdks(firebaseApp: FirebaseApp) {
         isSafari = /Safari\//.test(ua) && !/Chrome\//.test(ua) && !/Chromium\//.test(ua) && !/Edg\//.test(ua);
       }
     } catch {}
-    forceLongPolling = isDev || isSafari;
+    forceLongPolling = isSafari;
   }
   if (forceLongPolling) {
     console.info('Firestore networking: Using experimentalForceLongPolling (dev/safari fallback)');
