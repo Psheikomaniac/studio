@@ -143,18 +143,22 @@ export function getSdks(firebaseApp: FirebaseApp) {
   // Initialize Firestore with modern cache API (persistence and network transport configured here)
   let firestore;
   const usePersistence = shouldEnablePersistence && isBrowserCompatible();
+  // Note: experimentalAutoDetectLongPolling and experimentalForceLongPolling are mutually exclusive.
+  // When forceLongPolling is true, auto-detect should not be enabled to avoid internal state conflicts.
   const options = usePersistence
     ? {
         localCache: persistentLocalCache({
           tabManager: persistentMultipleTabManager()
         }),
-        experimentalAutoDetectLongPolling: true,
-        experimentalForceLongPolling: forceLongPolling
+        ...(forceLongPolling
+          ? { experimentalForceLongPolling: true }
+          : { experimentalAutoDetectLongPolling: true })
       }
     : {
         localCache: memoryLocalCache(),
-        experimentalAutoDetectLongPolling: true,
-        experimentalForceLongPolling: forceLongPolling
+        ...(forceLongPolling
+          ? { experimentalForceLongPolling: true }
+          : { experimentalAutoDetectLongPolling: true })
       };
 
   try {
