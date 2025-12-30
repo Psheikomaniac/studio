@@ -1,0 +1,120 @@
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, afterEach, expect, vi } from 'vitest';
+
+import { TeamProvider, useTeam } from '@/team/team-provider';
+import { ClubProvider, useClub } from '@/club/club-provider';
+import { createMockFirestore } from '../mocks/firestore-mock';
+
+let mockFirebase: any = null;
+
+vi.mock('@/firebase/use-firebase-optional', () => ({
+  useFirebaseOptional: () => mockFirebase,
+}));
+
+function TeamIdReader() {
+  const { teamId, isTeamLoading } = useTeam();
+  return <div data-testid="teamId">{isTeamLoading ? 'loading' : (teamId ?? 'null')}</div>;
+}
+
+function ClubIdReader() {
+  const { clubId, isClubLoading } = useClub();
+  return <div data-testid="clubId">{isClubLoading ? 'loading' : (clubId ?? 'null')}</div>;
+}
+
+afterEach(() => {
+  localStorage.clear();
+  mockFirebase = null;
+});
+
+describe('TeamProvider / ClubProvider persistence', () => {
+  it('TeamProvider uses uid-scoped key and removes legacy key', async () => {
+    localStorage.setItem('currentTeamId', 'legacy-team');
+    localStorage.setItem('currentTeamId:u2', 'team-u2');
+    localStorage.setItem('currentTeamId:u1', 'team-u1');
+
+    mockFirebase = {
+      user: { uid: 'u1', isAnonymous: false },
+      firestore: createMockFirestore(),
+    };
+
+    render(
+      <TeamProvider>
+        <TeamIdReader />
+      </TeamProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('teamId').textContent).toBe('team-u1');
+    });
+
+    expect(localStorage.getItem('currentTeamId')).toBeNull();
+  });
+
+  it('TeamProvider does not leak persisted teamId across users', async () => {
+    localStorage.setItem('currentTeamId', 'legacy-team');
+    localStorage.setItem('currentTeamId:u2', 'team-u2');
+
+    mockFirebase = {
+      user: { uid: 'u1', isAnonymous: false },
+      firestore: createMockFirestore(),
+    };
+
+    render(
+      <TeamProvider>
+        <TeamIdReader />
+      </TeamProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('teamId').textContent).toBe('null');
+    });
+
+    expect(localStorage.getItem('currentTeamId')).toBeNull();
+  });
+
+  it('ClubProvider uses uid-scoped key and removes legacy key', async () => {
+    localStorage.setItem('currentClubId', 'legacy-club');
+    localStorage.setItem('currentClubId:u2', 'club-u2');
+    localStorage.setItem('currentClubId:u1', 'club-u1');
+
+    mockFirebase = {
+      user: { uid: 'u1', isAnonymous: false },
+      firestore: createMockFirestore(),
+    };
+
+    render(
+      <ClubProvider>
+        <ClubIdReader />
+      </ClubProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('clubId').textContent).toBe('club-u1');
+    });
+
+    expect(localStorage.getItem('currentClubId')).toBeNull();
+  });
+
+  it('ClubProvider does not leak persisted clubId across users', async () => {
+    localStorage.setItem('currentClubId', 'legacy-club');
+    localStorage.setItem('currentClubId:u2', 'club-u2');
+
+    mockFirebase = {
+      user: { uid: 'u1', isAnonymous: false },
+      firestore: createMockFirestore(),
+    };
+
+    render(
+      <ClubProvider>
+        <ClubIdReader />
+      </ClubProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('clubId').textContent).toBe('null');
+    });
+
+    expect(localStorage.getItem('currentClubId')).toBeNull();
+  });
+});

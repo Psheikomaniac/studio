@@ -30,25 +30,38 @@ export interface ClubContextState {
 
 const ClubContext = createContext<ClubContextState | undefined>(undefined);
 
-const STORAGE_KEY = 'currentClubId';
+const LEGACY_STORAGE_KEY = 'currentClubId';
+const STORAGE_KEY_PREFIX = 'currentClubId:';
 
-function readPersistedClubId(): string | null {
+function storageKeyForUid(uid: string) {
+  return `${STORAGE_KEY_PREFIX}${uid}`;
+}
+
+function readPersistedClubId(uid: string | null): string | null {
   if (typeof window === 'undefined') return null;
+  if (!uid) return null;
   try {
-    return localStorage.getItem(STORAGE_KEY);
+    // Hard stop for legacy key to prevent cross-account leakage.
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    return localStorage.getItem(storageKeyForUid(uid));
   } catch {
     return null;
   }
 }
 
-function persistClubId(clubId: string | null) {
+function persistClubId(uid: string | null, clubId: string | null) {
   if (typeof window === 'undefined') return;
+  if (!uid) return;
   try {
+    // Hard stop for legacy key to prevent cross-account leakage.
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+
+    const key = storageKeyForUid(uid);
     if (!clubId) {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(key);
       return;
     }
-    localStorage.setItem(STORAGE_KEY, clubId);
+    localStorage.setItem(key, clubId);
   } catch {
     // ignore
   }
@@ -72,8 +85,8 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
 
   const setClubId = useCallback((nextClubId: string | null) => {
     setClubIdState(nextClubId);
-    persistClubId(nextClubId);
-  }, []);
+    persistClubId(uid, nextClubId);
+  }, [uid]);
 
   useEffect(() => {
     if (!firestore || !uid) {
@@ -87,7 +100,7 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
     setIsClubLoading(true);
     setClubError(null);
 
-    const persistedClubId = readPersistedClubId();
+    const persistedClubId = readPersistedClubId(uid);
     const q = buildMembershipQuery(firestore, uid);
 
     const unsubscribe = onSnapshot(

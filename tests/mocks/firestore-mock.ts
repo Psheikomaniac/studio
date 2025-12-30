@@ -33,6 +33,7 @@ const listenersByCollection = new Map<string, Set<ListenerEntry>>();
 function getCollectionPathFromQueryOrRef(qOrRef: any): string {
   if (qOrRef?.type === 'query') return qOrRef.collectionPath;
   if (qOrRef?.type === 'collection') return qOrRef.path;
+  if (qOrRef?.type === 'collectionGroup') return qOrRef.collectionId ?? qOrRef.path;
   return '';
 }
 
@@ -62,19 +63,40 @@ function collectDocs(qOrRef: any) {
   } else if (qOrRef && qOrRef.type === 'query' && qOrRef.collectionPath) {
     collectionPath = qOrRef.collectionPath;
     constraints = qOrRef.constraints || [];
+  } else if (qOrRef && qOrRef.type === 'collectionGroup') {
+    collectionPath = qOrRef.collectionId ?? qOrRef.path;
+    constraints = qOrRef.constraints || [];
   }
 
   const snapshots: DocumentSnapshot[] = [];
 
   mockDocuments.forEach((data, fullPath) => {
     if (!collectionPath) return;
-    if (!fullPath.startsWith(collectionPath + '/')) return;
-    // Ensure this is a direct child document (one extra segment)
-    const relative = fullPath.slice(collectionPath.length + 1);
-    if (relative.includes('/')) return; // nested deeper
 
-    const id = relative;
-    const docRef = createMockDocumentReference(collectionPath!, id);
+    let docRef: DocumentReference | null = null;
+
+    if (qOrRef && qOrRef.type === 'collectionGroup') {
+      // Match any document at .../{collectionId}/{docId}
+      const parts = fullPath.split('/').filter(Boolean);
+      const idx = parts.lastIndexOf(collectionPath);
+      // Ensure the match refers to the collection segment and the docId is the final segment
+      if (idx < 0 || idx + 1 >= parts.length) return;
+      if (idx + 2 !== parts.length) return;
+
+      const id = parts[idx + 1];
+      const parentCollectionPath = parts.slice(0, idx + 1).join('/');
+      docRef = createMockDocumentReference(parentCollectionPath, id);
+    } else {
+      if (!fullPath.startsWith(collectionPath + '/')) return;
+      // Ensure this is a direct child document (one extra segment)
+      const relative = fullPath.slice(collectionPath.length + 1);
+      if (relative.includes('/')) return; // nested deeper
+
+      const id = relative;
+      docRef = createMockDocumentReference(collectionPath!, id);
+    }
+
+    if (!docRef) return;
     // Apply where constraints (support '==' only)
     let passes = true;
     for (const c of constraints) {
@@ -244,6 +266,17 @@ export const mockFirestoreFunctions = {
     }
     // default: (firestore, path)
     return createMockCollectionReference(String(arg2 || arg1));
+  }),
+
+  collectionGroup: vi.fn((firestore: Firestore, collectionId: string) => {
+    return {
+      id: collectionId,
+      path: collectionId,
+      parent: null,
+      firestore: firestore ?? createMockFirestore(),
+      type: 'collectionGroup',
+      withConverter: vi.fn(),
+    } as unknown as any;
   }),
 
   doc: vi.fn((arg1: any, arg2?: any, ...pathSegments: string[]) => {

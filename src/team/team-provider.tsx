@@ -30,25 +30,38 @@ export interface TeamContextState {
 
 const TeamContext = createContext<TeamContextState | undefined>(undefined);
 
-const STORAGE_KEY = 'currentTeamId';
+const LEGACY_STORAGE_KEY = 'currentTeamId';
+const STORAGE_KEY_PREFIX = 'currentTeamId:';
 
-function readPersistedTeamId(): string | null {
+function storageKeyForUid(uid: string) {
+  return `${STORAGE_KEY_PREFIX}${uid}`;
+}
+
+function readPersistedTeamId(uid: string | null): string | null {
   if (typeof window === 'undefined') return null;
+  if (!uid) return null;
   try {
-    return localStorage.getItem(STORAGE_KEY);
+    // Hard stop for legacy key to prevent cross-account leakage.
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    return localStorage.getItem(storageKeyForUid(uid));
   } catch {
     return null;
   }
 }
 
-function persistTeamId(teamId: string | null) {
+function persistTeamId(uid: string | null, teamId: string | null) {
   if (typeof window === 'undefined') return;
+  if (!uid) return;
   try {
+    // Hard stop for legacy key to prevent cross-account leakage.
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+
+    const key = storageKeyForUid(uid);
     if (!teamId) {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(key);
       return;
     }
-    localStorage.setItem(STORAGE_KEY, teamId);
+    localStorage.setItem(key, teamId);
   } catch {
     // ignore
   }
@@ -75,8 +88,8 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
 
   const setTeamId = useCallback((nextTeamId: string | null) => {
     setTeamIdState(nextTeamId);
-    persistTeamId(nextTeamId);
-  }, []);
+    persistTeamId(uid, nextTeamId);
+  }, [uid]);
 
   useEffect(() => {
     // Reset when auth/services disappear (e.g. during logout)
@@ -91,7 +104,7 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
     setIsTeamLoading(true);
     setTeamError(null);
 
-    const persistedTeamId = readPersistedTeamId();
+    const persistedTeamId = readPersistedTeamId(uid);
     const q = buildMembershipQuery(firestore, uid);
 
     const unsubscribe = onSnapshot(
