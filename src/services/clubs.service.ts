@@ -79,30 +79,61 @@ export class ClubsService extends BaseFirebaseService<Club> {
 
   /**
    * Search clubs by name prefix.
-   * Note: Firestore prefix search is case-sensitive.
+   * Note:
+   * - Firestore prefix search is case-sensitive.
+   * - Zusätzlich wird (best-effort) ein case-insensitiver "contains"-Fallback gemacht,
+   *   damit z.B. "WBW" auch "HSG WBW" findet.
    */
   async searchClubsByNamePrefix(params: {
     prefix: string;
     limit?: number;
   }): Promise<ServiceResult<Club[]>> {
     try {
-      const prefix = (params.prefix ?? '').trim();
-      if (prefix.length < 3) {
+      const term = (params.prefix ?? '').trim();
+      if (term.length < 3) {
         return { success: true, data: [] };
       }
 
+      const desiredLimit = params.limit ?? 10;
+
       const clubsRef = collection(this.firestore, 'clubs');
-      const q = query(
+
+      // 1) Prefix-Treffer (schnell, aber case-sensitiv)
+      const prefixQuery = query(
         clubsRef,
-        where('name', '>=', prefix),
-        where('name', '<=', `${prefix}\uf8ff`),
+        where('name', '>=', term),
+        where('name', '<=', `${term}\uf8ff`),
         orderBy('name', 'asc'),
-        limit(params.limit ?? 10)
+        limit(desiredLimit)
       );
 
-      const snapshot = await getDocs(q);
-      const clubs = snapshot.docs.map((d) => d.data() as Club);
-      return { success: true, data: clubs };
+      const prefixSnapshot = await getDocs(prefixQuery);
+      const prefixClubs = prefixSnapshot.docs.map((d) => d.data() as Club);
+      if (prefixClubs.length >= desiredLimit) {
+        return { success: true, data: prefixClubs.slice(0, desiredLimit) };
+      }
+
+      // 2) "Contains"-Fallback: hole eine begrenzte Menge Clubs und filtere client-seitig.
+      // Das ist nicht für riesige Datenmengen gedacht, reicht aber für Suggestions gut aus.
+      const containsTerm = term.toLowerCase();
+      const scanLimit = Math.max(200, desiredLimit * 20);
+      const containsQuery = query(clubsRef, orderBy('name', 'asc'), limit(scanLimit));
+      const containsSnapshot = await getDocs(containsQuery);
+      const containsClubs = containsSnapshot.docs
+        .map((d) => d.data() as Club)
+        .filter((c) => (c.name ?? '').toLowerCase().includes(containsTerm));
+
+      const byId = new Map<string, Club>();
+      for (const c of prefixClubs) byId.set(c.id, c);
+      for (const c of containsClubs) {
+        if (!byId.has(c.id)) byId.set(c.id, c);
+      }
+
+      const merged = Array.from(byId.values())
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
+
+      return { success: true, data: merged.slice(0, desiredLimit) };
     } catch (error) {
       return { success: false, error: error as Error };
     }

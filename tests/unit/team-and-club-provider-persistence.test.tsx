@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { describe, it, afterEach, expect, vi } from 'vitest';
 
 import { TeamProvider, useTeam } from '@/team/team-provider';
@@ -22,7 +22,16 @@ function ClubIdReader() {
   return <div data-testid="clubId">{isClubLoading ? 'loading' : (clubId ?? 'null')}</div>;
 }
 
+function ClubIdSetter({ clubId }: { clubId: string }) {
+  const { setClubId } = useClub();
+  React.useEffect(() => {
+    setClubId(clubId);
+  }, [clubId, setClubId]);
+  return null;
+}
+
 afterEach(() => {
+  vi.useRealTimers();
   localStorage.clear();
   mockFirebase = null;
 });
@@ -116,5 +125,26 @@ describe('TeamProvider / ClubProvider persistence', () => {
     });
 
     expect(localStorage.getItem('currentClubId')).toBeNull();
+  });
+
+  it('ClubProvider keeps a manually set clubId stable even if the membership snapshot is still empty', async () => {
+    vi.useFakeTimers();
+
+    mockFirebase = {
+      user: { uid: 'u1', isAnonymous: false },
+      firestore: createMockFirestore(),
+    };
+
+    render(
+      <ClubProvider>
+        <ClubIdSetter clubId="club-manual" />
+        <ClubIdReader />
+      </ClubProvider>
+    );
+
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
+    expect(screen.getByTestId('clubId').textContent).toBe('club-manual');
   });
 });

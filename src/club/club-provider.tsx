@@ -100,7 +100,6 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
     setIsClubLoading(true);
     setClubError(null);
 
-    const persistedClubId = readPersistedClubId(uid);
     const q = buildMembershipQuery(firestore, uid);
 
     const unsubscribe = onSnapshot(
@@ -129,13 +128,20 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
         setMemberships(nextMemberships);
 
         const availableClubIds = nextMemberships.map((m) => m.clubId);
+        const persistedClubId = readPersistedClubId(uid);
         const initial = chooseInitialClubId({
           persistedClubId,
           availableClubIds,
         });
 
         setClubIdState((prev) => {
-          if (prev && availableClubIds.includes(prev)) return prev;
+          // Keep an explicitly selected clubId stable even if memberships are still loading/empty.
+          // This prevents short-lived null resets that could cause downstream actions (e.g. team creation)
+          // to run without a clubId.
+          if (prev) {
+            if (availableClubIds.length === 0) return prev;
+            if (availableClubIds.includes(prev)) return prev;
+          }
           return initial;
         });
 

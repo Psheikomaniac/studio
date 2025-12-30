@@ -44,6 +44,7 @@ export default function OnboardingPage() {
   const [clubTeams, setClubTeams] = useState<Team[]>([]);
   const [isClubTeamsLoading, setIsClubTeamsLoading] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  const [teamSearch, setTeamSearch] = useState('');
 
   const teamsService = useMemo(() => {
     if (!firebase?.firestore) return null;
@@ -51,6 +52,12 @@ export default function OnboardingPage() {
   }, [firebase?.firestore]);
 
   const clubsService = useClubsService();
+
+  const filteredClubTeams = useMemo(() => {
+    const term = teamSearch.trim().toLowerCase();
+    if (!term) return clubTeams;
+    return clubTeams.filter((t) => (t.name ?? '').toLowerCase().includes(term));
+  }, [clubTeams, teamSearch]);
 
   useEffect(() => {
     if (!clubsService) return;
@@ -107,6 +114,11 @@ export default function OnboardingPage() {
       active = false;
     };
   }, [teamsService, clubId]);
+
+  useEffect(() => {
+    setSelectedTeamId('');
+    setTeamSearch('');
+  }, [clubId]);
 
   useEffect(() => {
     if (isUserLoading) return;
@@ -209,6 +221,15 @@ export default function OnboardingPage() {
     e.preventDefault();
     if (!teamsService || !user) return;
 
+    if (!clubId) {
+      toast({
+        title: 'Verein fehlt',
+        description: 'Bitte wähle zuerst einen Verein aus.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const name = createTeamName.trim();
     if (!name) {
       toast({
@@ -221,10 +242,10 @@ export default function OnboardingPage() {
 
     setIsSubmitting(true);
     try {
-      const result = await teamsService.createTeam({ 
-          name, 
-          ownerUid: user.uid,
-          clubId: clubId ?? undefined
+      const result = await teamsService.createTeam({
+        name,
+        ownerUid: user.uid,
+        clubId,
       });
       if (!result.success || !result.data) {
         throw result.error ?? new Error('Team konnte nicht erstellt werden.');
@@ -433,16 +454,26 @@ export default function OnboardingPage() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label>Mannschaft auswählen</Label>
+                        <Input
+                          placeholder="Suche… (z.B. WBW, 2. Herren)"
+                          value={teamSearch}
+                          onChange={(e) => setTeamSearch(e.target.value)}
+                          disabled={isSubmitting || isClubTeamsLoading}
+                        />
                         <Select value={selectedTeamId} onValueChange={setSelectedTeamId} disabled={isSubmitting || isClubTeamsLoading}>
                           <SelectTrigger>
                             <SelectValue placeholder={isClubTeamsLoading ? 'Lade…' : 'Bitte auswählen'} />
                           </SelectTrigger>
                           <SelectContent>
-                            {clubTeams.map((team) => (
-                              <SelectItem key={team.id} value={team.id}>
-                                {team.name}
-                              </SelectItem>
-                            ))}
+                            {filteredClubTeams.length === 0 ? (
+                              <div className="px-3 py-2 text-sm text-muted-foreground">Keine Treffer</div>
+                            ) : (
+                              filteredClubTeams.map((team) => (
+                                <SelectItem key={team.id} value={team.id}>
+                                  {team.name}
+                                </SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                       </div>

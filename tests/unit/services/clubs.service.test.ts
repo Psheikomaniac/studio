@@ -90,5 +90,26 @@ describe('ClubsService', () => {
       expect(res.success).toBe(true);
       expect(res.data?.map((c) => c.name)).toEqual(['TSV Alpha', 'TSV Beta']);
     });
+
+    it('should find clubs by substring match (case-insensitive fallback)', async () => {
+      setMockDocument('clubs/a', {
+        id: 'a',
+        name: 'HSG WBW',
+        ownerUid: 'u1',
+        createdAt: 't',
+        updatedAt: 't',
+      });
+      setMockDocument('clubs/b', {
+        id: 'b',
+        name: 'TSV Musterstadt',
+        ownerUid: 'u2',
+        createdAt: 't',
+        updatedAt: 't',
+      });
+
+      const res = await service.searchClubsByNamePrefix({ prefix: 'wbw' });
+      expect(res.success).toBe(true);
+      expect(res.data?.map((c) => c.name)).toEqual(['HSG WBW']);
+    });
   });
 });
