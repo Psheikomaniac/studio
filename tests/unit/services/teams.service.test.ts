@@ -55,6 +55,7 @@ describe('TeamsService', () => {
       const teamId = result.data!.team.id;
       const teamDoc = getMockDocument(`teams/${teamId}`);
       const memberDoc = getMockDocument(`teams/${teamId}/teamMembers/owner-uid`);
+      const playerDoc = getMockDocument(`teams/${teamId}/players/owner-uid`);
 
       expect(teamDoc).toBeDefined();
       expect(teamDoc.name).toBe('Test Team');
@@ -64,6 +65,11 @@ describe('TeamsService', () => {
       expect(memberDoc).toBeDefined();
       expect(memberDoc.uid).toBe('owner-uid');
       expect(memberDoc.role).toBe('owner');
+
+      expect(playerDoc).toBeDefined();
+      expect(playerDoc.id).toBe('owner-uid');
+      expect(playerDoc.name).toBe('owner-uid');
+      expect(playerDoc.balance).toBe(0);
     });
   });
 
@@ -88,6 +94,11 @@ describe('TeamsService', () => {
       expect(memberDoc).toBeDefined();
       expect(memberDoc.uid).toBe('new-user');
       expect(memberDoc.role).toBe('member');
+
+      const playerDoc = getMockDocument(`teams/${created.data!.team.id}/players/new-user`);
+      expect(playerDoc).toBeDefined();
+      expect(playerDoc.id).toBe('new-user');
+      expect(playerDoc.name).toBe('new-user');
     });
   });
 

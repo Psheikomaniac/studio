@@ -12,6 +12,24 @@ balanceUp ist eine Next.js‑App für Vereinsverwaltung mit Fokus auf Geldflüss
 
    npm run dev
 
+### Emulator (lokal, empfohlen)
+
+Wenn du lokal entwickelst, solltest du Firestore/Auth über die Firebase Emulator Suite laufen lassen.
+
+1. Emulatoren starten
+
+   npm run emulator:start
+
+2. App im Dev verbindet sich auf `localhost` standardmäßig mit den Emulatoren.
+   Falls du bewusst gegen das echte Firebase-Projekt entwickeln willst, setze in `.env.local`:
+
+   NEXT_PUBLIC_USE_FIREBASE_EMULATORS=false
+
+Optional kannst du die Ziele explizit setzen:
+
+NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099
+
 3. Tests
 
    - Alle Tests: npm test

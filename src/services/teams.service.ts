@@ -22,7 +22,7 @@ import {
 import { useMemo } from 'react';
 import { BaseFirebaseService } from './base.service';
 import type { ServiceResult } from './types';
-import type { Team, TeamMember, TeamRole } from '@/lib/types';
+import type { Player, Team, TeamMember, TeamRole } from '@/lib/types';
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 
 const INVITE_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -53,6 +53,27 @@ export class TeamsService extends BaseFirebaseService<Team> {
 
   private teamMemberRef(teamId: string, uid: string) {
     return doc(this.firestore, 'teams', teamId, 'teamMembers', uid);
+  }
+
+  private playerRef(teamId: string, uid: string) {
+    return doc(this.firestore, 'teams', teamId, 'players', uid);
+  }
+
+  private buildDefaultPlayer(params: { teamId: string; uid: string }): Player {
+    const now = this.timestamp();
+    return {
+      id: params.uid,
+      name: params.uid,
+      nickname: '',
+      photoUrl: '',
+      balance: 0,
+      totalPaidPenalties: 0,
+      totalUnpaidPenalties: 0,
+      active: true,
+      teamId: params.teamId,
+      createdAt: now,
+      updatedAt: now,
+    };
   }
 
   private inviteRef(inviteCode: string) {
@@ -110,6 +131,7 @@ export class TeamsService extends BaseFirebaseService<Team> {
 
       const teamRef = this.teamRef(teamId);
       const memberRef = this.teamMemberRef(teamId, params.ownerUid);
+      const playerRef = this.playerRef(teamId, params.ownerUid);
       const inviteRef = this.inviteRef(inviteCode);
 
       await runTransaction(this.firestore, async (tx) => {
@@ -117,6 +139,12 @@ export class TeamsService extends BaseFirebaseService<Team> {
         const inviteSnap = await tx.get(inviteRef);
         if (inviteSnap.exists()) {
           throw new Error('Invite-Code ist bereits vergeben. Bitte erneut versuchen.');
+        }
+
+        // Ensure the owner also exists as a Player so they appear in the Players list immediately.
+        const playerSnap = await tx.get(playerRef);
+        if (!playerSnap.exists()) {
+          tx.set(playerRef, this.buildDefaultPlayer({ teamId, uid: params.ownerUid }) as any);
         }
 
         tx.set(inviteRef, { inviteCode, teamId, createdAt: now } as any);
@@ -151,8 +179,16 @@ export class TeamsService extends BaseFirebaseService<Team> {
 
       const memberRef = this.teamMemberRef(params.teamId, params.uid);
       const teamRef = this.teamRef(params.teamId);
+      const playerRef = this.playerRef(params.teamId, params.uid);
 
       await runTransaction(this.firestore, async (tx) => {
+        // Create a minimal Player record for new members so they show up in the Players list.
+        // Do not overwrite an existing Player document (e.g., if the user already created a profile).
+        const playerSnap = await tx.get(playerRef);
+        if (!playerSnap.exists()) {
+          tx.set(playerRef, this.buildDefaultPlayer({ teamId: params.teamId, uid: params.uid }) as any);
+        }
+
         tx.set(memberRef, member as any);
         tx.update(teamRef, { updatedAt: now } as any);
       });

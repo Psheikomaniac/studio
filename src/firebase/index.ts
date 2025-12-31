@@ -2,10 +2,11 @@
 
 import { firebaseConfig, enablePersistence as shouldEnablePersistence } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import {
   initializeFirestore,
   getFirestore,
+  connectFirestoreEmulator,
   persistentLocalCache,
   persistentMultipleTabManager,
   memoryLocalCache,
@@ -13,6 +14,77 @@ import {
 } from 'firebase/firestore';
 import { getPerformance } from 'firebase/performance';
 import { getAnalytics, isSupported } from 'firebase/analytics';
+
+function parseHostPort(
+  value: string | undefined,
+  defaults: { host: string; port: number }
+): { host: string; port: number } {
+  const trimmed = (value ?? '').trim();
+  if (!trimmed) return defaults;
+
+  const hasProtocol = /^https?:\/\//i.test(trimmed);
+  const withoutProtocol = hasProtocol ? trimmed.replace(/^https?:\/\//i, '') : trimmed;
+  const [hostPart, portPart] = withoutProtocol.split(':');
+  const host = (hostPart ?? '').trim() || defaults.host;
+  const port = portPart ? Number(portPart) : defaults.port;
+  return {
+    host,
+    port: Number.isFinite(port) && port > 0 ? port : defaults.port,
+  };
+}
+
+function shouldUseFirebaseEmulators(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (process.env.NODE_ENV !== 'development') return false;
+  if (process.env.NEXT_PUBLIC_USE_FIREBASE !== 'true') return false;
+
+  const flag = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS;
+  if (flag === 'false') return false;
+  if (flag === 'true') return true;
+
+  // Default: only auto-enable on local dev hosts.
+  const hostname = window.location?.hostname;
+  return hostname === 'localhost' || hostname === '127.0.0.1';
+}
+
+function connectFirebaseEmulatorsOnce(params: {
+  auth: ReturnType<typeof getAuth>;
+  firestore: ReturnType<typeof getFirestore>;
+}) {
+  const globalAny = globalThis as any;
+  if (globalAny.__BALANCEUP_FIREBASE_EMULATORS_CONNECTED__) return;
+  if (!shouldUseFirebaseEmulators()) return;
+
+  globalAny.__BALANCEUP_FIREBASE_EMULATORS_CONNECTED__ = true;
+
+  const firestoreTarget = parseHostPort(process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST, {
+    host: '127.0.0.1',
+    port: 8080,
+  });
+
+  const authTarget = parseHostPort(process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST, {
+    host: '127.0.0.1',
+    port: 9099,
+  });
+
+  try {
+    connectFirestoreEmulator(params.firestore as any, firestoreTarget.host, firestoreTarget.port);
+  } catch (err) {
+    console.warn('Firestore Emulator connection failed or already connected:', err);
+  }
+
+  try {
+    connectAuthEmulator(params.auth, `http://${authTarget.host}:${authTarget.port}`, {
+      disableWarnings: true,
+    });
+  } catch (err) {
+    console.warn('Auth Emulator connection failed or already connected:', err);
+  }
+
+  console.info(
+    `Firebase Emulators: Enabled (Firestore ${firestoreTarget.host}:${firestoreTarget.port}, Auth ${authTarget.host}:${authTarget.port})`
+  );
+}
 
 /**
  * Checks if the current browser supports Firebase features
@@ -190,6 +262,9 @@ export function getSdks(firebaseApp: FirebaseApp) {
     // If already initialized elsewhere, fall back to the existing instance
     firestore = getFirestore(firebaseApp);
   }
+
+  // Connect to emulators (dev only, best-effort) before any reads/writes.
+  connectFirebaseEmulatorsOnce({ auth, firestore });
 
   // Initialize monitoring services asynchronously (non-blocking)
   initializePerformanceMonitoring(firebaseApp);
