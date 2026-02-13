@@ -15,7 +15,7 @@ Imports dues and due payments from CSV.
 **CSV Structure:**
 ```
 team_id, team_name, due_name, due_created, due_amount, due_currency,
-due_archived, user_id, username, user_paid, user_payment_date, search_params
+due_archived, user_id, username, user_paid, user_payment_date
 ```
 
 **Processing:**
@@ -35,7 +35,7 @@ Imports fines and beverage consumptions from CSV.
 ```
 team_id, team_name, penatly_created, penatly_user, penatly_reason,
 penatly_archived, penatly_paid, penatly_amount, penatly_currency,
-penatly_subject, search_params
+penatly_subject
 ```
 
 **Processing:**
@@ -59,7 +59,7 @@ Imports payment transactions from CSV.
 **CSV Structure:**
 ```
 team_id, team_name, transaction_date, transaction_amount, transaction_currency,
-transaction_subject, balance_total, balance_filtered, search_params
+transaction_subject, balance_total, balance_filtered
 ```
 
 **Processing:**

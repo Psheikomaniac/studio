@@ -25,7 +25,6 @@ function buildPunishmentsCSVRow(
     amount,
     currency,
     subject,
-    ''
   ].join(';');
 }
 
@@ -48,7 +47,6 @@ describe('importPunishmentsCSV Guthaben handling', () => {
       'penatly_amount',
       'penatly_currency',
       'penatly_subject',
-      'search_params',
     ].join(';');
 
     const row = buildPunishmentsCSVRow({ reason: 'Guthaben', amount: '2500' }); // 25.00 EUR
@@ -82,7 +80,6 @@ describe('importPunishmentsCSV Guthaben handling', () => {
       'penatly_amount',
       'penatly_currency',
       'penatly_subject',
-      'search_params',
     ].join(';');
 
     const row = buildPunishmentsCSVRow({ reason: 'Guthaben Rest', amount: '750' }); // 7.50 EUR

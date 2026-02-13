@@ -155,7 +155,7 @@ export function deduplicatePlayers(playerList: Player[]): Player[] {
 /**
  * Import Dues CSV
  * CSV Format: team_id, team_name, due_name, due_created, due_amount, due_currency,
- *             due_archived, user_id, username, user_paid, user_payment_date, search_params
+ *             due_archived, user_id, username, user_paid, user_payment_date
  */
 export async function importDuesCSV(text: string): Promise<ImportResult> {
   const result: ImportResult = {
@@ -288,7 +288,7 @@ export async function importDuesCSV(text: string): Promise<ImportResult> {
  * Import Punishments CSV
  * CSV Format: team_id, team_name, penatly_created, penatly_user, penatly_reason,
  *             penatly_archived, penatly_paid, penatly_amount, penatly_currency,
- *             penatly_subject, search_params
+ *             penatly_subject
  */
 export async function importPunishmentsCSV(text: string): Promise<ImportResult> {
   const result: ImportResult = {
@@ -446,7 +446,7 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
 /**
  * Import Transactions CSV
  * CSV Format: team_id, team_name, transaction_date, transaction_amount, transaction_currency,
- *             transaction_subject, balance_total, balance_filtered, search_params
+ *             transaction_subject, balance_total, balance_filtered
  */
 export async function importTransactionsCSV(text: string): Promise<ImportResult> {
   const result: ImportResult = {
