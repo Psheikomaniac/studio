@@ -18,7 +18,7 @@ import {
   Firestore,
 } from 'firebase/firestore';
 import { Player, Fine, Payment, Due, DuePayment, Beverage, BeverageConsumption } from './types';
-import { classifyPunishment, mapBeverageCategory } from './csv-utils';
+import { classifyPunishmentWithSubject, mapBeverageCategory } from './csv-utils';
 
 export interface SkippedItem {
   date: string;
@@ -573,8 +573,8 @@ export async function importPunishmentsCSVToFirestore(
           continue;
         }
 
-        // Classify as DRINK or FINE
-        const type = classifyPunishment(row.penatly_reason);
+        // Classify as DRINK or FINE (prefer penatly_subject if available)
+        const type = classifyPunishmentWithSubject(row.penatly_reason, row.penatly_subject);
 
         if (type === 'DRINK') {
           // Map to standardized category

@@ -10,6 +10,7 @@ import {
   parseCentsToEuro,
   formatEuro,
   classifyPunishment,
+  classifyPunishmentWithSubject,
   mapBeverageCategory,
 } from '@/lib/csv-utils';
 
@@ -472,5 +473,59 @@ describe('mapBeverageCategory', () => {
   it('handles null/undefined', () => {
     expect(mapBeverageCategory(null as any)).toBe('Beverages');
     expect(mapBeverageCategory(undefined as any)).toBe('Beverages');
+  });
+});
+
+describe('classifyPunishmentWithSubject', () => {
+  describe('uses penatly_subject when available', () => {
+    it('classifies "Getränk" subject as DRINK regardless of reason', () => {
+      expect(classifyPunishmentWithSubject('Foto in den Medien', 'Getränk')).toBe('DRINK');
+    });
+
+    it('classifies "Getränke" subject as DRINK', () => {
+      expect(classifyPunishmentWithSubject('some reason', 'Getränke')).toBe('DRINK');
+    });
+
+    it('classifies "Strafe" subject as FINE regardless of reason', () => {
+      expect(classifyPunishmentWithSubject('Bier', 'Strafe')).toBe('FINE');
+    });
+
+    it('classifies "fine" subject as FINE', () => {
+      expect(classifyPunishmentWithSubject('Getränke', 'fine')).toBe('FINE');
+    });
+
+    it('classifies "penalty" subject as FINE', () => {
+      expect(classifyPunishmentWithSubject('Bier', 'penalty')).toBe('FINE');
+    });
+
+    it('classifies "drink" subject as DRINK', () => {
+      expect(classifyPunishmentWithSubject('Zu spät', 'drink')).toBe('DRINK');
+    });
+
+    it('classifies "beverage" subject as DRINK', () => {
+      expect(classifyPunishmentWithSubject('Zu spät', 'beverage')).toBe('DRINK');
+    });
+
+    it('is case-insensitive for subject', () => {
+      expect(classifyPunishmentWithSubject('test', 'GETRÄNK')).toBe('DRINK');
+      expect(classifyPunishmentWithSubject('test', 'STRAFE')).toBe('FINE');
+    });
+  });
+
+  describe('falls back to keyword classification when subject is empty/unknown', () => {
+    it('falls back when subject is empty string', () => {
+      expect(classifyPunishmentWithSubject('Bier', '')).toBe('DRINK');
+      expect(classifyPunishmentWithSubject('Zu spät', '')).toBe('FINE');
+    });
+
+    it('falls back when subject is undefined', () => {
+      expect(classifyPunishmentWithSubject('Bier', undefined)).toBe('DRINK');
+      expect(classifyPunishmentWithSubject('Zu spät', undefined)).toBe('FINE');
+    });
+
+    it('falls back when subject is unrecognized', () => {
+      expect(classifyPunishmentWithSubject('Bier', 'unknown_value')).toBe('DRINK');
+      expect(classifyPunishmentWithSubject('Zu spät', 'unknown_value')).toBe('FINE');
+    });
   });
 });

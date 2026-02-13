@@ -268,6 +268,26 @@ export function parseTransactionSubject(subject: string): ParsedSubject {
  * classifyPunishment("");                           // "FINE"
  * ```
  */
+/**
+ * Classifies a punishment using the penatly_subject column first, then falling back to keyword matching.
+ *
+ * @param reason - The punishment reason/description
+ * @param subject - The optional penatly_subject column value
+ * @returns Classification as 'DRINK' or 'FINE'
+ */
+export function classifyPunishmentWithSubject(reason: string, subject?: string): 'DRINK' | 'FINE' {
+  if (subject && typeof subject === 'string') {
+    const normalized = subject.toLowerCase().trim();
+    if (normalized === 'getränk' || normalized === 'getränke' || normalized === 'drink' || normalized === 'beverage') {
+      return 'DRINK';
+    }
+    if (normalized === 'strafe' || normalized === 'fine' || normalized === 'penalty') {
+      return 'FINE';
+    }
+  }
+  return classifyPunishment(reason);
+}
+
 export function classifyPunishment(reason: string): 'DRINK' | 'FINE' {
   if (!reason || typeof reason !== 'string') {
     return 'FINE';

@@ -17,7 +17,7 @@ import {
   dues,
   duePayments
 } from './static-data';
-import { classifyPunishment } from './csv-utils';
+import { classifyPunishmentWithSubject } from './csv-utils';
 
 export interface ImportResult {
   success: boolean;
@@ -387,8 +387,8 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
           continue;
         }
 
-        // Classify as DRINK or FINE
-        const type = classifyPunishment(row.penatly_reason);
+        // Classify as DRINK or FINE (prefer penatly_subject if available)
+        const type = classifyPunishmentWithSubject(row.penatly_reason, row.penatly_subject);
 
         if (type === 'DRINK') {
           // Create beverage consumption record
