@@ -18,7 +18,7 @@ import {
   Firestore,
 } from 'firebase/firestore';
 import { Player, Fine, Payment, Due, DuePayment, Beverage, BeverageConsumption } from './types';
-import { classifyPunishmentWithSubject, mapBeverageCategory } from './csv-utils';
+import { parsePunishmentCSV } from './csv-parse-punishments';
 
 export interface SkippedItem {
   date: string;
@@ -444,7 +444,9 @@ export async function importDuesCSVToFirestore(
 }
 
 /**
- * Import Punishments CSV into Firestore
+ * Import Punishments CSV into Firestore.
+ * Uses shared parsePunishmentCSV() for parsing and classification,
+ * then handles player/beverage lookup and Firestore batch writes.
  */
 export async function importPunishmentsCSVToFirestore(
   firestore: Firestore,
@@ -462,20 +464,12 @@ export async function importPunishmentsCSVToFirestore(
   };
 
   try {
-    // Strip BOM and parse CSV
-    const cleanText = stripBOM(text);
-    const parsed = Papa.parse(cleanText, {
-      delimiter: ';',
-      header: true,
-      skipEmptyLines: true,
-      transformHeader: (header) => header.trim().replace(/^"/, '').replace(/"$/, '')
-    });
+    // Use shared parser for CSV parsing and classification
+    const parsed = parsePunishmentCSV(text);
+    result.rowsProcessed = parsed.totalRowsProcessed;
+    result.errors.push(...parsed.errors);
+    result.warnings.push(...parsed.warnings);
 
-    if (parsed.errors.length > 0) {
-      result.errors.push(...parsed.errors.map(e => `CSV Parse Error: ${e.message}`));
-    }
-
-    const rows = parsed.data as any[];
     const existingPlayers = new Map<string, Player>();
     const existingBeverages = new Map<string, Beverage>();
     const playersToCreate: Player[] = [];
@@ -484,144 +478,72 @@ export async function importPunishmentsCSVToFirestore(
     const consumptionsToCreate: { userId: string; consumption: BeverageConsumption }[] = [];
     const paymentsToCreate: { userId: string; payment: Payment }[] = [];
 
-    // Process all rows first
-    for (let i = 0; i < rows.length; i++) {
-      try {
-        const row = rows[i];
-        result.rowsProcessed++;
+    // Process parsed rows — only player/beverage lookup and record creation
+    for (let i = 0; i < parsed.rows.length; i++) {
+      const row = parsed.rows[i];
 
-        if (onProgress) {
-          onProgress(i + 1, rows.length);
+      if (onProgress) {
+        onProgress(i + 1, parsed.rows.length);
+      }
+
+      // Find or create player
+      const player = await findOrCreatePlayer(firestore, row.playerName, undefined, existingPlayers);
+
+      if ((player as any).__isNew && !playersToCreate.some(p => p.id === player.id)) {
+        playersToCreate.push(player);
+        result.playersCreated++;
+      }
+
+      if (row.type === 'PAYMENT') {
+        const payment: Payment = {
+          id: generateId('payment'),
+          userId: player.id,
+          reason: row.reason,
+          amount: row.amount,
+          date: row.date,
+          paid: row.paid,
+          paidAt: row.paidAt
+        };
+        paymentsToCreate.push({ userId: player.id, payment });
+        result.recordsCreated++;
+
+      } else if (row.type === 'DRINK') {
+        const beverage = await findOrCreateBeverage(
+          firestore, row.beverageCategory!, row.amount, existingBeverages
+        );
+
+        if ((beverage as any).__isNew && !beveragesToCreate.some(b => b.id === beverage.id)) {
+          beveragesToCreate.push(beverage);
         }
 
-        // Validate required fields
-        if (!row.penatly_user || !row.penatly_reason || !row.penatly_amount) {
-          result.warnings.push(`Row ${i + 1}: Missing required fields`);
-          continue;
-        }
+        const consumption: BeverageConsumption = {
+          id: generateId('bc'),
+          userId: player.id,
+          beverageId: beverage.id,
+          beverageName: beverage.name,
+          amount: row.amount,
+          date: row.date,
+          paid: row.paid,
+          paidAt: row.paidAt,
+          createdAt: row.date
+        };
+        consumptionsToCreate.push({ userId: player.id, consumption });
+        result.recordsCreated++;
 
-        // Parse dates
-        const createdDate = parseGermanDate(row.penatly_created);
-        const { paid: isPaidFlag, paidAt: parsedPaidAt } = parsePaidStatus(row.penatly_paid);
-
-        // Convert amount from cents to EUR
-        const amountEUR = centsToEUR(row.penatly_amount);
-
-        // Validate amount
-        if (isNaN(amountEUR)) {
-          result.warnings.push(`Row ${i + 1}: Invalid amount: ${row.penatly_amount}`);
-          continue;
-        }
-
-        // Skip zero-amount penalties
-        if (amountEUR === 0) {
-          result.warnings.push(`Row ${i + 1}: Skipped zero-amount penalty`);
-          result.skippedItems.push({
-            date: createdDate,
-            user: row.penatly_user || 'Unknown',
-            reason: row.penatly_reason || 'Unknown',
-            amount: 0,
-            paid: isPaidFlag,
-            skipReason: 'Zero amount',
-            type: 'fine'
-          });
-          continue;
-        }
-
-        // Skip invalid or unknown player names
-        if (isInvalidPlayerName(row.penatly_user)) {
-          result.warnings.push(`Row ${i + 1}: Skipped due to missing or unknown player name`);
-          result.skippedItems.push({
-            date: createdDate,
-            user: row.penatly_user || 'Unknown',
-            reason: row.penatly_reason || 'Unknown',
-            amount: amountEUR,
-            paid: isPaidFlag,
-            skipReason: 'Missing or unknown player name',
-            type: 'fine'
-          });
-          continue;
-        }
-
-        // Find or create player
-        const player = await findOrCreatePlayer(firestore, row.penatly_user, undefined, existingPlayers);
-
-        // Queue player creation if this is a newly discovered player
-        if ((player as any).__isNew && !playersToCreate.some(p => p.id === player.id)) {
-          playersToCreate.push(player);
-          result.playersCreated++;
-        }
-
-        // Special case: Guthaben top-ups appear in punishments export in some datasets
-        // Create them as Payments here so balances/tooltip can reflect credits even if only punishments CSV is imported
-        const reasonLower = (row.penatly_reason || '').trim().toLowerCase();
-        const isCreditGuthabenRest = reasonLower === 'guthaben rest' || reasonLower.includes('guthaben rest');
-        const isCreditGuthaben = reasonLower === 'guthaben' || reasonLower.includes('guthaben') || reasonLower.startsWith('einzahlung');
-        if (isCreditGuthabenRest || isCreditGuthaben) {
-          const payment: Payment = {
-            id: generateId('payment'),
-            userId: player.id,
-            reason: row.penatly_reason.trim(),
-            amount: amountEUR,
-            date: createdDate,
-            // Preserve original paid status from CSV for credits
-            paid: isPaidFlag,
-            paidAt: parsedPaidAt
-          };
-          paymentsToCreate.push({ userId: player.id, payment });
-          result.recordsCreated++;
-          continue;
-        }
-
-        // Classify as DRINK or FINE (prefer penatly_subject if available)
-        const type = classifyPunishmentWithSubject(row.penatly_reason, row.penatly_subject);
-
-        if (type === 'DRINK') {
-          // Map to standardized category
-          const standardizedName = mapBeverageCategory(row.penatly_reason);
-
-          // Create beverage consumption record
-          const beverage = await findOrCreateBeverage(firestore, standardizedName, amountEUR, existingBeverages);
-
-          if ((beverage as any).__isNew && !beveragesToCreate.some(b => b.id === (beverage as any).id)) {
-            beveragesToCreate.push(beverage);
-          }
-
-          const consumption: BeverageConsumption = {
-            id: generateId('bc'),
-            userId: player.id,
-            beverageId: beverage.id,
-            beverageName: beverage.name,
-            amount: amountEUR,
-            date: createdDate,
-            paid: isPaidFlag,
-            paidAt: parsedPaidAt,
-            createdAt: createdDate
-          };
-
-          consumptionsToCreate.push({ userId: player.id, consumption });
-          result.recordsCreated++;
-
-        } else {
-          // Create fine record
-          const fine: Fine = {
-            id: generateId('fine'),
-            userId: player.id,
-            reason: row.penatly_reason.trim(),
-            amount: amountEUR,
-            date: createdDate,
-            paid: isPaidFlag,
-            paidAt: parsedPaidAt,
-            createdAt: createdDate,
-            updatedAt: parsedPaidAt || createdDate
-          };
-
-          finesToCreate.push({ userId: player.id, fine });
-          result.recordsCreated++;
-        }
-
-      } catch (error) {
-        result.errors.push(`Row ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } else {
+        const fine: Fine = {
+          id: generateId('fine'),
+          userId: player.id,
+          reason: row.reason,
+          amount: row.amount,
+          date: row.date,
+          paid: row.paid,
+          paidAt: row.paidAt,
+          createdAt: row.date,
+          updatedAt: row.paidAt || row.date
+        };
+        finesToCreate.push({ userId: player.id, fine });
+        result.recordsCreated++;
       }
     }
 

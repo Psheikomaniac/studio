@@ -17,7 +17,7 @@ import {
   dues,
   duePayments
 } from './static-data';
-import { classifyPunishmentWithSubject } from './csv-utils';
+import { parsePunishmentCSV } from './csv-parse-punishments';
 
 export interface ImportResult {
   success: boolean;
@@ -286,9 +286,8 @@ export async function importDuesCSV(text: string): Promise<ImportResult> {
 
 /**
  * Import Punishments CSV
- * CSV Format: team_id, team_name, penatly_created, penatly_user, penatly_reason,
- *             penatly_archived, penatly_paid, penatly_amount, penatly_currency,
- *             penatly_subject
+ * Uses shared parsePunishmentCSV() for parsing and classification,
+ * then stores results in static-data arrays.
  */
 export async function importPunishmentsCSV(text: string): Promise<ImportResult> {
   const result: ImportResult = {
@@ -300,145 +299,64 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
     warnings: []
   };
 
-  try {
-    // Strip BOM and parse CSV
-    const cleanText = stripBOM(text);
-    const parsed = Papa.parse(cleanText, {
-      delimiter: ';',
-      header: true,
-      skipEmptyLines: true,
-      transformHeader: (header) => header.trim().replace(/^"/, '').replace(/"$/, '')
-    });
+  const parsed = parsePunishmentCSV(text);
+  result.rowsProcessed = parsed.totalRowsProcessed;
+  result.errors.push(...parsed.errors);
+  result.warnings.push(...parsed.warnings);
 
-    if (parsed.errors.length > 0) {
-      result.errors.push(...parsed.errors.map(e => `CSV Parse Error: ${e.message}`));
+  const initialPlayerCount = players.length;
+
+  for (const row of parsed.rows) {
+    const player = findOrCreatePlayer(row.playerName);
+
+    if (row.type === 'PAYMENT') {
+      const payment: Payment = {
+        id: generateId('payment'),
+        userId: player.id,
+        reason: row.reason,
+        amount: row.amount,
+        date: row.date,
+        paid: row.paid,
+        paidAt: row.paidAt
+      };
+      payments.push(payment);
+      result.recordsCreated++;
+
+    } else if (row.type === 'DRINK') {
+      const beverage = findOrCreateBeverage(row.reason, row.amount);
+      const consumption: BeverageConsumption = {
+        id: generateId('bc'),
+        userId: player.id,
+        beverageId: beverage.id,
+        beverageName: beverage.name,
+        amount: row.amount,
+        date: row.date,
+        paid: row.paid,
+        paidAt: row.paidAt,
+        createdAt: row.date
+      };
+      beverageConsumptions.push(consumption);
+      result.recordsCreated++;
+
+    } else {
+      const fine: Fine = {
+        id: generateId('fine'),
+        userId: player.id,
+        reason: row.reason,
+        amount: row.amount,
+        date: row.date,
+        paid: row.paid,
+        paidAt: row.paidAt,
+        createdAt: row.date,
+        updatedAt: row.paidAt || row.date
+      };
+      fines.push(fine);
+      result.recordsCreated++;
     }
-
-    const rows = parsed.data as any[];
-    const initialPlayerCount = players.length;
-
-    for (let i = 0; i < rows.length; i++) {
-      try {
-        const row = rows[i];
-        result.rowsProcessed++;
-
-        // Validate required fields
-        if (!row.penatly_user || !row.penatly_reason || !row.penatly_amount) {
-          result.warnings.push(`Row ${i + 1}: Missing required fields`);
-          continue;
-        }
-
-        // Parse dates
-        const createdDate = parseGermanDate(row.penatly_created);
-        const { paid: isPaidFlag, paidAt: parsedPaidAt } = (function parsePaidStatus(raw: any): { paid: boolean; paidAt: string | null } {
-          const v = (raw ?? '').toString().trim();
-          if (!v) return { paid: false, paidAt: null };
-          const lower = v.toLowerCase();
-          if (['yes', 'y', 'true', 'paid', 'status_paid', 'status-paid'].includes(lower)) return { paid: true, paidAt: null };
-          if (['no', 'n', 'false', 'unpaid', 'status_unpaid', 'status-unpaid'].includes(lower)) return { paid: false, paidAt: null };
-          if (v.includes('-')) {
-            try { return { paid: true, paidAt: parseGermanDate(v) }; } catch {}
-          }
-          return { paid: false, paidAt: null };
-        })(row.penatly_paid);
-
-        // Convert amount from cents to EUR
-        const amountEUR = centsToEUR(row.penatly_amount);
-
-        // Validate amount
-        if (isNaN(amountEUR)) {
-          result.warnings.push(`Row ${i + 1}: Invalid amount: ${row.penatly_amount}`);
-          continue;
-        }
-
-        // Skip zero-amount penalties with warning
-        if (amountEUR === 0) {
-          result.warnings.push(`Row ${i + 1}: Skipped zero-amount penalty`);
-          continue;
-        }
-
-        // Skip invalid or unknown player names
-        if (isInvalidPlayerName(row.penatly_user)) {
-          result.warnings.push(`Row ${i + 1}: Skipped due to missing or unknown player name`);
-          continue;
-        }
-
-        // Find or create player
-        const player = findOrCreatePlayer(row.penatly_user);
-
-        // Special case: "Guthaben" and "Guthaben Rest" appear in punishments export but are top-ups
-        // Create them as Payments so balances/tooltip can reflect credits even if only punishments CSV is imported
-        const reasonLower = (row.penatly_reason || '').trim().toLowerCase();
-        const isCreditGuthabenRest = reasonLower === 'guthaben rest' || reasonLower.includes('guthaben rest');
-        const isCreditGuthaben = reasonLower === 'guthaben' || reasonLower.includes('guthaben') || reasonLower.startsWith('einzahlung');
-        if (isCreditGuthabenRest || isCreditGuthaben) {
-          const payment: Payment = {
-            id: generateId('payment'),
-            userId: player.id,
-            reason: row.penatly_reason.trim(),
-            amount: amountEUR,
-            date: createdDate,
-            // Preserve original paid status from CSV for credits
-            paid: isPaidFlag,
-            paidAt: parsedPaidAt
-          };
-          payments.push(payment);
-          result.recordsCreated++;
-          continue;
-        }
-
-        // Classify as DRINK or FINE (prefer penatly_subject if available)
-        const type = classifyPunishmentWithSubject(row.penatly_reason, row.penatly_subject);
-
-        if (type === 'DRINK') {
-          // Create beverage consumption record
-          const beverage = findOrCreateBeverage(row.penatly_reason, amountEUR);
-
-          const consumption: BeverageConsumption = {
-            id: generateId('bc'),
-            userId: player.id,
-            beverageId: beverage.id,
-            beverageName: beverage.name,
-            amount: amountEUR,
-            date: createdDate,
-            paid: isPaidFlag,
-            paidAt: parsedPaidAt,
-            createdAt: createdDate
-          };
-
-          beverageConsumptions.push(consumption);
-          result.recordsCreated++;
-
-        } else {
-          // Create fine record
-          const fine: Fine = {
-            id: generateId('fine'),
-            userId: player.id,
-            reason: row.penatly_reason.trim(),
-            amount: amountEUR,
-            date: createdDate,
-            paid: isPaidFlag,
-            paidAt: parsedPaidAt,
-            createdAt: createdDate,
-            updatedAt: parsedPaidAt || createdDate
-          };
-
-          fines.push(fine);
-          result.recordsCreated++;
-        }
-
-      } catch (error) {
-        result.errors.push(`Row ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-    }
-
-    result.playersCreated = players.length - initialPlayerCount;
-    result.success = result.errors.length === 0;
-
-  } catch (error) {
-    result.errors.push(`Fatal error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    result.success = false;
   }
+
+  result.playersCreated = players.length - initialPlayerCount;
+  result.success = result.errors.length === 0;
 
   return result;
 }
