@@ -416,7 +416,8 @@ const duesQuery = useMemoFirebase(() => {
         }
 
         case 'due': {
-          const duesService = new DuesService(firestore, transaction.userId);
+          if (!teamId) throw new Error('Team is not set');
+          const duesService = new DuesService(firestore, teamId, transaction.userId);
           await duesService.toggleDuePaid(transaction.id, newStatus);
           break;
         }

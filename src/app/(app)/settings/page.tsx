@@ -60,7 +60,7 @@ export default function SettingsPage() {
   // Collection-group data for data quality & freshness
   const { data: finesData } = useAllFines({ teamId });
   const { data: paymentsData } = useAllPayments({ teamId });
-  const { data: duePaymentsData } = useAllDuePayments();
+  const { data: duePaymentsData } = useAllDuePayments({ teamId });
   const { data: consumptionsData } = useAllBeverageConsumptions({ teamId });
 
   const fines = finesData || [];
@@ -167,6 +167,7 @@ export default function SettingsPage() {
       // Import to Firestore with progress callback
       const result = await importCSVToFirestore(
         firestore,
+        teamId!,
         text,
         csvType,
         (progress, total) => {
@@ -238,17 +239,17 @@ export default function SettingsPage() {
 
     setIsResetting(true);
     try {
-      // Get all users
-      const usersSnapshot = await getDocs(collection(firestore, 'users'));
+      // Get all players in the team
+      const playersSnapshot = await getDocs(collection(firestore, `teams/${teamId}/players`));
       const batch = writeBatch(firestore);
       let transactionCount = 0;
 
-      // For each user, mark all their transactions as paid
-      for (const userDoc of usersSnapshot.docs) {
-        const userId = userDoc.id;
+      // For each player, mark all their transactions as paid
+      for (const playerDoc of playersSnapshot.docs) {
+        const playerId = playerDoc.id;
 
         // Mark all fines as paid
-        const finesSnapshot = await getDocs(collection(firestore, `users/${userId}/fines`));
+        const finesSnapshot = await getDocs(collection(firestore, `teams/${teamId}/players/${playerId}/fines`));
         finesSnapshot.docs.forEach((fineDoc) => {
           batch.update(fineDoc.ref, {
             paid: true,
@@ -259,7 +260,7 @@ export default function SettingsPage() {
         });
 
         // Mark all dues as paid
-        const duesSnapshot = await getDocs(collection(firestore, `users/${userId}/duePayments`));
+        const duesSnapshot = await getDocs(collection(firestore, `teams/${teamId}/players/${playerId}/duePayments`));
         duesSnapshot.docs.forEach((dueDoc) => {
           batch.update(dueDoc.ref, {
             paid: true,
@@ -270,7 +271,7 @@ export default function SettingsPage() {
         });
 
         // Mark all beverages as paid
-        const beveragesSnapshot = await getDocs(collection(firestore, `users/${userId}/beverageConsumptions`));
+        const beveragesSnapshot = await getDocs(collection(firestore, `teams/${teamId}/players/${playerId}/beverageConsumptions`));
         beveragesSnapshot.docs.forEach((bevDoc) => {
           batch.update(bevDoc.ref, {
             paid: true,
@@ -422,7 +423,7 @@ export default function SettingsPage() {
       const itemsToImport = skippedItems.filter((_, i) => selectedSkippedItems.has(i));
 
       // Get all players for name lookup
-      const playersSnapshot = await getDocs(collection(firestore, 'users'));
+      const playersSnapshot = await getDocs(collection(firestore, `teams/${teamId}/players`));
       const players = playersSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as any));
 
       // Helper to find player by name
@@ -442,9 +443,10 @@ export default function SettingsPage() {
         const date = new Date(item.date).toISOString();
 
         if (item.type === 'fine') {
-          await addDoc(collection(firestore, `users/${userId}/fines`), {
+          await addDoc(collection(firestore, `teams/${teamId}/players/${userId}/fines`), {
             id: generateId('fine'),
             userId,
+            teamId,
             amount: item.amount,
             reason: item.reason,
             date,
@@ -453,9 +455,10 @@ export default function SettingsPage() {
             createdAt: date
           });
         } else if (item.type === 'payment' || item.type === 'transaction') {
-          await addDoc(collection(firestore, `users/${userId}/payments`), {
+          await addDoc(collection(firestore, `teams/${teamId}/players/${userId}/payments`), {
             id: generateId('payment'),
             userId,
+            teamId,
             amount: item.amount,
             reason: item.reason,
             date,
@@ -472,10 +475,11 @@ export default function SettingsPage() {
           }
 
           if (dueId) {
-            await addDoc(collection(firestore, `users/${userId}/duePayments`), {
+            await addDoc(collection(firestore, `teams/${teamId}/players/${userId}/duePayments`), {
               id: generateId('dp'),
               dueId,
               userId,
+              teamId,
               userName: item.user,
               amountDue: item.amount,
               paid: item.paid,
@@ -485,9 +489,10 @@ export default function SettingsPage() {
             });
           } else {
             // Fallback: create as generic payment if due definition not found
-            await addDoc(collection(firestore, `users/${userId}/payments`), {
+            await addDoc(collection(firestore, `teams/${teamId}/players/${userId}/payments`), {
               id: generateId('payment'),
               userId,
+              teamId,
               amount: item.amount,
               reason: `Force Import Due: ${item.reason}`,
               date,

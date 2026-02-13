@@ -23,7 +23,7 @@ describe('importDuesCSVToFirestore Logic', () => {
         const csv = `due_name;due_amount;due_created;due_archived;username;user_id;user_paid;user_payment_date
 Test Due;1000;01-01-2025;NO;Test User;user1;Paid;02-01-2025`;
 
-        const result = await importDuesCSVToFirestore(mockFirestore, csv);
+        const result = await importDuesCSVToFirestore(mockFirestore, 'test-team', csv);
         expect(result.success).toBe(true);
         // We can't easily inspect the internal state without more complex mocking, 
         // but we can check if it didn't error and processed the row.
@@ -34,7 +34,7 @@ Test Due;1000;01-01-2025;NO;Test User;user1;Paid;02-01-2025`;
         const csv = `due_name;due_amount;due_created;due_archived;username;user_id;user_paid;user_payment_date
 Test Due;1000;01-01-2025;NO;Test User;user1;STATUS_PAID;02-01-2025`;
 
-        const result = await importDuesCSVToFirestore(mockFirestore, csv);
+        const result = await importDuesCSVToFirestore(mockFirestore, 'test-team', csv);
         expect(result.success).toBe(true);
     });
 
@@ -47,7 +47,7 @@ Test Due;1000;01-01-2025;NO;Test User;user1;STATUS_PAID;02-01-2025`;
         const csv = `due_name;due_amount;due_created;due_archived;username;user_id;user_paid;user_payment_date
 Old Due;1000;${oldDateStr};NO;Test User;user1;NO;`;
 
-        const result = await importDuesCSVToFirestore(mockFirestore, csv);
+        const result = await importDuesCSVToFirestore(mockFirestore, 'test-team', csv);
         expect(result.success).toBe(true);
         expect(result.warnings.length).toBeGreaterThan(0);
         expect(result.warnings[0]).toContain('Auto-exempted old due');
@@ -60,7 +60,7 @@ Old Due;1000;${oldDateStr};NO;Test User;user1;NO;`;
         const csv = `due_name;due_amount;due_created;due_archived;username;user_id;user_paid;user_payment_date
 Invalid Due;invalid;01-01-2025;NO;Test User;user1;NO;`;
 
-        const result = await importDuesCSVToFirestore(mockFirestore, csv);
+        const result = await importDuesCSVToFirestore(mockFirestore, 'test-team', csv);
         expect(result.success).toBe(true); // It's partial success usually
         expect(result.skippedItems).toHaveLength(1);
         expect(result.skippedItems[0].reason).toBe('Invalid Due');
@@ -77,7 +77,7 @@ Invalid Due;invalid;01-01-2025;NO;Test User;user1;NO;`;
         const csv = `due_name;due_amount;due_created;due_archived;username;user_id;user_paid;user_payment_date
 Recent Due;1000;${recentDateStr};NO;Test User;user1;NO;`;
 
-        const result = await importDuesCSVToFirestore(mockFirestore, csv);
+        const result = await importDuesCSVToFirestore(mockFirestore, 'test-team', csv);
         expect(result.success).toBe(true);
         // Should NOT have the auto-exempt warning
         const exemptWarnings = result.warnings.filter(w => w.includes('Auto-exempted old due'));

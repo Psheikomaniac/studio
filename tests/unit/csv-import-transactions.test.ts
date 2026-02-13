@@ -34,7 +34,7 @@ describe('importTransactionsCSVToFirestore Logic', () => {
         const csvContent = `transaction_date; transaction_amount; transaction_subject
 01.01.2024; 1200; Beiträge: Max Mustermann(Jahresbeitrag 2024)`;
 
-        const result = await importTransactionsCSVToFirestore(mockFirestore, csvContent);
+        const result = await importTransactionsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
         // Should NOT be skipped
         expect(result.skippedItems).toHaveLength(0);
@@ -50,7 +50,7 @@ describe('importTransactionsCSVToFirestore Logic', () => {
         const csvContent = `transaction_date; transaction_amount; transaction_subject
 01.01.2024; 1200; Beiträge: Invalid Format`;
 
-        const result = await importTransactionsCSVToFirestore(mockFirestore, csvContent);
+        const result = await importTransactionsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
         // Should be skipped
         expect(result.skippedItems).toHaveLength(1);

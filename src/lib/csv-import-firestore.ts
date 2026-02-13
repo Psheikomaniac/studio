@@ -140,6 +140,7 @@ function isInvalidPlayerName(name?: string | null): boolean {
  */
 async function findOrCreatePlayer(
   firestore: Firestore,
+  teamId: string,
   name: string,
   id?: string,
   existingPlayers?: Map<string, Player>
@@ -151,9 +152,12 @@ async function findOrCreatePlayer(
     return existingPlayers.get(normalizedName)!;
   }
 
-  // Then check Firestore by ID if provided
+  // Check Firestore in team players collection
+  const playersRef = collection(firestore, `teams/${teamId}/players`);
+
+  // Check by ID if provided
   if (id) {
-    const docSnap = await getDocs(query(collection(firestore, 'users'), where('__name__', '==', id)));
+    const docSnap = await getDocs(query(playersRef, where('__name__', '==', id)));
     if (!docSnap.empty) {
       const player = { id, ...docSnap.docs[0].data() } as Player;
       (player as any).__isNew = false;
@@ -162,10 +166,8 @@ async function findOrCreatePlayer(
     }
   }
 
-  // Then check Firestore by name
-  const usersRef = collection(firestore, 'users');
-  const q = query(usersRef);
-  const snapshot = await getDocs(q);
+  // Check by name
+  const snapshot = await getDocs(query(playersRef));
 
   for (const doc of snapshot.docs) {
     const player = { id: doc.id, ...doc.data() } as Player;
@@ -183,6 +185,7 @@ async function findOrCreatePlayer(
     nickname: name.trim().split(' ')[0],
     photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=400&background=0ea5e9&color=fff`,
     balance: 0,
+    teamId,
   };
   (newPlayer as any).__isNew = true;
 
@@ -236,6 +239,7 @@ async function findOrCreateBeverage(
  */
 export async function importDuesCSVToFirestore(
   firestore: Firestore,
+  teamId: string,
   text: string,
   onProgress?: (progress: number, total: number) => void
 ): Promise<ImportResult> {
@@ -339,7 +343,7 @@ export async function importDuesCSVToFirestore(
         }
 
         // Find or create player
-        const player = await findOrCreatePlayer(firestore, row.username, row.user_id, existingPlayers);
+        const player = await findOrCreatePlayer(firestore, teamId, row.username, row.user_id, existingPlayers);
 
         // Track if player is new (based on __isNew flag set by finder)
         if ((player as any).__isNew && !playersToCreate.some(p => p.id === player.id)) {
@@ -372,6 +376,7 @@ export async function importDuesCSVToFirestore(
           id: generateId('dp'),
           dueId: due.id,
           userId: player.id,
+          teamId,
           userName: player.name,
           amountDue: amountEUR,
           paid: isPaid,
@@ -397,7 +402,7 @@ export async function importDuesCSVToFirestore(
       const batchPlayers = playersToCreate.slice(i, i + BATCH_SIZE);
 
       for (const player of batchPlayers) {
-        const playerRef = doc(firestore, 'users', player.id);
+        const playerRef = doc(firestore, `teams/${teamId}/players`, player.id);
         batch.set(playerRef, sanitizeFirestoreData(player as any));
       }
 
@@ -418,14 +423,14 @@ export async function importDuesCSVToFirestore(
       await batch.commit();
     }
 
-    // Write due payments (in user subcollections)
+    // Write due payments (in team/player subcollections)
     for (let i = 0; i < duePaymentsToCreate.length; i += BATCH_SIZE) {
       const batch = writeBatch(firestore);
       const batchPayments = duePaymentsToCreate.slice(i, i + BATCH_SIZE);
 
       for (const payment of batchPayments) {
-        const paymentRef = doc(firestore, `users/${payment.userId}/duePayments`, payment.id);
-        batch.set(paymentRef, sanitizeFirestoreData(payment as any));
+        const paymentRef = doc(firestore, `teams/${teamId}/players/${payment.userId}/duePayments`, payment.id);
+        batch.set(paymentRef, sanitizeFirestoreData({ ...payment, teamId } as any));
       }
 
       await batch.commit();
@@ -448,6 +453,7 @@ export async function importDuesCSVToFirestore(
  */
 export async function importPunishmentsCSVToFirestore(
   firestore: Firestore,
+  teamId: string,
   text: string,
   onProgress?: (progress: number, total: number) => void
 ): Promise<ImportResult> {
@@ -485,7 +491,7 @@ export async function importPunishmentsCSVToFirestore(
       }
 
       // Find or create player
-      const player = await findOrCreatePlayer(firestore, row.playerName, undefined, existingPlayers);
+      const player = await findOrCreatePlayer(firestore, teamId, row.playerName, undefined, existingPlayers);
 
       if ((player as any).__isNew && !playersToCreate.some(p => p.id === player.id)) {
         playersToCreate.push(player);
@@ -496,6 +502,7 @@ export async function importPunishmentsCSVToFirestore(
         const payment: Payment = {
           id: generateId('payment'),
           userId: player.id,
+          teamId,
           reason: row.reason,
           amount: row.amount,
           date: row.date,
@@ -517,6 +524,7 @@ export async function importPunishmentsCSVToFirestore(
         const consumption: BeverageConsumption = {
           id: generateId('bc'),
           userId: player.id,
+          teamId,
           beverageId: beverage.id,
           beverageName: beverage.name,
           amount: row.amount,
@@ -532,6 +540,7 @@ export async function importPunishmentsCSVToFirestore(
         const fine: Fine = {
           id: generateId('fine'),
           userId: player.id,
+          teamId,
           reason: row.reason,
           amount: row.amount,
           date: row.date,
@@ -548,13 +557,13 @@ export async function importPunishmentsCSVToFirestore(
     // Write to Firestore in batches
     const BATCH_SIZE = 500;
 
-    // Write players
+    // Write players (to team subcollection)
     for (let i = 0; i < playersToCreate.length; i += BATCH_SIZE) {
       const batch = writeBatch(firestore);
       const batchPlayers = playersToCreate.slice(i, i + BATCH_SIZE);
 
       for (const player of batchPlayers) {
-        const playerRef = doc(firestore, 'users', player.id);
+        const playerRef = doc(firestore, `teams/${teamId}/players`, player.id);
         batch.set(playerRef, sanitizeFirestoreData(player as any));
       }
 
@@ -574,40 +583,40 @@ export async function importPunishmentsCSVToFirestore(
       await batch.commit();
     }
 
-    // Write payments (in user subcollections)
+    // Write payments (in team/player subcollections)
     for (let i = 0; i < paymentsToCreate.length; i += BATCH_SIZE) {
       const batch = writeBatch(firestore);
       const batchPayments = paymentsToCreate.slice(i, i + BATCH_SIZE);
 
       for (const { userId, payment } of batchPayments) {
-        const paymentRef = doc(firestore, `users/${userId}/payments`, payment.id);
-        batch.set(paymentRef, sanitizeFirestoreData(payment as any));
+        const paymentRef = doc(firestore, `teams/${teamId}/players/${userId}/payments`, payment.id);
+        batch.set(paymentRef, sanitizeFirestoreData({ ...payment, teamId } as any));
       }
 
       await batch.commit();
     }
 
-    // Write fines (in user subcollections)
+    // Write fines (in team/player subcollections)
     for (let i = 0; i < finesToCreate.length; i += BATCH_SIZE) {
       const batch = writeBatch(firestore);
       const batchFines = finesToCreate.slice(i, i + BATCH_SIZE);
 
       for (const { userId, fine } of batchFines) {
-        const fineRef = doc(firestore, `users/${userId}/fines`, fine.id);
-        batch.set(fineRef, sanitizeFirestoreData(fine as any));
+        const fineRef = doc(firestore, `teams/${teamId}/players/${userId}/fines`, fine.id);
+        batch.set(fineRef, sanitizeFirestoreData({ ...fine, teamId } as any));
       }
 
       await batch.commit();
     }
 
-    // Write beverage consumptions (in user subcollections)
+    // Write beverage consumptions (in team/player subcollections)
     for (let i = 0; i < consumptionsToCreate.length; i += BATCH_SIZE) {
       const batch = writeBatch(firestore);
       const batchConsumptions = consumptionsToCreate.slice(i, i + BATCH_SIZE);
 
       for (const { userId, consumption } of batchConsumptions) {
-        const consumptionRef = doc(firestore, `users/${userId}/beverageConsumptions`, consumption.id);
-        batch.set(consumptionRef, sanitizeFirestoreData(consumption as any));
+        const consumptionRef = doc(firestore, `teams/${teamId}/players/${userId}/beverageConsumptions`, consumption.id);
+        batch.set(consumptionRef, sanitizeFirestoreData({ ...consumption, teamId } as any));
       }
 
       await batch.commit();
@@ -628,6 +637,7 @@ export async function importPunishmentsCSVToFirestore(
  */
 export async function importTransactionsCSVToFirestore(
   firestore: Firestore,
+  teamId: string,
   text: string,
   onProgress?: (progress: number, total: number) => void
 ): Promise<ImportResult> {
@@ -778,7 +788,7 @@ export async function importTransactionsCSVToFirestore(
         }
 
         // Find or create player
-        const player = await findOrCreatePlayer(firestore, playerName, undefined, existingPlayers);
+        const player = await findOrCreatePlayer(firestore, teamId, playerName, undefined, existingPlayers);
 
         if ((player as any).__isNew && !playersToCreate.some(p => p.id === player.id)) {
           playersToCreate.push(player);
@@ -795,6 +805,7 @@ export async function importTransactionsCSVToFirestore(
         const payment: Payment = {
           id: generateId('payment'),
           userId: player.id,
+          teamId,
           reason: category || subject,
           amount: Math.abs(amountEUR),
           date: transactionDate,
@@ -813,27 +824,27 @@ export async function importTransactionsCSVToFirestore(
     // Write to Firestore in batches
     const BATCH_SIZE = 500;
 
-    // Write players
+    // Write players (to team subcollection)
     for (let i = 0; i < playersToCreate.length; i += BATCH_SIZE) {
       const batch = writeBatch(firestore);
       const batchPlayers = playersToCreate.slice(i, i + BATCH_SIZE);
 
       for (const player of batchPlayers) {
-        const playerRef = doc(firestore, 'users', player.id);
+        const playerRef = doc(firestore, `teams/${teamId}/players`, player.id);
         batch.set(playerRef, sanitizeFirestoreData(player as any));
       }
 
       await batch.commit();
     }
 
-    // Write payments (in user subcollections)
+    // Write payments (in team/player subcollections)
     for (let i = 0; i < paymentsToCreate.length; i += BATCH_SIZE) {
       const batch = writeBatch(firestore);
       const batchPayments = paymentsToCreate.slice(i, i + BATCH_SIZE);
 
       for (const { userId, payment } of batchPayments) {
-        const paymentRef = doc(firestore, `users/${userId}/payments`, payment.id);
-        batch.set(paymentRef, sanitizeFirestoreData(payment as any));
+        const paymentRef = doc(firestore, `teams/${teamId}/players/${userId}/payments`, payment.id);
+        batch.set(paymentRef, sanitizeFirestoreData({ ...payment, teamId } as any));
       }
 
       await batch.commit();
@@ -854,17 +865,18 @@ export async function importTransactionsCSVToFirestore(
  */
 export async function importCSVToFirestore(
   firestore: Firestore,
+  teamId: string,
   text: string,
   type: 'dues' | 'punishments' | 'transactions',
   onProgress?: (progress: number, total: number) => void
 ): Promise<ImportResult> {
   switch (type) {
     case 'dues':
-      return importDuesCSVToFirestore(firestore, text, onProgress);
+      return importDuesCSVToFirestore(firestore, teamId, text, onProgress);
     case 'punishments':
-      return importPunishmentsCSVToFirestore(firestore, text, onProgress);
+      return importPunishmentsCSVToFirestore(firestore, teamId, text, onProgress);
     case 'transactions':
-      return importTransactionsCSVToFirestore(firestore, text, onProgress);
+      return importTransactionsCSVToFirestore(firestore, teamId, text, onProgress);
     default:
       return {
         success: false,

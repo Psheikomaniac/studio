@@ -1,15 +1,18 @@
 /**
  * Integration Tests: Dues Management Workflows
  * Tests due payment creation, auto-payment, exemptions, and status management
+ * All data is written to teams/{teamId}/players/{playerId}/... paths
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { getTestFirestore } from './setup';
 import { DuesService } from '@/services/dues.service';
 import { BalanceService } from '@/services/balance.service';
-import { seedPlayer, seedDue, seedDuePayment, clearCollection } from './helpers/seed-data';
+import { seedTeamPlayer, seedDue, seedTeamDuePayment, clearCollection } from './helpers/seed-data';
 import { createPlayer, createDue, createDuePayment } from './helpers/test-builders';
 import { getDocs, collection } from 'firebase/firestore';
+
+const TEAM_ID = 'test-team-dues';
 
 describe('Integration: Dues Management', () => {
   let firestore: ReturnType<typeof getTestFirestore>;
@@ -21,12 +24,12 @@ describe('Integration: Dues Management', () => {
     balanceService = new BalanceService();
 
     // Clean up
-    await clearCollection(firestore, 'users');
+    await clearCollection(firestore, 'teams');
     await clearCollection(firestore, 'dues');
 
-    // Seed test player
+    // Seed test player under team
     const player = createPlayer(testPlayerId).withName('Dues Test Player').build();
-    await seedPlayer(firestore, player);
+    await seedTeamPlayer(firestore, TEAM_ID, player);
   });
 
   describe('Due Creation', () => {
@@ -65,7 +68,7 @@ describe('Integration: Dues Management', () => {
   describe('Due Payment Creation with Auto-Payment', () => {
     it('should create unpaid due payment when player has zero balance', async () => {
       // Given: Player with zero balance and a due
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
       const due = createDue('due1').withAmount(50).build();
       await seedDue(firestore, due);
 
@@ -89,7 +92,7 @@ describe('Integration: Dues Management', () => {
 
     it('should auto-pay due when player has sufficient balance', async () => {
       // Given: Player with balance of 100
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
       const due = createDue('due1').withAmount(50).build();
       await seedDue(firestore, due);
 
@@ -114,7 +117,7 @@ describe('Integration: Dues Management', () => {
 
     it('should partially pay due when player has insufficient balance', async () => {
       // Given: Player with balance of 30
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
       const due = createDue('due1').withAmount(50).build();
       await seedDue(firestore, due);
 
@@ -138,7 +141,7 @@ describe('Integration: Dues Management', () => {
 
     it('should not apply auto-payment to exempt due', async () => {
       // Given: Player with balance and exempt due
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
       const due = createDue('due1').withAmount(50).build();
       await seedDue(firestore, due);
 
@@ -165,14 +168,14 @@ describe('Integration: Dues Management', () => {
   describe('Due Payment Status Toggle', () => {
     it('should toggle due payment from unpaid to paid', async () => {
       // Given: Unpaid due payment
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
       const due = createDue('due1').withAmount(50).build();
       await seedDue(firestore, due);
 
       const duePayment = createDuePayment(due.id, testPlayerId, 'Test Player')
         .withAmount(50)
         .build();
-      await seedDuePayment(firestore, testPlayerId, duePayment);
+      await seedTeamDuePayment(firestore, TEAM_ID, testPlayerId, duePayment);
 
       // When: Toggling to paid
       const result = await duesService.toggleDuePaid(duePayment.id, true);
@@ -186,7 +189,7 @@ describe('Integration: Dues Management', () => {
 
     it('should toggle due payment from paid to unpaid', async () => {
       // Given: Paid due payment
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
       const due = createDue('due1').withAmount(50).build();
       await seedDue(firestore, due);
 
@@ -194,7 +197,7 @@ describe('Integration: Dues Management', () => {
         .withAmount(50)
         .paid()
         .build();
-      await seedDuePayment(firestore, testPlayerId, duePayment);
+      await seedTeamDuePayment(firestore, TEAM_ID, testPlayerId, duePayment);
 
       // When: Toggling to unpaid
       const result = await duesService.toggleDuePaid(duePayment.id, false);
@@ -209,7 +212,7 @@ describe('Integration: Dues Management', () => {
   describe('Due Payment Update', () => {
     it('should apply additional payment to partially paid due', async () => {
       // Given: Partially paid due (50 EUR, 20 EUR already paid)
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
       const due = createDue('due1').withAmount(50).build();
       await seedDue(firestore, due);
 
@@ -217,7 +220,7 @@ describe('Integration: Dues Management', () => {
         .withAmount(50)
         .partiallyPaid(20)
         .build();
-      await seedDuePayment(firestore, testPlayerId, duePayment);
+      await seedTeamDuePayment(firestore, TEAM_ID, testPlayerId, duePayment);
 
       // When: Applying additional 15 EUR payment
       const result = await duesService.updateDuePayment(duePayment.id, 15);
@@ -230,7 +233,7 @@ describe('Integration: Dues Management', () => {
 
     it('should mark due as paid when additional payment completes it', async () => {
       // Given: Partially paid due (50 EUR, 45 EUR already paid)
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
       const due = createDue('due1').withAmount(50).build();
       await seedDue(firestore, due);
 
@@ -238,7 +241,7 @@ describe('Integration: Dues Management', () => {
         .withAmount(50)
         .partiallyPaid(45)
         .build();
-      await seedDuePayment(firestore, testPlayerId, duePayment);
+      await seedTeamDuePayment(firestore, TEAM_ID, testPlayerId, duePayment);
 
       // When: Applying additional 10 EUR payment
       const result = await duesService.updateDuePayment(duePayment.id, 10);
@@ -260,7 +263,7 @@ describe('Integration: Dues Management', () => {
       const duePayment = createDuePayment(due.id, testPlayerId, 'Test Player')
         .withAmount(50)
         .build(); // Unpaid
-      await seedDuePayment(firestore, testPlayerId, duePayment);
+      await seedTeamDuePayment(firestore, TEAM_ID, testPlayerId, duePayment);
 
       // When: Calculating balance
       const balance = balanceService.calculatePlayerBalance(
@@ -291,8 +294,8 @@ describe('Integration: Dues Management', () => {
         .withAmount(40)
         .build();
 
-      await seedDuePayment(firestore, testPlayerId, exemptDue);
-      await seedDuePayment(firestore, testPlayerId, regularDue);
+      await seedTeamDuePayment(firestore, TEAM_ID, testPlayerId, exemptDue);
+      await seedTeamDuePayment(firestore, TEAM_ID, testPlayerId, regularDue);
 
       // When: Calculating balance
       const balance = balanceService.calculatePlayerBalance(
@@ -316,7 +319,7 @@ describe('Integration: Dues Management', () => {
         .withAmount(50)
         .partiallyPaid(30)
         .build();
-      await seedDuePayment(firestore, testPlayerId, duePayment);
+      await seedTeamDuePayment(firestore, TEAM_ID, testPlayerId, duePayment);
 
       // When: Calculating balance
       const balance = balanceService.calculatePlayerBalance(
@@ -335,7 +338,7 @@ describe('Integration: Dues Management', () => {
   describe('Multiple Dues Per Player', () => {
     it('should handle multiple dues for same player', async () => {
       // Given: Player with multiple dues
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
 
       const due1 = createDue('due1').withName('Season 24/25').withAmount(50).build();
       const due2 = createDue('due2').withName('Tournament').withAmount(30).build();
@@ -359,9 +362,9 @@ describe('Integration: Dues Management', () => {
         exempt: false,
       });
 
-      // Then: Both should be created
+      // Then: Both should be created at the team-scoped path
       const duePaymentsSnapshot = await getDocs(
-        collection(firestore, `users/${testPlayerId}/duePayments`)
+        collection(firestore, `teams/${TEAM_ID}/players/${testPlayerId}/duePayments`)
       );
       expect(duePaymentsSnapshot.size).toBe(2);
 
@@ -383,12 +386,12 @@ describe('Integration: Dues Management', () => {
   describe('Due Deletion', () => {
     it('should soft delete due payment', async () => {
       // Given: Existing due payment
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
       const due = createDue('due1').withAmount(50).build();
       await seedDue(firestore, due);
 
       const duePayment = createDuePayment(due.id, testPlayerId, 'Test Player').build();
-      await seedDuePayment(firestore, testPlayerId, duePayment);
+      await seedTeamDuePayment(firestore, TEAM_ID, testPlayerId, duePayment);
 
       // When: Soft deleting
       const result = await duesService.deleteDuePayment(duePayment.id, { soft: true });
@@ -402,12 +405,12 @@ describe('Integration: Dues Management', () => {
 
     it('should hard delete due payment', async () => {
       // Given: Existing due payment
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
       const due = createDue('due1').withAmount(50).build();
       await seedDue(firestore, due);
 
       const duePayment = createDuePayment(due.id, testPlayerId, 'Test Player').build();
-      await seedDuePayment(firestore, testPlayerId, duePayment);
+      await seedTeamDuePayment(firestore, TEAM_ID, testPlayerId, duePayment);
 
       // When: Hard deleting
       const result = await duesService.deleteDuePayment(duePayment.id, { soft: false });
@@ -423,7 +426,7 @@ describe('Integration: Dues Management', () => {
   describe('Error Handling', () => {
     it('should handle updating non-existent due payment', async () => {
       // Given: Non-existent due payment
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
 
       // When: Attempting to update
       const result = await duesService.toggleDuePaid('non-existent', true);
@@ -435,7 +438,7 @@ describe('Integration: Dues Management', () => {
 
     it('should handle applying payment to non-existent due', async () => {
       // Given: Non-existent due payment
-      const duesService = new DuesService(firestore, testPlayerId);
+      const duesService = new DuesService(firestore, TEAM_ID, testPlayerId);
 
       // When: Attempting to apply payment
       const result = await duesService.updateDuePayment('non-existent', 10);

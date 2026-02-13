@@ -49,7 +49,7 @@ describe('importPunishmentsCSVToFirestore Beverage Logic', () => {
         const csvContent = `penatly_date;penatly_amount;penatly_reason;penatly_user
 01.01.2024;1500;Kasten Bier;Max Mustermann`;
 
-        const result = await importPunishmentsCSVToFirestore(mockFirestore, csvContent);
+        const result = await importPunishmentsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
         if (result.errors.length > 0) {
             throw new Error(`Import failed with errors: ${JSON.stringify(result.errors)}`);
@@ -111,7 +111,7 @@ describe('importPunishmentsCSVToFirestore Beverage Logic', () => {
         const csvContent = `penatly_date;penatly_amount;penatly_reason;penatly_user
 01.01.2024;150;Bier;Max Mustermann`;
 
-        await importPunishmentsCSVToFirestore(mockFirestore, csvContent);
+        await importPunishmentsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
         const beverageCall = findSetCallInData((data) => data.name === 'Beer/Lemonade');
         expect(beverageCall).toBeDefined();
@@ -121,7 +121,7 @@ describe('importPunishmentsCSVToFirestore Beverage Logic', () => {
         const csvContent = `penatly_date;penatly_amount;penatly_reason;penatly_user
 01.01.2024;200;Apfelwein;Max Mustermann`;
 
-        await importPunishmentsCSVToFirestore(mockFirestore, csvContent);
+        await importPunishmentsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
         const beverageCall = findSetCallInData((data) => data.name === 'Appler');
         expect(beverageCall).toBeDefined();
@@ -131,7 +131,7 @@ describe('importPunishmentsCSVToFirestore Beverage Logic', () => {
         const csvContent = `penatly_date;penatly_amount;penatly_reason;penatly_user
 01.01.2024;500;Mystery Drink;Max Mustermann`;
 
-        await importPunishmentsCSVToFirestore(mockFirestore, csvContent);
+        await importPunishmentsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
         const beverageCall = findSetCallInData((data) => data.name === 'Beverages');
         expect(beverageCall).toBeDefined();
