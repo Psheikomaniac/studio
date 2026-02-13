@@ -27,7 +27,6 @@ import type { ServiceResult, CreateOptions, UpdateOptions, DeleteOptions } from 
 import type { Fine } from '@/lib/types';
 import { useMemoFirebase, useCollection } from '@/firebase';
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
-import { setDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 /**
  * Extended create options for fines
@@ -122,57 +121,6 @@ export class FinesService extends BaseFirebaseService<Fine> {
         error: error as Error,
       };
     }
-  }
-
-  /**
-   * Create a new fine with auto-payment logic (non-blocking)
-   *
-   * @param fineData Fine data without id, createdAt, updatedAt, paid, amountPaid
-   * @param options Create options including playerBalance for auto-payment
-   * @returns Fine ID
-   */
-  createFineNonBlocking(
-    fineData: Omit<Fine, 'id' | 'createdAt' | 'updatedAt' | 'paid' | 'paidAt' | 'amountPaid'>,
-    options: FineCreateOptions = {}
-  ): string {
-    const id = options.customId || this.generateId();
-    const now = this.timestamp();
-    const { playerBalance = 0 } = options;
-
-    // Apply auto-payment logic
-    const hasFullCredit = playerBalance >= fineData.amount;
-    const hasPartialCredit = playerBalance > 0 && playerBalance < fineData.amount;
-
-    let paid = false;
-    let paidAt: string | undefined = undefined;
-    let amountPaid: number | undefined = undefined;
-
-    if (hasFullCredit) {
-      paid = true;
-      paidAt = now;
-      amountPaid = fineData.amount;
-    } else if (hasPartialCredit) {
-      paid = false;
-      amountPaid = playerBalance;
-    }
-
-    const fullData = {
-      ...fineData,
-      userId: this.playerId,
-      teamId: this.teamId,
-      id,
-      paid,
-      paidAt,
-      amountPaid,
-      createdAt: now,
-      updatedAt: now,
-      ...(options.userId && { createdBy: options.userId, updatedBy: options.userId }),
-    };
-
-    const docRef = this.getDocRef(id);
-    setDocumentNonBlocking(docRef, fullData, {});
-
-    return id;
   }
 
   /**
@@ -292,31 +240,6 @@ export class FinesService extends BaseFirebaseService<Fine> {
   }
 
   /**
-   * Toggle fine paid status (non-blocking)
-   *
-   * @param fineId Fine ID
-   * @param paid New paid status
-   * @param options Update options
-   */
-  toggleFinePaidNonBlocking(
-    fineId: string,
-    paid: boolean,
-    options: UpdateOptions = {}
-  ): void {
-    const now = this.timestamp();
-    const docRef = this.getDocRef(fineId);
-
-    // Note: This is non-blocking and doesn't fetch current state
-    // Use with caution - prefer the transactional version
-    updateDocumentNonBlocking(docRef, {
-      paid,
-      paidAt: paid ? now : null,
-      updatedAt: now,
-      ...(options.userId && { updatedBy: options.userId }),
-    });
-  }
-
-  /**
    * Update an existing fine
    *
    * @param fineId Fine ID
@@ -333,29 +256,6 @@ export class FinesService extends BaseFirebaseService<Fine> {
   }
 
   /**
-   * Update an existing fine (non-blocking)
-   *
-   * @param fineId Fine ID
-   * @param fineData Partial fine data to update
-   * @param options Update options
-   */
-  updateFineNonBlocking(
-    fineId: string,
-    fineData: Partial<Omit<Fine, 'id'>>,
-    options: UpdateOptions = {}
-  ): void {
-    const now = this.timestamp();
-    const updateData = {
-      ...fineData,
-      updatedAt: now,
-      ...(options.userId && { updatedBy: options.userId }),
-    };
-
-    const docRef = this.getDocRef(fineId);
-    updateDocumentNonBlocking(docRef, updateData);
-  }
-
-  /**
    * Delete a fine
    *
    * @param fineId Fine ID
@@ -367,28 +267,6 @@ export class FinesService extends BaseFirebaseService<Fine> {
     options: DeleteOptions = {}
   ): Promise<ServiceResult<void>> {
     return this.delete(fineId, options);
-  }
-
-  /**
-   * Delete a fine (non-blocking)
-   *
-   * @param fineId Fine ID
-   * @param options Delete options
-   */
-  deleteFineNonBlocking(
-    fineId: string,
-    options: DeleteOptions = {}
-  ): void {
-    if (options.soft) {
-      this.updateFineNonBlocking(fineId, {
-        deleted: true,
-        deletedAt: this.timestamp(),
-        ...(options.userId && { deletedBy: options.userId }),
-      } as any);
-    } else {
-      const docRef = this.getDocRef(fineId);
-      deleteDocumentNonBlocking(docRef);
-    }
   }
 
   /**
