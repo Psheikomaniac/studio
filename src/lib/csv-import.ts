@@ -98,8 +98,6 @@ function findOrCreatePlayer(name: string, id?: string): Player {
     balance: 0,
     email: undefined,
     phone: undefined,
-    totalUnpaidPenalties: 0,
-    totalPaidPenalties: 0,
   };
 
   players.push(newPlayer);
@@ -138,8 +136,6 @@ export function deduplicatePlayers(playerList: Player[]): Player[] {
       // Merge the player data (keep the first one, but merge balances)
       const existing = seen.get(normalizedName)!;
       existing.balance += player.balance;
-      existing.totalPaidPenalties += player.totalPaidPenalties;
-      existing.totalUnpaidPenalties += player.totalUnpaidPenalties;
     } else {
       seen.set(normalizedName, player);
     }

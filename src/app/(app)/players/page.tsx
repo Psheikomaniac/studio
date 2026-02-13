@@ -199,7 +199,7 @@ export default function PlayersPage() {
     setDeleteDialogOpen(true);
   };
 
-  const handleSavePlayer = async (playerData: Omit<Player, 'id' | 'balance' | 'totalPaidPenalties' | 'totalUnpaidPenalties'> & { id?: string }) => {
+  const handleSavePlayer = async (playerData: Omit<Player, 'id' | 'balance'> & { id?: string }) => {
     if (!playersService) {
       toast({
         variant: "destructive",
@@ -222,8 +222,6 @@ export default function PlayersPage() {
         const newPlayerData = {
           ...playerData,
           balance: 0,
-          totalPaidPenalties: 0,
-          totalUnpaidPenalties: 0,
         };
         await playersService.createPlayer(newPlayerData);
         toast({

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '@/firebase/provider';
 import { usePlayer, usePlayersService } from '@/services/players.service';
 import { useTeam } from '@/team';
+import { useAllFines } from '@/hooks/use-all-transactions';
 import { updatePassword } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +23,17 @@ export default function ProfilePage() {
     const { teamId } = useTeam();
     const { data: player, isLoading: isPlayerLoading } = usePlayer(teamId, authUser?.uid);
     const playersService = usePlayersService(teamId);
+    const { data: allFines } = useAllFines({ teamId });
     const { toast } = useToast();
+
+    const { totalUnpaid, totalPaid } = useMemo(() => {
+        if (!allFines || !authUser?.uid) return { totalUnpaid: 0, totalPaid: 0 };
+        const userFines = allFines.filter(f => f.userId === authUser.uid);
+        return {
+            totalUnpaid: userFines.filter(f => !f.paid).reduce((sum, f) => sum + (f.amount - (f.amountPaid || 0)), 0),
+            totalPaid: userFines.filter(f => f.paid).reduce((sum, f) => sum + f.amount, 0),
+        };
+    }, [allFines, authUser?.uid]);
 
     const [name, setName] = useState('');
     const [nickname, setNickname] = useState('');
@@ -70,8 +81,6 @@ export default function ProfilePage() {
                     notes: notes || '',
                     email: authUser.email || '',
                     balance: 0,
-                    totalPaidPenalties: 0,
-                    totalUnpaidPenalties: 0,
                     active: true,
                 }, { customId: authUser.uid });
             }
@@ -189,7 +198,7 @@ export default function ProfilePage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-red-500">
-                            {formatCurrency(player.totalUnpaidPenalties || 0)}
+                            {formatCurrency(totalUnpaid)}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             {t('profilePage.outstandingAmount')}
@@ -203,7 +212,7 @@ export default function ProfilePage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {formatCurrency(player.totalPaidPenalties || 0)}
+                            {formatCurrency(totalPaid)}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             {t('profilePage.lifetimeContribution')}

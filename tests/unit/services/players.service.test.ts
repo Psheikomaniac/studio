@@ -68,8 +68,6 @@ describe('PlayersService', () => {
         phone: '+1234567890',
         photoUrl: 'https://example.com/photo.jpg',
         balance: 0,
-        totalUnpaidPenalties: 0,
-        totalPaidPenalties: 0,
       };
 
       // When: Creating the player

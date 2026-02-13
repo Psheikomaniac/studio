@@ -183,8 +183,6 @@ async function findOrCreatePlayer(
     nickname: name.trim().split(' ')[0],
     photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=400&background=0ea5e9&color=fff`,
     balance: 0,
-    totalUnpaidPenalties: 0,
-    totalPaidPenalties: 0,
   };
   (newPlayer as any).__isNew = true;
 

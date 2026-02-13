@@ -40,8 +40,6 @@ export interface Player {
   balance: number;
   email?: string;
   phone?: string;
-  totalUnpaidPenalties: number;
-  totalPaidPenalties: number;
   active?: boolean; // if false, player is inactive and should be hidden from assignment pickers
   notes?: string;
   // Multi-tenancy

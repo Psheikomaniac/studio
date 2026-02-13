@@ -4,20 +4,18 @@ import type { Player, Fine, PredefinedFine, Payment, Beverage, Transaction, Due,
 
 export const players: Player[] = [
   // Added common English names used in AI suggestion tests to ensure mapping works
-  { id: 'john', name: 'John', nickname: 'John', photoUrl: 'https://ui-avatars.com/api/?name=John', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
-  { id: 'mike', name: 'Mike', nickname: 'Mike', photoUrl: 'https://ui-avatars.com/api/?name=Mike', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
-  { id: 'alice', name: 'Alice', nickname: 'Alice', photoUrl: 'https://ui-avatars.com/api/?name=Alice', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
-  { id: 'bob', name: 'Bob', nickname: 'Bob', photoUrl: 'https://ui-avatars.com/api/?name=Bob', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
-  { id: 'charlie', name: 'Charlie', nickname: 'Charlie', photoUrl: 'https://ui-avatars.com/api/?name=Charlie', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
-  { id: 'david', name: 'David', nickname: 'David', photoUrl: 'https://ui-avatars.com/api/?name=David', balance: 0, totalPaidPenalties: 0, totalUnpaidPenalties: 0 },
+  { id: 'john', name: 'John', nickname: 'John', photoUrl: 'https://ui-avatars.com/api/?name=John', balance: 0 },
+  { id: 'mike', name: 'Mike', nickname: 'Mike', photoUrl: 'https://ui-avatars.com/api/?name=Mike', balance: 0 },
+  { id: 'alice', name: 'Alice', nickname: 'Alice', photoUrl: 'https://ui-avatars.com/api/?name=Alice', balance: 0 },
+  { id: 'bob', name: 'Bob', nickname: 'Bob', photoUrl: 'https://ui-avatars.com/api/?name=Bob', balance: 0 },
+  { id: 'charlie', name: 'Charlie', nickname: 'Charlie', photoUrl: 'https://ui-avatars.com/api/?name=Charlie', balance: 0 },
+  { id: 'david', name: 'David', nickname: 'David', photoUrl: 'https://ui-avatars.com/api/?name=David', balance: 0 },
   {
     id: "1",
     name: "Alex Schmidt",
     nickname: "Schmidti",
     photoUrl: "https://ui-avatars.com/api/?name=Alex+Schmidt&size=400&background=0ea5e9&color=fff",
     balance: -15.50,
-    totalPaidPenalties: 20,
-    totalUnpaidPenalties: 35.50,
   },
   {
     id: "2",
@@ -25,8 +23,6 @@ export const players: Player[] = [
     nickname: "Benny",
     photoUrl: "https://ui-avatars.com/api/?name=Ben+Muller&size=400&background=8b5cf6&color=fff",
     balance: 5.00,
-    totalPaidPenalties: 50,
-    totalUnpaidPenalties: 45,
   },
   {
     id: "3",
@@ -34,8 +30,6 @@ export const players: Player[] = [
     nickname: "Carly",
     photoUrl: "https://ui-avatars.com/api/?name=Carla+Weber&size=400&background=ec4899&color=fff",
     balance: 0,
-    totalPaidPenalties: 30,
-    totalUnpaidPenalties: 30,
   },
   {
     id: "4",
@@ -43,8 +37,6 @@ export const players: Player[] = [
     nickname: "Dave",
     photoUrl: "https://ui-avatars.com/api/?name=David+Klein&size=400&background=f59e0b&color=fff",
     balance: -5.00,
-    totalPaidPenalties: 10,
-    totalUnpaidPenalties: 15,
   },
   {
     id: "5",
@@ -52,8 +44,6 @@ export const players: Player[] = [
     nickname: "Evi",
     photoUrl: "https://ui-avatars.com/api/?name=Eva+Lang&size=400&background=10b981&color=fff",
     balance: 20.00,
-    totalPaidPenalties: 100,
-    totalUnpaidPenalties: 80,
   }
 ];
 

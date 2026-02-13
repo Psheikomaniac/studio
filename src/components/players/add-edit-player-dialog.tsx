@@ -36,7 +36,7 @@ const playerSchema = z.object({
 type AddEditPlayerDialogProps = {
   isOpen: boolean;
   setOpen: (open: boolean) => void;
-  onSave: (playerData: Omit<Player, 'id' | 'balance' | 'totalPaidPenalties' | 'totalUnpaidPenalties'> & { id?: string }) => void;
+  onSave: (playerData: Omit<Player, 'id' | 'balance'> & { id?: string }) => void;
   player: Player | null;
 };
 

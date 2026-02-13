@@ -45,8 +45,6 @@ describe('Integration: Player Workflows', () => {
         nickname: 'JD',
         photoUrl: 'https://example.com/photo.jpg',
         balance: 0,
-        totalUnpaidPenalties: 0,
-        totalPaidPenalties: 0,
       };
 
       // When: Creating a new player
@@ -74,8 +72,6 @@ describe('Integration: Player Workflows', () => {
         nickname: 'Ali',
         photoUrl: 'https://example.com/alice.jpg',
         balance: 0,
-        totalUnpaidPenalties: 0,
-        totalPaidPenalties: 0,
       });
 
       await playersService.createPlayer({
@@ -83,8 +79,6 @@ describe('Integration: Player Workflows', () => {
         nickname: 'Bobby',
         photoUrl: 'https://example.com/bob.jpg',
         balance: 0,
-        totalUnpaidPenalties: 0,
-        totalPaidPenalties: 0,
       });
 
       await playersService.createPlayer({
@@ -92,8 +86,6 @@ describe('Integration: Player Workflows', () => {
         nickname: 'Chuck',
         photoUrl: 'https://example.com/charlie.jpg',
         balance: 0,
-        totalUnpaidPenalties: 0,
-        totalPaidPenalties: 0,
       });
 
       // When: Retrieving all players
@@ -116,8 +108,6 @@ describe('Integration: Player Workflows', () => {
           nickname: 'Custom',
           photoUrl: 'https://example.com/custom.jpg',
           balance: 0,
-          totalUnpaidPenalties: 0,
-          totalPaidPenalties: 0,
         },
         { customId }
       );
@@ -208,8 +198,6 @@ describe('Integration: Player Workflows', () => {
         nickname: 'Test',
         photoUrl: 'https://example.com/test.jpg',
         balance: 0,
-        totalUnpaidPenalties: 0,
-        totalPaidPenalties: 0,
       });
       expect(createResult.success).toBe(true);
       const playerId = createResult.data!.id;
@@ -253,8 +241,6 @@ describe('Integration: Player Workflows', () => {
           nickname: `P${i + 1}`,
           photoUrl: `https://example.com/player${i + 1}.jpg`,
           balance: 0,
-          totalUnpaidPenalties: 0,
-          totalPaidPenalties: 0,
         })
       );
 

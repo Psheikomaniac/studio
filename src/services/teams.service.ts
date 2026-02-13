@@ -67,8 +67,6 @@ export class TeamsService extends BaseFirebaseService<Team> {
       nickname: '',
       photoUrl: '',
       balance: 0,
-      totalPaidPenalties: 0,
-      totalUnpaidPenalties: 0,
       active: true,
       teamId: params.teamId,
       createdAt: now,

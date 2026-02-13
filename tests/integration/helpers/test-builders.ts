@@ -25,8 +25,6 @@ export class PlayerBuilder {
     this.player.nickname = 'Test';
     this.player.photoUrl = 'https://ui-avatars.com/api/?name=Test+Player';
     this.player.balance = 0;
-    this.player.totalUnpaidPenalties = 0;
-    this.player.totalPaidPenalties = 0;
     this.player.active = true;
   }
 

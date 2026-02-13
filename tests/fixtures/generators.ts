@@ -18,8 +18,6 @@ export function generatePlayer(overrides?: Partial<Player>): Player {
     balance: 0,
     email: 'test@example.com',
     phone: '+1234567890',
-    totalUnpaidPenalties: 0,
-    totalPaidPenalties: 0,
     ...overrides,
   };
 }
