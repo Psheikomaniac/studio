@@ -9,6 +9,8 @@ import {
   parseGermanDate,
   parseCentsToEuro,
   formatEuro,
+  classifyPunishment,
+  mapBeverageCategory,
 } from '@/lib/csv-utils';
 
 describe('stripBOM', () => {
@@ -369,5 +371,106 @@ describe('Integration: parseCentsToEuro + formatEuro', () => {
     const formatted = formatEuro(euros);
 
     expect(formatted).toMatch(/1[.\s]234,56\s€/);
+  });
+});
+
+describe('classifyPunishment', () => {
+  describe('classifies drinks correctly', () => {
+    it.each([
+      ['Getränke', 'DRINK'],
+      ['Getränk', 'DRINK'],
+      ['Bier', 'DRINK'],
+      ['Beer penalty', 'DRINK'],
+      ['Drink after training', 'DRINK'],
+      ['Beverage', 'DRINK'],
+      ['Trinken', 'DRINK'],
+      ['Alkohol', 'DRINK'],
+      ['Alcohol', 'DRINK'],
+      ['Apfelwein', 'DRINK'],
+      ['Appler', 'DRINK'],
+      ['Äppler', 'DRINK'],
+      ['Cidre', 'DRINK'],
+      ['Cider', 'DRINK'],
+    ])('classifies "%s" as %s', (reason, expected) => {
+      expect(classifyPunishment(reason)).toBe(expected);
+    });
+  });
+
+  describe('classifies fines correctly', () => {
+    it.each([
+      ['Zu spät gekommen', 'FINE'],
+      ['Late to practice', 'FINE'],
+      ['Gelbe Karte', 'FINE'],
+      ['Rote Karte', 'FINE'],
+      ['Vergessenes Equipment', 'FINE'],
+      ['Foto in den Medien', 'FINE'],
+    ])('classifies "%s" as %s', (reason, expected) => {
+      expect(classifyPunishment(reason)).toBe(expected);
+    });
+  });
+
+  describe('excludes false positives', () => {
+    it('classifies "Kasten Bier" as FINE (not DRINK)', () => {
+      expect(classifyPunishment('Kasten Bier')).toBe('FINE');
+    });
+
+    it('classifies "Runde" as FINE (not DRINK)', () => {
+      expect(classifyPunishment('Runde ausgeben')).toBe('FINE');
+    });
+  });
+
+  describe('handles edge cases', () => {
+    it('returns FINE for empty string', () => {
+      expect(classifyPunishment('')).toBe('FINE');
+    });
+
+    it('returns FINE for null/undefined', () => {
+      expect(classifyPunishment(null as any)).toBe('FINE');
+      expect(classifyPunishment(undefined as any)).toBe('FINE');
+    });
+
+    it('is case-insensitive', () => {
+      expect(classifyPunishment('BIER')).toBe('DRINK');
+      expect(classifyPunishment('bier')).toBe('DRINK');
+      expect(classifyPunishment('Bier')).toBe('DRINK');
+    });
+
+    it('handles whitespace', () => {
+      expect(classifyPunishment('  Bier  ')).toBe('DRINK');
+    });
+  });
+});
+
+describe('mapBeverageCategory', () => {
+  describe('maps to Appler', () => {
+    it.each(['Apfelwein', 'Appler', 'Äppler'])(
+      'maps "%s" to Appler',
+      (reason) => {
+        expect(mapBeverageCategory(reason)).toBe('Appler');
+      }
+    );
+  });
+
+  describe('maps to Beer/Lemonade', () => {
+    it.each(['Bier', 'Beer', 'Pils', 'Weizen', 'Radler', 'Cola', 'Sprite', 'Wasser', 'Water', 'Limo'])(
+      'maps "%s" to Beer/Lemonade',
+      (reason) => {
+        expect(mapBeverageCategory(reason)).toBe('Beer/Lemonade');
+      }
+    );
+  });
+
+  describe('maps to Beverages (default)', () => {
+    it.each(['Mystery Drink', 'Trinken', 'Alkohol', ''])(
+      'maps "%s" to Beverages',
+      (reason) => {
+        expect(mapBeverageCategory(reason)).toBe('Beverages');
+      }
+    );
+  });
+
+  it('handles null/undefined', () => {
+    expect(mapBeverageCategory(null as any)).toBe('Beverages');
+    expect(mapBeverageCategory(undefined as any)).toBe('Beverages');
   });
 });

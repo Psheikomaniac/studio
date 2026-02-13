@@ -17,6 +17,7 @@ import {
   dues,
   duePayments
 } from './static-data';
+import { classifyPunishment } from './csv-utils';
 
 export interface ImportResult {
   success: boolean;
@@ -103,20 +104,6 @@ function findOrCreatePlayer(name: string, id?: string): Player {
 
   players.push(newPlayer);
   return newPlayer;
-}
-
-// Helper function to classify punishment as DRINK or FINE
-function classifyPunishment(reason: string): 'DRINK' | 'FINE' {
-  const lowerReason = reason.toLowerCase();
-  const drinkKeywords = ['getränke', 'getränk', 'bier', 'beer', 'drink', 'beverage', 'wasser', 'water', 'cola', 'sprite'];
-
-  for (const keyword of drinkKeywords) {
-    if (lowerReason.includes(keyword)) {
-      return 'DRINK';
-    }
-  }
-
-  return 'FINE';
 }
 
 // Helper function to find or create beverage by name
