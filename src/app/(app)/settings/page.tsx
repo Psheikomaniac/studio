@@ -237,6 +237,15 @@ export default function SettingsPage() {
       return;
     }
 
+    if (!teamId) {
+      toast({
+        title: t('error'),
+        description: t('settingsPage.teamNotSet', 'Team is not set'),
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsResetting(true);
     try {
       // Get all players in the team
@@ -416,6 +425,15 @@ export default function SettingsPage() {
 
   const handleForceImport = async () => {
     if (!firestore || selectedSkippedItems.size === 0) return;
+
+    if (!teamId) {
+      toast({
+        title: t('error'),
+        description: t('settingsPage.teamNotSet', 'Team is not set'),
+        variant: "destructive"
+      });
+      return;
+    }
 
     setIsForceImporting(true);
     try {

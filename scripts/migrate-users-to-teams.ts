@@ -42,7 +42,7 @@ async function migrate() {
 
   // Initialize Firebase (uses environment config)
   const app = initializeApp({
-    projectId: process.env.FIREBASE_PROJECT_ID || 'demo-project',
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'demo-project',
   });
   const firestore = getFirestore(app);
 
