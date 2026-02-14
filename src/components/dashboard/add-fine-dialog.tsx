@@ -33,22 +33,25 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Player, PredefinedFine } from "@/lib/types";
+import type { Player } from "@/lib/types";
 import { PlayerMultiSelect } from "./player-multi-select";
 import { getFineSuggestion } from "@/lib/actions";
 import { formatEuro } from "@/lib/csv-utils";
 import { useTranslation } from 'react-i18next';
+import { useTeamPredefinedFines } from '@/services/predefined-fines.service';
+import { useTeam } from '@/team';
 
 
 type AddFineDialogProps = {
   isOpen: boolean;
   setOpen: (open: boolean) => void;
   players: Player[];
-  predefinedFines: PredefinedFine[];
   onFineAdded: (fine: any) => void;
 };
 
-export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFineAdded }: AddFineDialogProps) {
+export function AddFineDialog({ isOpen, setOpen, players, onFineAdded }: AddFineDialogProps) {
+  const { teamId } = useTeam();
+  const { data: predefinedFines, isLoading: predefinedFinesLoading } = useTeamPredefinedFines(teamId);
   const { t } = useTranslation();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const { toast } = useToast();
@@ -125,7 +128,7 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
   };
 
   const handlePredefinedFineChange = (value: string) => {
-    const fine = predefinedFines.find(f => f.reason === value);
+    const fine = (predefinedFines || []).find(f => f.reason === value);
     if (fine) {
       form.setValue("reason", fine.reason, { shouldValidate: true });
       form.setValue("amount", fine.amount, { shouldValidate: true });
@@ -191,15 +194,15 @@ export function AddFineDialog({ isOpen, setOpen, players, predefinedFines, onFin
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('dialogs.reason')}</FormLabel>
-                  <Select onValueChange={handlePredefinedFineChange} value={field.value}>
+                  <Select onValueChange={handlePredefinedFineChange} value={field.value} disabled={predefinedFinesLoading}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select or type a reason..." />
+                        <SelectValue placeholder={predefinedFinesLoading ? "Loading fines..." : "Select or type a reason..."} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {predefinedFines.map((fine, i) => (
-                        <SelectItem key={i} value={fine.reason}>
+                      {(predefinedFines || []).map((fine) => (
+                        <SelectItem key={fine.id} value={fine.reason}>
                           {fine.reason} ({formatEuro(fine.amount)})
                         </SelectItem>
                       ))}

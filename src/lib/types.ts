@@ -67,6 +67,9 @@ export interface PredefinedFine {
   id: string;
   reason: string;
   amount: number;
+  teamId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export enum PaymentCategory {
