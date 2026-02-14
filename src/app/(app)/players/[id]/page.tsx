@@ -45,7 +45,7 @@ export default function PlayerDetailsPage() {
   const { data: player, isLoading: playerLoading, error: playerError } = usePlayer(teamId, playerId);
   const { data: fines, isLoading: finesLoading, error: finesError } = usePlayerFines(teamId, playerId);
   const { data: payments, isLoading: paymentsLoading, error: paymentsError } = usePlayerPayments(teamId, playerId);
-  const { data: duePayments, isLoading: dueLoading, error: dueError } = usePlayerDuePayments(playerId);
+  const { data: duePayments, isLoading: dueLoading, error: dueError } = usePlayerDuePayments(teamId, playerId);
   const { data: consumptions, isLoading: consLoading, error: consError } = usePlayerConsumptions(teamId, playerId);
 
   const isLoading = playerLoading || finesLoading || paymentsLoading || dueLoading || consLoading;

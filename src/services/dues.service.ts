@@ -3,7 +3,7 @@
  * Handles CRUD operations for due payments with auto-payment logic and real-time hooks
  *
  * CRITICAL BUSINESS LOGIC:
- * - Due payments are stored in nested collections: /users/{userId}/duePayments/{duePaymentId}
+ * - Due payments are stored in nested collections: /teams/{teamId}/players/{playerId}/duePayments/{duePaymentId}
  * - Auto-payment logic applies player balance to new due payments
  * - Supports partial payments via amountPaid field
  * - Supports exempt status for players who don't need to pay
@@ -43,8 +43,12 @@ interface DuePaymentCreateOptions extends CreateOptions {
  * Provides due payment-specific operations with auto-payment logic
  */
 export class DuesService extends BaseFirebaseService<DuePayment> {
-  constructor(firestore: Firestore, private userId: string) {
-    super(firestore, `users/${userId}/duePayments`);
+  constructor(
+    firestore: Firestore,
+    private teamId: string,
+    private playerId: string
+  ) {
+    super(firestore, `teams/${teamId}/players/${playerId}/duePayments`);
   }
 
   /**
@@ -103,7 +107,7 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
       } as DuePayment;
 
       const docRef = this.getDocRef(id);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const userRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
 
       await runTransaction(this.firestore, async (transaction) => {
         transaction.set(docRef, fullData);
@@ -190,7 +194,7 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
   ): Promise<ServiceResult<DuePayment>> {
     try {
       const docRef = this.getDocRef(duePaymentId);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const userRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
       const now = this.timestamp();
 
       const updatedDuePayment = await runTransaction(this.firestore, async (transaction) => {
@@ -249,7 +253,7 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
   ): Promise<ServiceResult<DuePayment>> {
     try {
       const docRef = this.getDocRef(duePaymentId);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const userRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
       const now = this.timestamp();
 
       const updatedDuePayment = await runTransaction(this.firestore, async (transaction) => {
@@ -374,7 +378,7 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
   ): Promise<ServiceResult<void>> {
     try {
       const docRef = this.getDocRef(duePaymentId);
-      const userRef = doc(this.firestore, 'users', this.userId);
+      const userRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
 
       await runTransaction(this.firestore, async (transaction) => {
         const docSnap = await transaction.get(docRef);
@@ -433,7 +437,7 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
    * @returns DocumentReference for the due payment
    */
   getDuePaymentRef(duePaymentId: string): DocumentReference {
-    return doc(this.firestore, `users/${this.userId}/duePayments`, duePaymentId);
+    return doc(this.firestore, `teams/${this.teamId}/players/${this.playerId}/duePayments`, duePaymentId);
   }
 
   /**
@@ -442,46 +446,54 @@ export class DuesService extends BaseFirebaseService<DuePayment> {
    * @returns CollectionReference for user's due payments
    */
   getDuePaymentsCollectionRef(): CollectionReference {
-    return collection(this.firestore, `users/${this.userId}/duePayments`);
+    return collection(this.firestore, `teams/${this.teamId}/players/${this.playerId}/duePayments`);
   }
 }
 
 /**
- * Hook to get the DuesService instance for a specific user
+ * Hook to get the DuesService instance for a specific player in a team
  *
- * @param userId User ID to get dues service for
- * @returns DuesService instance or null if userId not provided
+ * @param teamId Team ID
+ * @param playerId Player ID to get dues service for
+ * @returns DuesService instance or null if teamId/playerId not provided
  * @example
- * const duesService = useDuesService(playerId);
+ * const duesService = useDuesService(teamId, playerId);
  * if (duesService) {
  *   await duesService.createDuePayment({ dueId: 'season2526', amountDue: 50, ... });
  * }
  */
-export function useDuesService(userId: string | null | undefined): DuesService | null {
+export function useDuesService(
+  teamId: string | null | undefined,
+  playerId: string | null | undefined
+): DuesService | null {
   const firebase = useFirebaseOptional();
 
   return useMemo(() => {
-    if (!userId || !firebase?.firestore) return null;
-    return new DuesService(firebase.firestore, userId);
-  }, [firebase?.firestore, userId]);
+    if (!teamId || !playerId || !firebase?.firestore) return null;
+    return new DuesService(firebase.firestore, teamId, playerId);
+  }, [firebase?.firestore, teamId, playerId]);
 }
 
 /**
  * Hook to subscribe to a player's due payments in real-time
  *
- * @param userId User ID to fetch due payments for
+ * @param teamId Team ID
+ * @param playerId Player ID to fetch due payments for
  * @returns Hook result with due payments array, loading state, and error
  * @example
- * const { data: duePayments, isLoading, error } = usePlayerDuePayments(playerId);
+ * const { data: duePayments, isLoading, error } = usePlayerDuePayments(teamId, playerId);
  */
-export function usePlayerDuePayments(userId: string | null | undefined) {
+export function usePlayerDuePayments(
+  teamId: string | null | undefined,
+  playerId: string | null | undefined
+) {
   const firebase = useFirebaseOptional();
 
   const duePaymentsQuery = useMemoFirebase(() => {
-    if (!userId || !firebase?.firestore) return null;
-    const duePaymentsCol = collection(firebase.firestore, `users/${userId}/duePayments`);
+    if (!teamId || !playerId || !firebase?.firestore) return null;
+    const duePaymentsCol = collection(firebase.firestore, `teams/${teamId}/players/${playerId}/duePayments`);
     return query(duePaymentsCol, orderBy('createdAt', 'desc'));
-  }, [firebase?.firestore, userId]);
+  }, [firebase?.firestore, teamId, playerId]);
 
   return useCollection<DuePayment>(duePaymentsQuery);
 }

@@ -49,21 +49,6 @@ export async function seedTeam(
 }
 
 /**
- * Seed a player into Firestore
- * @param firestore Firestore instance
- * @param player Player data
- * @returns Player ID
- */
-export async function seedPlayer(firestore: Firestore, player: Player): Promise<string> {
-  // Legacy helper retained for DuePayments/legacy tests.
-  const playerRef = doc(firestore, 'users', player.id);
-  const batch = writeBatch(firestore);
-  batch.set(playerRef, player);
-  await batch.commit();
-  return player.id;
-}
-
-/**
  * Seed a player into Firestore under a team scope
  * @param firestore Firestore instance
  * @param teamId Team ID
@@ -82,24 +67,6 @@ export async function seedTeamPlayer(
   batch.set(playerRef, player);
   await batch.commit();
   return player.id;
-}
-
-/**
- * Seed multiple players into Firestore
- * @param firestore Firestore instance
- * @param players Array of players
- * @returns Array of player IDs
- */
-export async function seedPlayers(firestore: Firestore, players: Player[]): Promise<string[]> {
-  const batch = writeBatch(firestore);
-
-  players.forEach(player => {
-    const playerRef = doc(firestore, 'users', player.id);
-    batch.set(playerRef, player);
-  });
-
-  await batch.commit();
-  return players.map(p => p.id);
 }
 
 /**
@@ -123,25 +90,6 @@ export async function seedTeamPlayers(
 }
 
 /**
- * Seed a fine into Firestore (in user subcollection)
- * @param firestore Firestore instance
- * @param userId User ID
- * @param fine Fine data
- * @returns Fine ID
- */
-export async function seedFine(
-  firestore: Firestore,
-  userId: string,
-  fine: Fine
-): Promise<string> {
-  const fineRef = doc(firestore, `users/${userId}/fines`, fine.id);
-  const batch = writeBatch(firestore);
-  batch.set(fineRef, fine);
-  await batch.commit();
-  return fine.id;
-}
-
-/**
  * Seed a fine into Firestore under a team-scoped player subcollection
  */
 export async function seedTeamFine(
@@ -156,29 +104,6 @@ export async function seedTeamFine(
   batch.set(fineRef, fine);
   await batch.commit();
   return fine.id;
-}
-
-/**
- * Seed multiple fines into Firestore
- * @param firestore Firestore instance
- * @param userId User ID
- * @param fines Array of fines
- * @returns Array of fine IDs
- */
-export async function seedFines(
-  firestore: Firestore,
-  userId: string,
-  fines: Fine[]
-): Promise<string[]> {
-  const batch = writeBatch(firestore);
-
-  fines.forEach(fine => {
-    const fineRef = doc(firestore, `users/${userId}/fines`, fine.id);
-    batch.set(fineRef, fine);
-  });
-
-  await batch.commit();
-  return fines.map(f => f.id);
 }
 
 export async function seedTeamFines(
@@ -200,25 +125,6 @@ export async function seedTeamFines(
 }
 
 /**
- * Seed a payment into Firestore (in user subcollection)
- * @param firestore Firestore instance
- * @param userId User ID
- * @param payment Payment data
- * @returns Payment ID
- */
-export async function seedPayment(
-  firestore: Firestore,
-  userId: string,
-  payment: Payment
-): Promise<string> {
-  const paymentRef = doc(firestore, `users/${userId}/payments`, payment.id);
-  const batch = writeBatch(firestore);
-  batch.set(paymentRef, payment);
-  await batch.commit();
-  return payment.id;
-}
-
-/**
  * Seed a payment into Firestore under a team-scoped player subcollection
  */
 export async function seedTeamPayment(
@@ -233,29 +139,6 @@ export async function seedTeamPayment(
   batch.set(paymentRef, payment);
   await batch.commit();
   return payment.id;
-}
-
-/**
- * Seed multiple payments into Firestore
- * @param firestore Firestore instance
- * @param userId User ID
- * @param payments Array of payments
- * @returns Array of payment IDs
- */
-export async function seedPayments(
-  firestore: Firestore,
-  userId: string,
-  payments: Payment[]
-): Promise<string[]> {
-  const batch = writeBatch(firestore);
-
-  payments.forEach(payment => {
-    const paymentRef = doc(firestore, `users/${userId}/payments`, payment.id);
-    batch.set(paymentRef, payment);
-  });
-
-  await batch.commit();
-  return payments.map(p => p.id);
 }
 
 export async function seedTeamPayments(
@@ -291,18 +174,25 @@ export async function seedDue(firestore: Firestore, due: Due): Promise<string> {
 }
 
 /**
- * Seed a due payment into Firestore (in user subcollection)
+ * Seed a due payment into Firestore under a team-scoped player subcollection
  * @param firestore Firestore instance
- * @param userId User ID
+ * @param teamId Team ID
+ * @param playerId Player ID
  * @param duePayment Due payment data
  * @returns Due payment ID
  */
-export async function seedDuePayment(
+export async function seedTeamDuePayment(
   firestore: Firestore,
-  userId: string,
+  teamId: string,
+  playerId: string,
   duePayment: DuePayment
 ): Promise<string> {
-  const duePaymentRef = doc(firestore, `users/${userId}/duePayments`, duePayment.id);
+  await seedTeam(firestore, teamId);
+  const duePaymentRef = doc(
+    firestore,
+    `teams/${teamId}/players/${playerId}/duePayments`,
+    duePayment.id
+  );
   const batch = writeBatch(firestore);
   batch.set(duePaymentRef, duePayment);
   await batch.commit();
@@ -321,25 +211,6 @@ export async function seedBeverage(firestore: Firestore, beverage: Beverage): Pr
   batch.set(beverageRef, beverage);
   await batch.commit();
   return beverage.id;
-}
-
-/**
- * Seed a beverage consumption into Firestore (in user subcollection)
- * @param firestore Firestore instance
- * @param userId User ID
- * @param consumption Beverage consumption data
- * @returns Consumption ID
- */
-export async function seedBeverageConsumption(
-  firestore: Firestore,
-  userId: string,
-  consumption: BeverageConsumption
-): Promise<string> {
-  const consumptionRef = doc(firestore, `users/${userId}/beverageConsumptions`, consumption.id);
-  const batch = writeBatch(firestore);
-  batch.set(consumptionRef, consumption);
-  await batch.commit();
-  return consumption.id;
 }
 
 /**
@@ -379,7 +250,7 @@ export async function clearCollection(firestore: Firestore, collectionPath: stri
   const userSubcollections = ['fines', 'payments', 'duePayments', 'beverageConsumptions'];
 
   // Known subcollections under team player documents
-  const teamPlayerSubcollections = ['fines', 'payments', 'beverageConsumptions'];
+  const teamPlayerSubcollections = ['fines', 'payments', 'beverageConsumptions', 'duePayments'];
 
   // Delete nested subcollections first (to avoid orphaned subcollection docs between tests)
   if (collectionPath === 'users') {
