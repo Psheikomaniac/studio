@@ -33,13 +33,11 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Player } from "@/lib/types";
+import type { Player, PredefinedFine } from "@/lib/types";
 import { PlayerMultiSelect } from "./player-multi-select";
 import { getFineSuggestion } from "@/lib/actions";
 import { formatEuro } from "@/lib/csv-utils";
 import { useTranslation } from 'react-i18next';
-import { useTeamPredefinedFines } from '@/services/predefined-fines.service';
-import { useTeam } from '@/team';
 
 
 type AddFineDialogProps = {
@@ -47,11 +45,11 @@ type AddFineDialogProps = {
   setOpen: (open: boolean) => void;
   players: Player[];
   onFineAdded: (fine: any) => void;
+  predefinedFines: PredefinedFine[];
+  predefinedFinesLoading?: boolean;
 };
 
-export function AddFineDialog({ isOpen, setOpen, players, onFineAdded }: AddFineDialogProps) {
-  const { teamId } = useTeam();
-  const { data: predefinedFines, isLoading: predefinedFinesLoading } = useTeamPredefinedFines(teamId);
+export function AddFineDialog({ isOpen, setOpen, players, onFineAdded, predefinedFines, predefinedFinesLoading }: AddFineDialogProps) {
   const { t } = useTranslation();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const { toast } = useToast();
@@ -197,7 +195,7 @@ export function AddFineDialog({ isOpen, setOpen, players, onFineAdded }: AddFine
                   <Select onValueChange={handlePredefinedFineChange} value={field.value} disabled={predefinedFinesLoading}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={predefinedFinesLoading ? "Loading fines..." : "Select or type a reason..."} />
+                        <SelectValue placeholder={predefinedFinesLoading ? t('dialogs.loadingFines') : t('dialogs.selectOrTypeReason')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
