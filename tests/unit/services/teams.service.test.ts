@@ -11,6 +11,7 @@ import {
   setMockDocument,
 } from '../../mocks/firestore-mock';
 import { TeamsService, generateInviteCode, normalizeInviteCode } from '@/services/teams.service';
+import { PredefinedFinesService } from '@/services/predefined-fines.service';
 
 vi.mock('firebase/firestore', async () => {
   const mocks = await import('../../mocks/firestore-mock');
@@ -70,6 +71,28 @@ describe('TeamsService', () => {
       expect(playerDoc.id).toBe('owner-uid');
       expect(playerDoc.name).toBe('owner-uid');
       expect(playerDoc.balance).toBe(0);
+    });
+
+    it('should seed default predefined fines after creating a team', async () => {
+      const seedSpy = vi.spyOn(PredefinedFinesService.prototype, 'seedDefaults');
+
+      const result = await service.createTeam({
+        name: 'Seed Test Team',
+        ownerUid: 'seed-owner',
+        inviteCode: 'SEED1234',
+      });
+
+      expect(result.success).toBe(true);
+      expect(seedSpy).toHaveBeenCalledOnce();
+
+      // Verify the fines were actually created
+      const teamId = result.data!.team.id;
+      const pfService = new PredefinedFinesService(firestore, teamId);
+      const fines = await pfService.getAll();
+      expect(fines.success).toBe(true);
+      expect(fines.data).toHaveLength(7);
+
+      seedSpy.mockRestore();
     });
   });
 

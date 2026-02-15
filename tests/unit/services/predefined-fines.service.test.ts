@@ -181,6 +181,21 @@ describe('PredefinedFinesService', () => {
         expect(fine.teamId).toBe(TEAM_ID);
       }
     });
+
+    it('should be idempotent — calling twice returns 7 fines, not 14', async () => {
+      const first = await service.seedDefaults();
+      expect(first.success).toBe(true);
+      expect(first.data).toHaveLength(7);
+
+      const second = await service.seedDefaults();
+      expect(second.success).toBe(true);
+      expect(second.data).toHaveLength(7);
+
+      // Verify total documents in the collection is still 7
+      const all = await service.getAll();
+      expect(all.success).toBe(true);
+      expect(all.data).toHaveLength(7);
+    });
   });
 
   describe('Error handling', () => {

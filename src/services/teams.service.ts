@@ -24,6 +24,7 @@ import { BaseFirebaseService } from './base.service';
 import type { ServiceResult } from './types';
 import type { Player, Team, TeamMember, TeamRole } from '@/lib/types';
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
+import { PredefinedFinesService } from './predefined-fines.service';
 
 const INVITE_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -149,6 +150,10 @@ export class TeamsService extends BaseFirebaseService<Team> {
         tx.set(teamRef, team as any);
         tx.set(memberRef, membership as any);
       });
+
+      // Seed default predefined fines for the new team
+      const pfService = new PredefinedFinesService(this.firestore, teamId);
+      await pfService.seedDefaults();
 
       return {
         success: true,
