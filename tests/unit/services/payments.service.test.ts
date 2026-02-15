@@ -14,7 +14,6 @@ import type { Firestore } from 'firebase/firestore';
 import type { Payment } from '@/lib/types';
 import {
   createMockFirestore,
-  createMockDocumentSnapshot,
   clearMockDocuments,
   mockFirestoreFunctions,
   setMockDocument

@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PaymentsService } from '@/services/payments.service';
 import {
-    doc,
     runTransaction,
-    increment
 } from 'firebase/firestore';
 
 // Mock Firebase

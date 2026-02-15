@@ -208,7 +208,7 @@ export class PaymentsService extends BaseFirebaseService<Payment> {
    */
   async deletePayment(
     paymentId: string,
-    options: DeleteOptions = {}
+    _options: DeleteOptions = {}
   ): Promise<ServiceResult<void>> {
     try {
       const docRef = this.getDocRef(paymentId);

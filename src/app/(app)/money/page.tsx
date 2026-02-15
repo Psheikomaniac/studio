@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle, Receipt, Wallet, Beer, Search, X, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Player, Fine, Payment, Due, DuePayment, BeverageConsumption, Beverage } from "@/lib/types";
+import type { Due, Beverage } from "@/lib/types";
 import { usePlayers } from '@/services/players.service';
 import { useTeam } from '@/team';
 import { useMemoFirebase, useCollection } from '@/firebase';
@@ -182,7 +182,7 @@ const duesQuery = useMemoFirebase(() => {
 
     // Due Payments (debit)
     duePayments.forEach(duePayment => {
-      const due = dues.find(d => d.id === duePayment.dueId);
+      const _due = dues.find(d => d.id === duePayment.dueId);
       const isPartiallyPaid = !duePayment.paid && duePayment.amountPaid && duePayment.amountPaid > 0;
       transactions.push({
         id: duePayment.id,

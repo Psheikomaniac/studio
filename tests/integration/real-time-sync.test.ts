@@ -9,7 +9,6 @@ import { onSnapshot, collection, query, orderBy } from 'firebase/firestore';
 import { seedTeamPlayer, seedTeamFine, clearCollection } from './helpers/seed-data';
 import { createPlayer, createFine } from './helpers/test-builders';
 import { PlayersService } from '@/services/players.service';
-import { FinesService } from '@/services/fines.service';
 
 describe('Integration: Real-time Sync', () => {
   let firestore: ReturnType<typeof getTestFirestore>;

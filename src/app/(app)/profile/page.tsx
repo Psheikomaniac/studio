@@ -11,10 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Save, User, Wallet, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
+import { Loader2, Save, Wallet, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 export default function ProfilePage() {

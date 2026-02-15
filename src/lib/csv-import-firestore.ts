@@ -712,7 +712,7 @@ export async function importTransactionsCSVToFirestore(
 
           if (match) {
             playerName = match[1].trim();
-            const dueName = match[2].trim();
+            const _dueName = match[2].trim();
 
             // Use the due name as the reason/description
             // We treat this as a generic payment for now, but linked to the user

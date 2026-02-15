@@ -92,7 +92,7 @@ export function useDoc<T = any>(
           }
           setError(null);
           setIsLoading(false);
-        } catch (e) {
+        } catch {
           if (cancelled) return;
           const contextualError = new FirestorePermissionError({
             operation: 'get',
@@ -123,7 +123,7 @@ export function useDoc<T = any>(
         setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
         setIsLoading(false);
       },
-      (error: FirestoreError) => {
+      (_error: FirestoreError) => {
         const contextualError = new FirestorePermissionError({
           operation: 'get',
           path: memoizedDocRef.path,

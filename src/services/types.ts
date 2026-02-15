@@ -3,7 +3,7 @@
  * Common interfaces and types used across all Firebase services
  */
 
-import type { Firestore, QueryConstraint, DocumentSnapshot, WhereFilterOp, OrderByDirection } from 'firebase/firestore';
+import type { DocumentSnapshot, WhereFilterOp, OrderByDirection } from 'firebase/firestore';
 
 /**
  * Standard result wrapper for service operations

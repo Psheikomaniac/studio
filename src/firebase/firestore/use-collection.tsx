@@ -12,7 +12,6 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { Player } from '@/lib/types';
 
 // Debug logging flag (opt-in)
 const DEBUG_LOGS = process.env.NEXT_PUBLIC_FIREBASE_DEBUG_LOGS === 'true';

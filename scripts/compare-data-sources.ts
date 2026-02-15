@@ -136,7 +136,7 @@ function main() {
   // Calculate differences
   const diff1 = totalBev - 199.50;
   const diff2 = 260.50 - totalBev;
-  const diff3 = totalBev - 184.50;
+  const _diff3 = totalBev - 184.50;
 
   console.log('\n💡 ANALYSIS:\n');
   console.log(`   CSV Total (${totalBev.toFixed(2)}) - User's Total (199.50) = €${diff1.toFixed(2)}`);

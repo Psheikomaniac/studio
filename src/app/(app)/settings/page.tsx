@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Trash2, RotateCcw, AlertCircle, Check, X } from "lucide-react";
+import { Loader2, Trash2, RotateCcw, AlertCircle, Check } from "lucide-react";
 import { importCSVToFirestore, type SkippedItem } from "@/lib/csv-import-firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";

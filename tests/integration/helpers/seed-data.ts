@@ -4,7 +4,6 @@
  */
 
 import {
-  collection,
   doc,
   writeBatch,
   type Firestore,

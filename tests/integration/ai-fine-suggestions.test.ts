@@ -3,7 +3,7 @@
  * Tests AI-powered fine suggestion generation with Genkit + Gemini
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { getFineSuggestion } from '@/lib/actions';
 
 // Mock the AI flow to avoid actual API calls in tests

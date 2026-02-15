@@ -14,7 +14,7 @@ export function reportWebVitals(metric: MinimalMetric) {
     // Example: [WebVitals] LCP 1200 id-xxxx
     // Round values where appropriate (most metrics are in ms)
     const value = Math.round(metric.value);
-    // eslint-disable-next-line no-console
+     
     console.log('[WebVitals]', metric.name, value, metric.id);
   }
   // TODO: send to analytics endpoint if needed (e.g., Firestore/BigQuery)
@@ -35,7 +35,7 @@ export async function initWebVitals() {
       mod.onINP(reportWebVitals);
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
+     
     console.warn('[PRD-10] web-vitals package not available or failed to load.', e);
   }
 }

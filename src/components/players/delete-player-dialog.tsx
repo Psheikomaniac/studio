@@ -11,7 +11,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "../ui/button";
 import { useTranslation } from 'react-i18next';
 
 type DeletePlayerDialogProps = {

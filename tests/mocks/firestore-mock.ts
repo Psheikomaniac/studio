@@ -21,11 +21,6 @@ const mockDocuments = new Map<string, any>();
 
 // Basic pub/sub for realtime listeners
 type Listener = (snapshot: any) => void;
-interface QueryDescriptor {
-  type: 'query';
-  collectionPath: string;
-  constraints?: any[];
-}
 // Maintain listeners per collection path; each entry stores the original query/ref and callback
 interface ListenerEntry { qOrRef: any; cb: Listener }
 const listenersByCollection = new Map<string, Set<ListenerEntry>>();
@@ -466,7 +461,7 @@ export const mockFirestoreFunctions = {
     }
   }),
 
-  writeBatch: vi.fn((firestore: Firestore) => {
+  writeBatch: vi.fn((_firestore: Firestore) => {
     const ops: Array<() => void> = [];
     const affectedCollections = new Set<string>();
     return {

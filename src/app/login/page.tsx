@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { useAuth, useUser } from '@/firebase/provider';
+import { useUser } from '@/firebase/provider';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, setDoc, collectionGroup, query, where, limit, getDocs } from 'firebase/firestore';
+import { collectionGroup, query, where, limit, getDocs } from 'firebase/firestore';
 import { useFirebase } from '@/firebase/provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -106,7 +106,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await createUserWithEmailAndPassword(auth, email, password);
 
       // Create user document in Firestore
       // We need to use the non-blocking update or a direct setDoc here

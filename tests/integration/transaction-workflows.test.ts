@@ -8,7 +8,6 @@ import { getTestFirestore } from './setup';
 import { FinesService } from '@/services/fines.service';
 import { PaymentsService } from '@/services/payments.service';
 import { BalanceService } from '@/services/balance.service';
-import { BeveragesService } from '@/services/beverages.service';
 import {
   seedTeamPlayer,
   clearCollection,
@@ -314,7 +313,7 @@ describe('Integration: Transaction Workflows', () => {
       try {
         await runTransaction(firestore, async (transaction) => {
           const fineRef = finesService.getFineRef(initialFine.id);
-          const fineDoc = await transaction.get(fineRef);
+          await transaction.get(fineRef);
 
           // Update the fine
           transaction.update(fineRef, { paid: true, paidAt: new Date().toISOString() });
@@ -322,7 +321,7 @@ describe('Integration: Transaction Workflows', () => {
           // Force an error
           throw new Error('Simulated transaction failure');
         });
-      } catch (error) {
+      } catch {
         // Expected to fail
       }
 

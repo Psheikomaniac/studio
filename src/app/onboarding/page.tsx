@@ -156,7 +156,7 @@ export default function OnboardingPage() {
       
       setClubId(result.data.club.id);
       toast({ title: 'Verein erstellt', description: 'Du kannst nun ein Team erstellen.' });
-    } catch (err) {
+    } catch {
       toast({ title: 'Fehler', description: 'Verein konnte nicht erstellt werden.', variant: 'destructive' });
     } finally {
       setIsSubmitting(false);

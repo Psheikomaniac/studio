@@ -12,7 +12,7 @@ import * as path from 'path';
 /**
  * Example 1: Import Dues CSV
  */
-async function exampleImportDues() {
+export async function exampleImportDues() {
   try {
     const csvPath = path.join(process.cwd(), 'data', 'cashbox-dues-27-10-2025-132824.csv');
     const csvText = fs.readFileSync(csvPath, 'utf-8');
@@ -45,7 +45,7 @@ async function exampleImportDues() {
 /**
  * Example 2: Import Punishments CSV
  */
-async function exampleImportPunishments() {
+export async function exampleImportPunishments() {
   try {
     const csvPath = path.join(process.cwd(), 'data', 'cashbox-punishments-27-10-2025-132755.csv');
     const csvText = fs.readFileSync(csvPath, 'utf-8');
@@ -78,7 +78,7 @@ async function exampleImportPunishments() {
 /**
  * Example 3: Import Transactions CSV
  */
-async function exampleImportTransactions() {
+export async function exampleImportTransactions() {
   try {
     const csvPath = path.join(process.cwd(), 'data', 'cashbox-transactions-27-10-2025-132849.csv');
     const csvText = fs.readFileSync(csvPath, 'utf-8');
@@ -111,7 +111,7 @@ async function exampleImportTransactions() {
 /**
  * Example 4: Using the generic importCSV function
  */
-async function exampleImportGeneric() {
+export async function exampleImportGeneric() {
   try {
     const csvPath = path.join(process.cwd(), 'data', 'cashbox-dues-27-10-2025-132824.csv');
     const csvText = fs.readFileSync(csvPath, 'utf-8');

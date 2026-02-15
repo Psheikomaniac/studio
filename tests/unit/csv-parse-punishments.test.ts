@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { parsePunishmentCSV } from '@/lib/csv-parse-punishments';
-import type { ParsedPunishmentRow } from '@/lib/csv-parse-punishments';
 
 function buildCSV(rows: string[]): string {
   const header = [

@@ -31,7 +31,6 @@ import {
   type QueryConstraint,
   type DocumentSnapshot,
   onSnapshot,
-  serverTimestamp,
   writeBatch,
 } from 'firebase/firestore';
 
@@ -353,7 +352,7 @@ export abstract class BaseFirebaseService<T> {
       const docRef = this.getDocRef(id);
       const snapshot = await getDoc(docRef);
       return snapshot.exists();
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -367,7 +366,7 @@ export abstract class BaseFirebaseService<T> {
     try {
       const result = await this.getAll(options);
       return result.data?.length || 0;
-    } catch (error) {
+    } catch {
       return 0;
     }
   }
@@ -410,7 +409,7 @@ export abstract class BaseFirebaseService<T> {
       });
 
       await batch.commit();
-    } catch (error) {
+    } catch {
       result.failed = items.length;
       result.success = 0;
     }

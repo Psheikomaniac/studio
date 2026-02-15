@@ -7,9 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Receipt, Wallet, Beer, TrendingDown } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
-import type { Player, Fine, Payment, Due, DuePayment, BeverageConsumption, Beverage } from '@/lib/types';
+import type { Due, Beverage } from '@/lib/types';
 import { Stats } from '@/components/dashboard/stats';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { usePlayers } from '@/services/players.service';
@@ -92,7 +91,6 @@ export default function DashboardPage() {
   const [isRecordDueOpen, setRecordDueOpen] = useState(false);
   const [isRecordBeverageOpen, setRecordBeverageOpen] = useState(false);
 
-  const { toast } = useToast();
 
   const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Unknown';
   const getDueName = (id: string) => dues.find(d => d.id === id)?.name || 'Unknown';

@@ -4,9 +4,8 @@ import {
   getFirestore, 
   collection, 
   getDocs, 
-  doc, 
-  updateDoc, 
-  writeBatch 
+  doc,
+  writeBatch
 } from 'firebase/firestore';
 
 // Import Firebase config from your environment

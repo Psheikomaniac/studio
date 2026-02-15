@@ -339,7 +339,6 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
     consumptionData: Partial<Omit<BeverageConsumption, 'id'>>,
     options: UpdateOptions = {}
   ): void {
-    const now = this.timestamp();
     const updateData = {
       ...consumptionData,
       ...(options.userId && { updatedBy: options.userId }),
@@ -358,7 +357,7 @@ export class BeveragesService extends BaseFirebaseService<BeverageConsumption> {
    */
   async deleteConsumption(
     consumptionId: string,
-    options: DeleteOptions = {}
+    _options: DeleteOptions = {}
   ): Promise<ServiceResult<void>> {
     try {
       const docRef = this.getDocRef(consumptionId);
