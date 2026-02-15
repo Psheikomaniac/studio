@@ -34,7 +34,7 @@ test.describe('Feature: Dashboard Analytics', () => {
     await expect(dashboardPage.recordBeverageButton).toBeVisible();
   });
 
-  test('should display stat cards correctly', async ({ page }) => {
+  test('should display stat cards correctly', async ({ page: _page }) => {
     // GIVEN: Dashboard is loaded
     // WHEN: User views stat cards
     const statsVisible = await dashboardPage.statsCards.first().isVisible();
@@ -56,7 +56,7 @@ test.describe('Feature: Dashboard Analytics', () => {
     expect(chartVisible).toBe(true);
   });
 
-  test('should display top debtors widget', async ({ page }) => {
+  test('should display top debtors widget', async ({ page: _page }) => {
     // GIVEN: Dashboard is loaded
     // WHEN: User views top debtors
     const topDebtorsVisible = await dashboardPage.topDebtorsWidget.isVisible();
@@ -220,7 +220,7 @@ test.describe('Feature: Dashboard Analytics', () => {
     }
   });
 
-  test('should perform within acceptable time', async ({ page }) => {
+  test('should perform within acceptable time', async ({ page: _page }) => {
     // GIVEN: User navigates to dashboard
     const startTime = Date.now();
 

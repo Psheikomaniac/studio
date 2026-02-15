@@ -18,8 +18,6 @@ import {
   getDocs,
   collectionGroup,
   query,
-  orderBy,
-  limit,
 } from 'firebase/firestore';
 import { initializeApp as initializeAdminApp, getApps as getAdminApps } from 'firebase-admin/app';
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
@@ -318,19 +316,19 @@ async function checkFirestoreData() {
     console.log('\n==========================');
     console.log('📋 Summary\n');
 
-    const totalUsers = usersSnap.size;
-    let totalTransactions = 0;
-    let hasIndexErrors = false;
+    const _totalUsers = usersSnap.size;
+    let _totalTransactions = 0;
+    let _hasIndexErrors = false;
 
     try {
       const allFines = await getDocs(collectionGroup(db, 'fines'));
       const allPayments = await getDocs(collectionGroup(db, 'payments'));
       const allDuePayments = await getDocs(collectionGroup(db, 'duePayments'));
       const allConsumptions = await getDocs(collectionGroup(db, 'beverageConsumptions'));
-      totalTransactions = allFines.size + allPayments.size + allDuePayments.size + allConsumptions.size;
+      _totalTransactions = allFines.size + allPayments.size + allDuePayments.size + allConsumptions.size;
     } catch (error: any) {
       if (error.message.includes('index')) {
-        hasIndexErrors = true;
+        _hasIndexErrors = true;
       }
     }
 

@@ -179,26 +179,9 @@ export class ClubsService extends BaseFirebaseService<Club> {
     }
   }
   
-  async getUserClubs(uid: string): Promise<ServiceResult<Club[]>> {
-      // Since we don't have a collectionGroup index for clubMembers yet (maybe), 
-      // or we can try collectionGroup query.
-      // Ideally, we replicate the TeamProvider logic: query collectionGroup 'clubMembers' where docId == uid.
-      try {
-          // This requires 'clubMembers' to be indexed for collectionGroup queries if we query by field.
-          // Query by documentID is supported by default? 
-          // TeamProvider uses: query(membersGroup, where(documentId(), '==', uid));
-          // Let's do the same.
-          // However, getting the Club data requires fetching the parent docs.
-          // This might be expensive if user is in many clubs (unlikely).
-          
-          // Implementation:
-          // 1. Find membership docs
-          // 2. Extract clubIds
-          // 3. Fetch clubs
-          return { success: true, data: [] }; // Placeholder, logic to be implemented in Provider/Hook
-      } catch (error) {
-          return { success: false, error: error as Error };
-      }
+  async getUserClubs(_uid: string): Promise<ServiceResult<Club[]>> {
+      // Placeholder — logic to be implemented in Provider/Hook
+      return { success: true, data: [] };
   }
 }
 

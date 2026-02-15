@@ -10,7 +10,6 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
   memoryLocalCache,
-  CACHE_SIZE_UNLIMITED
 } from 'firebase/firestore';
 import { getPerformance } from 'firebase/performance';
 import { getAnalytics, isSupported } from 'firebase/analytics';
@@ -258,7 +257,7 @@ export function getSdks(firebaseApp: FirebaseApp) {
         ? 'Firestore: Multi-tab persistence enabled (modern API)'
         : 'Firestore: Memory-only cache enabled'
     );
-  } catch (e) {
+  } catch {
     // If already initialized elsewhere, fall back to the existing instance
     firestore = getFirestore(firebaseApp);
   }
