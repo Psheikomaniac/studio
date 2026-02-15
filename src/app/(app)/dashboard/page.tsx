@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Receipt, Wallet, Beer, TrendingDown } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
-import type { Player, Fine, Payment, Due, DuePayment, BeverageConsumption, PredefinedFine, Beverage } from '@/lib/types';
+import type { Player, Fine, Payment, Due, DuePayment, BeverageConsumption, Beverage } from '@/lib/types';
 import { Stats } from '@/components/dashboard/stats';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { usePlayers } from '@/services/players.service';
@@ -17,13 +17,13 @@ import { useTeam } from '@/team';
 import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
 import {
   dues as staticDues,
-  predefinedFines as staticPredefinedFines,
   beverages as staticBeverages
 } from '@/lib/static-data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { AddFineDialog } from '@/components/dashboard/add-fine-dialog';
+import { useTeamPredefinedFines } from '@/services/predefined-fines.service';
 import { RecordDuePaymentDialog } from '@/components/dues/record-due-payment-dialog';
 import { AddEditPaymentDialog } from '@/components/payments/add-edit-payment-dialog';
 import { RecordConsumptionDialog } from '@/components/beverages/record-consumption-dialog';
@@ -57,10 +57,10 @@ export default function DashboardPage() {
   const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments({ teamId });
   const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ teamId });
+  const { data: predefinedFines, isLoading: predefinedFinesLoading } = useTeamPredefinedFines(teamId);
 
-  // Keep static data for catalogs (dues, predefined fines, beverages)
+  // Keep static data for catalogs (dues, beverages)
   const [dues] = useState<Due[]>(staticDues);
-  const [predefinedFines] = useState<PredefinedFine[]>(staticPredefinedFines);
   const [beverages] = useState<Beverage[]>(staticBeverages);
 
   // Use Firebase data or empty arrays while loading
@@ -541,8 +541,9 @@ export default function DashboardPage() {
         isOpen={isAddFineOpen}
         setOpen={setAddFineOpen}
         players={players}
-        predefinedFines={predefinedFines}
         onFineAdded={() => { }} // Kept for backwards compatibility
+        predefinedFines={predefinedFines ?? []}
+        predefinedFinesLoading={predefinedFinesLoading}
       />
       <AddEditPaymentDialog
         isOpen={isAddPaymentOpen}

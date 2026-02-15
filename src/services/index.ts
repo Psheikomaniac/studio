@@ -9,3 +9,4 @@ export * from './players.service';
 export * from './fines.service';
 export * from './payments.service';
 export * from './balance.service';
+export * from './predefined-fines.service';

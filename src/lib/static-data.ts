@@ -1,6 +1,6 @@
 
 
-import type { Player, Fine, PredefinedFine, Payment, Beverage, Transaction, Due, DuePayment, BeverageConsumption } from './types';
+import type { Player, Fine, Payment, Beverage, Transaction, Due, DuePayment, BeverageConsumption } from './types';
 
 export const players: Player[] = [
   // Added common English names used in AI suggestion tests to ensure mapping works
@@ -100,16 +100,6 @@ export const fines: Fine[] = [
         createdAt: "2024-05-02T10:00:00Z",
         updatedAt: "2024-05-02T10:00:00Z",
     }
-];
-
-export const predefinedFines: PredefinedFine[] = [
-    { id: "pf1", reason: "Late for training", amount: 5.00 },
-    { id: "pf2", reason: "Late for game", amount: 10.00 },
-    { id: "pf3", reason: "Yellow card (foul)", amount: 5.00 },
-    { id: "pf4", reason: "Yellow card (dissent)", amount: 7.50 },
-    { id: "pf5", reason: "Red card", amount: 20.00 },
-    { id: "pf6", reason: "Forgot equipment", amount: 2.50 },
-    { id: "pf7", reason: "Phone in locker room", amount: 1.00 },
 ];
 
 export const payments: Payment[] = [
