@@ -1,3 +1,8 @@
+/**
+ * PredefinedFinesService - Manages team-scoped predefined fines catalog in Firestore
+ * Handles CRUD operations and default seeding for predefined fines
+ */
+
 'use client';
 
 import {
@@ -33,8 +38,12 @@ const DEFAULT_PREDEFINED_FINES: Omit<PredefinedFine, 'id' | 'teamId' | 'createdA
 export class PredefinedFinesService extends BaseFirebaseService<PredefinedFine> {
   private teamId: string;
 
+  static collectionPath(teamId: string): string {
+    return `teams/${teamId}/predefinedFines`;
+  }
+
   constructor(firestore: Firestore, teamId: string) {
-    super(firestore, `teams/${teamId}/predefinedFines`);
+    super(firestore, PredefinedFinesService.collectionPath(teamId));
     this.teamId = teamId;
   }
 
@@ -100,7 +109,7 @@ export function useTeamPredefinedFines(teamId: string | null | undefined) {
 
   const predefinedFinesQuery = useMemoFirebase(() => {
     if (!teamId || !firebase?.firestore) return null;
-    const col = collection(firebase.firestore, `teams/${teamId}/predefinedFines`);
+    const col = collection(firebase.firestore, PredefinedFinesService.collectionPath(teamId));
     return query(col, orderBy('reason', 'asc'));
   }, [firebase?.firestore, teamId]);
 
