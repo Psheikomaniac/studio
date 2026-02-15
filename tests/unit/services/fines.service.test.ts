@@ -196,6 +196,52 @@ describe('FinesService', () => {
       expect(playerDoc.balance).toBe(0);
     });
 
+    it('should restore only the outstanding amount when deleting a partially-paid fine', async () => {
+      const fineId = 'fine-partial';
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`, { id: PLAYER_ID, balance: -4 });
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}/fines/${fineId}`, {
+        id: fineId,
+        userId: PLAYER_ID,
+        teamId: TEAM_ID,
+        reason: 'Late',
+        amount: 10,
+        date: '2024-01-01T00:00:00.000Z',
+        paid: false,
+        amountPaid: 6,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+      } satisfies Fine);
+
+      const result = await service.deleteFine(fineId);
+
+      expect(result.success).toBe(true);
+      const playerDoc = getMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`);
+      expect(playerDoc.balance).toBe(0); // only 4 outstanding restored, not full 10
+    });
+
+    it('should not change player balance when deleting a fully-paid fine', async () => {
+      const fineId = 'fine-paid';
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`, { id: PLAYER_ID, balance: 0 });
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}/fines/${fineId}`, {
+        id: fineId,
+        userId: PLAYER_ID,
+        teamId: TEAM_ID,
+        reason: 'Yellow card',
+        amount: 10,
+        date: '2024-01-01T00:00:00.000Z',
+        paid: true,
+        amountPaid: 10,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+      } satisfies Fine);
+
+      const result = await service.deleteFine(fineId);
+
+      expect(result.success).toBe(true);
+      const playerDoc = getMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`);
+      expect(playerDoc.balance).toBe(0); // nothing to restore, fine was fully paid
+    });
+
     it('should return error when fine does not exist', async () => {
       setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`, { id: PLAYER_ID, balance: 0 });
 

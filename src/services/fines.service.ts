@@ -139,7 +139,7 @@ export class FinesService extends BaseFirebaseService<Fine> {
   ): Promise<ServiceResult<Fine>> {
     return this.createFine(
       {
-        userId: this.playerId,
+        userId: this.playerId, // overridden by createFine, kept for type satisfaction
         reason: beverage.name,
         amount: beverage.price,
         date,
@@ -305,8 +305,13 @@ export class FinesService extends BaseFirebaseService<Fine> {
         }
         const fine = docSnap.data() as Fine;
 
+        // Only restore the outstanding (unpaid) portion to balance
+        const outstanding = fine.amount - (fine.amountPaid ?? 0);
+
         transaction.delete(docRef);
-        transaction.update(playerRef, { balance: increment(fine.amount) });
+        if (outstanding !== 0) {
+          transaction.update(playerRef, { balance: increment(outstanding) });
+        }
       });
 
       return { success: true, data: undefined };
