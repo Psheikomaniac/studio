@@ -54,6 +54,12 @@ export class PredefinedFinesService extends BaseFirebaseService<PredefinedFine> 
    */
   async seedDefaults(): Promise<ServiceResult<PredefinedFine[]>> {
     try {
+      // Idempotency guard: skip seeding if fines already exist
+      const existing = await this.getAll();
+      if (existing.success && existing.data && existing.data.length > 0) {
+        return existing as ServiceResult<PredefinedFine[]>;
+      }
+
       const result = await this.batchCreate(
         DEFAULT_PREDEFINED_FINES.map(fine => ({
           ...fine,
