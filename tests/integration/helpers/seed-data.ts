@@ -252,6 +252,9 @@ export async function clearCollection(firestore: Firestore, collectionPath: stri
   // Known subcollections under team player documents
   const teamPlayerSubcollections = ['fines', 'payments', 'beverageConsumptions', 'duePayments'];
 
+  // Known subcollections directly under team documents
+  const teamSubcollections = ['predefinedFines', 'teamMembers'];
+
   // Delete nested subcollections first (to avoid orphaned subcollection docs between tests)
   if (collectionPath === 'users') {
     for (const docSnap of snapshot.docs) {
@@ -292,6 +295,17 @@ export async function clearCollection(firestore: Firestore, collectionPath: stri
         const playersBatch = writeBatch(firestore);
         playersSnap.docs.forEach(p => playersBatch.delete(p.ref));
         await playersBatch.commit();
+      }
+
+      // Clean up team-level subcollections (predefinedFines, teamMembers)
+      for (const sub of teamSubcollections) {
+        const subColRef = collection(firestore, `teams/${teamId}/${sub}`);
+        const subSnap = await getDocs(subColRef);
+        if (!subSnap.empty) {
+          const subBatch = writeBatch(firestore);
+          subSnap.docs.forEach(subDoc => subBatch.delete(subDoc.ref));
+          await subBatch.commit();
+        }
       }
     }
   }
