@@ -28,6 +28,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AddFineDialog } from '@/components/dashboard/add-fine-dialog';
+import { useTeamPredefinedFines } from '@/services/predefined-fines.service';
 import { RecordDuePaymentDialog } from '@/components/dues/record-due-payment-dialog';
 import { AddEditPaymentDialog } from '@/components/payments/add-edit-payment-dialog';
 import { RecordConsumptionDialog } from '@/components/beverages/record-consumption-dialog';
@@ -73,6 +74,7 @@ export default function MoneyPage() {
   const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();
   const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ teamId });
+  const { data: predefinedFines, isLoading: predefinedFinesLoading } = useTeamPredefinedFines(teamId);
 
   // Keep static data for catalogs (dues, beverages)
   const [dues] = useState<Due[]>(staticDues);
@@ -971,6 +973,8 @@ const duesQuery = useMemoFirebase(() => {
         setOpen={setAddFineOpen}
         players={players}
         onFineAdded={() => { }} // Kept for backwards compatibility
+        predefinedFines={predefinedFines ?? []}
+        predefinedFinesLoading={predefinedFinesLoading}
       />
       <AddEditPaymentDialog
         isOpen={isAddPaymentOpen}

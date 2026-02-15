@@ -11,7 +11,6 @@ import {
   orderBy,
   type Firestore,
 } from 'firebase/firestore';
-import { useMemo } from 'react';
 import { BaseFirebaseService } from './base.service';
 import type { ServiceResult } from './types';
 import type { PredefinedFine } from '@/lib/types';
@@ -79,23 +78,6 @@ export class PredefinedFinesService extends BaseFirebaseService<PredefinedFine> 
       };
     }
   }
-}
-
-/**
- * Hook to get a PredefinedFinesService instance for a team
- *
- * @param teamId Team ID
- * @returns PredefinedFinesService instance or null if not available
- */
-export function usePredefinedFinesService(
-  teamId: string | null | undefined
-): PredefinedFinesService | null {
-  const firebase = useFirebaseOptional();
-
-  return useMemo(() => {
-    if (!teamId || !firebase?.firestore) return null;
-    return new PredefinedFinesService(firebase.firestore, teamId);
-  }, [firebase?.firestore, teamId]);
 }
 
 /**

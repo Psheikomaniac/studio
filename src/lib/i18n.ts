@@ -130,6 +130,8 @@ const resources = {
                 "selectCategory": "Select a category",
                 "savePayment": "Save Payment",
                 "paymentReasonPlaceholder": "e.g., Team Contribution",
+                "loadingFines": "Loading fines...",
+                "selectOrTypeReason": "Select or type a reason...",
                 "validation": {
                     "reasonLength": "Reason must be at least 3 characters.",
                     "positiveAmount": "Amount must be positive.",
@@ -538,6 +540,8 @@ const resources = {
                 "selectCategory": "Kategorie auswählen",
                 "savePayment": "Zahlung speichern",
                 "paymentReasonPlaceholder": "z.B. Mannschaftskasse",
+                "loadingFines": "Strafen werden geladen...",
+                "selectOrTypeReason": "Grund auswählen oder eingeben...",
                 "validation": {
                     "selectPlayer": "Bitte wählen Sie mindestens einen Spieler aus.",
                     "reasonLength": "Grund muss mindestens 3 Zeichen lang sein.",
@@ -930,6 +934,8 @@ const resources = {
                 "selectCategory": "Sélectionner une catégorie",
                 "savePayment": "Enregistrer le paiement",
                 "paymentReasonPlaceholder": "ex: Cotisation d'équipe",
+                "loadingFines": "Chargement des amendes...",
+                "selectOrTypeReason": "Sélectionner ou saisir un motif...",
                 "validation": {
                     "selectPlayer": "Veuillez sélectionner au moins un joueur.",
                     "reasonLength": "Le motif doit comporter au moins 3 caractères.",
@@ -1160,6 +1166,8 @@ const resources = {
                 "selectCategory": "Seleccionar una categoría",
                 "savePayment": "Guardar pago",
                 "paymentReasonPlaceholder": "ej: Contribución del equipo",
+                "loadingFines": "Cargando multas...",
+                "selectOrTypeReason": "Seleccionar o escribir un motivo...",
                 "validation": {
                     "selectPlayer": "Por favor seleccione al menos un jugador.",
                     "reasonLength": "El motivo debe tener al menos 3 caracteres.",
@@ -1391,6 +1399,8 @@ const resources = {
                 "selectCategory": "Selecione uma categoria",
                 "savePayment": "Salvar Pagamento",
                 "paymentReasonPlaceholder": "ex: Contribuição do Time",
+                "loadingFines": "Carregando multas...",
+                "selectOrTypeReason": "Selecionar ou digitar um motivo...",
                 "validation": {
                     "selectPlayer": "Por favor selecione pelo menos um jogador.",
                     "reasonLength": "O motivo deve ter pelo menos 3 caracteres.",
@@ -1622,6 +1632,8 @@ const resources = {
                 "selectCategory": "选择一个类别",
                 "savePayment": "保存付款",
                 "paymentReasonPlaceholder": "例如：团队贡献",
+                "loadingFines": "正在加载罚款...",
+                "selectOrTypeReason": "选择或输入原因...",
                 "validation": {
                     "selectPlayer": "请至少选择一名玩家。",
                     "reasonLength": "原因至少需要 3 个字符。",
@@ -1853,6 +1865,8 @@ const resources = {
                 "selectCategory": "Bir kategori seçin",
                 "savePayment": "Ödemeyi Kaydet",
                 "paymentReasonPlaceholder": "örn: Takım Katkısı",
+                "loadingFines": "Cezalar yükleniyor...",
+                "selectOrTypeReason": "Bir neden seçin veya yazın...",
                 "validation": {
                     "selectPlayer": "Lütfen en az bir oyuncu seçin.",
                     "reasonLength": "Neden en az 3 karakter olmalıdır.",
@@ -2084,6 +2098,8 @@ const resources = {
                 "selectCategory": "Wybierz kategorię",
                 "savePayment": "Zapisz płatność",
                 "paymentReasonPlaceholder": "np. Składka zespołowa",
+                "loadingFines": "Ładowanie kar...",
+                "selectOrTypeReason": "Wybierz lub wpisz powód...",
                 "validation": {
                     "selectPlayer": "Wybierz co najmniej jednego gracza.",
                     "reasonLength": "Powód musi mieć co najmniej 3 znaki.",
@@ -2315,6 +2331,8 @@ const resources = {
                 "selectCategory": "Выберите категорию",
                 "savePayment": "Сохранить платеж",
                 "paymentReasonPlaceholder": "например, Взнос команды",
+                "loadingFines": "Загрузка штрафов...",
+                "selectOrTypeReason": "Выберите или введите причину...",
                 "validation": {
                     "selectPlayer": "Пожалуйста, выберите хотя бы одного игрока.",
                     "reasonLength": "Причина должна содержать не менее 3 символов.",
