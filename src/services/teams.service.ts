@@ -151,9 +151,13 @@ export class TeamsService extends BaseFirebaseService<Team> {
         tx.set(memberRef, membership as any);
       });
 
-      // Seed default predefined fines for the new team
-      const pfService = new PredefinedFinesService(this.firestore, teamId);
-      await pfService.seedDefaults();
+      // Seed default predefined fines for the new team (soft failure — don't block team creation)
+      try {
+        const pfService = new PredefinedFinesService(this.firestore, teamId);
+        await pfService.seedDefaults();
+      } catch {
+        // Seeding is non-critical; team creation still succeeds
+      }
 
       return {
         success: true,
