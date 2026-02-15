@@ -55,10 +55,12 @@ describe('useTeamPredefinedFines', () => {
       firestore: {},
     });
 
-    renderHook(() => useTeamPredefinedFines(null));
+    const { result } = renderHook(() => useTeamPredefinedFines(null));
 
     expect(mockUseCollection).toHaveBeenCalledWith(null);
     expect(mockCollection).not.toHaveBeenCalled();
+    expect(result.current.data).toBeNull();
+    expect(result.current.isLoading).toBe(true);
   });
 
   it('should return null query when teamId is undefined', () => {
@@ -66,28 +68,31 @@ describe('useTeamPredefinedFines', () => {
       firestore: {},
     });
 
-    renderHook(() => useTeamPredefinedFines(undefined));
+    const { result } = renderHook(() => useTeamPredefinedFines(undefined));
 
     expect(mockUseCollection).toHaveBeenCalledWith(null);
     expect(mockCollection).not.toHaveBeenCalled();
+    expect(result.current.data).toBeNull();
   });
 
   it('should return null query when firebase is not available', () => {
     mockUseFirebaseOptional.mockReturnValue(null);
 
-    renderHook(() => useTeamPredefinedFines('team-1'));
+    const { result } = renderHook(() => useTeamPredefinedFines('team-1'));
 
     expect(mockUseCollection).toHaveBeenCalledWith(null);
     expect(mockCollection).not.toHaveBeenCalled();
+    expect(result.current.data).toBeNull();
   });
 
   it('should return null query when firestore is not available', () => {
     mockUseFirebaseOptional.mockReturnValue({ firestore: null });
 
-    renderHook(() => useTeamPredefinedFines('team-1'));
+    const { result } = renderHook(() => useTeamPredefinedFines('team-1'));
 
     expect(mockUseCollection).toHaveBeenCalledWith(null);
     expect(mockCollection).not.toHaveBeenCalled();
+    expect(result.current.data).toBeNull();
   });
 
   it('should construct correct query when teamId is provided', () => {
@@ -107,6 +112,22 @@ describe('useTeamPredefinedFines', () => {
     expect(mockOrderBy).toHaveBeenCalledWith('reason', 'asc');
     expect(mockQuery).toHaveBeenCalledWith(fakeCol, fakeOrderByRef);
     expect(mockUseCollection).toHaveBeenCalledWith(fakeQueryRef);
+  });
+
+  it('should return error state from useCollection', () => {
+    const fakeError = new Error('Firestore permission denied');
+
+    mockUseFirebaseOptional.mockReturnValue({ firestore: {} });
+    mockCollection.mockReturnValue({});
+    mockOrderBy.mockReturnValue({});
+    mockQuery.mockReturnValue({});
+    mockUseCollection.mockReturnValue({ data: null, isLoading: false, error: fakeError });
+
+    const { result } = renderHook(() => useTeamPredefinedFines('team-1'));
+
+    expect(result.current.error).toBe(fakeError);
+    expect(result.current.data).toBeNull();
+    expect(result.current.isLoading).toBe(false);
   });
 
   it('should return data from useCollection when available', () => {
