@@ -177,7 +177,7 @@ export default function PlayerDetailsPage() {
   }
 
   const paymentsSeries = useMemo(() => groupPaymentsByDay((payments || []), start90, end90), [payments, start90, end90]);
-  const finesSeries = useMemo(() => groupByDay((fines || []), f => f.date, f => Math.max(0, Number(f.amount) || 0)), [fines, start90, end90]);
+  const finesSeries = useMemo(() => groupByDay((fines || []).filter(f => !isBeverageFine(f)), f => f.date, f => Math.max(0, Number(f.amount) || 0)), [fines, start90, end90]);
   const beveragesSeries = useMemo(() => groupByDay((fines || []).filter(f => isBeverageFine(f)), f => f.date, f => Math.max(0, Number(f.amount) || 0)), [fines, start90, end90]);
 
   if (anyError) {
