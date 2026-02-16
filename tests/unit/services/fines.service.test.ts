@@ -11,6 +11,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { FinesService } from '@/services/fines.service';
 import type { Firestore } from 'firebase/firestore';
 import type { Fine } from '@/lib/types';
+import { isBeverageFine } from '@/lib/types';
 import {
   createMockFirestore,
   clearMockDocuments,
@@ -117,6 +118,140 @@ describe('FinesService', () => {
     });
   });
 
+  describe('createBeverageFine', () => {
+    it('should create a fine with fineType=beverage and beverageId', async () => {
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`, { id: PLAYER_ID, balance: 0 });
+
+      const beverage = { id: 'bev-1', name: 'Bier', price: 2.5 };
+      const result = await service.createBeverageFine(
+        beverage,
+        '2024-01-10T18:00:00.000Z',
+        { playerBalance: 0 }
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.fineType).toBe('beverage');
+      expect(result.data?.beverageId).toBe('bev-1');
+      expect(result.data?.reason).toBe('Bier');
+      expect(result.data?.amount).toBe(2.5);
+      expect(result.data?.paid).toBe(false);
+    });
+
+    it('should auto-pay beverage fine when player has sufficient balance', async () => {
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`, { id: PLAYER_ID, balance: 10 });
+
+      const beverage = { id: 'bev-2', name: 'Cola', price: 1.5 };
+      const result = await service.createBeverageFine(
+        beverage,
+        '2024-01-10T18:00:00.000Z',
+        { playerBalance: 10 }
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.paid).toBe(true);
+      expect(result.data?.amountPaid).toBe(1.5);
+      expect(result.data?.fineType).toBe('beverage');
+    });
+
+    it('should partially pay beverage fine when balance < price', async () => {
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`, { id: PLAYER_ID, balance: 1 });
+
+      const beverage = { id: 'bev-3', name: 'Wasser', price: 2 };
+      const result = await service.createBeverageFine(
+        beverage,
+        '2024-01-10T18:00:00.000Z',
+        { playerBalance: 1 }
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.paid).toBe(false);
+      expect(result.data?.amountPaid).toBe(1);
+      expect(result.data?.fineType).toBe('beverage');
+    });
+  });
+
+  describe('deleteFine (transactional + balance restore)', () => {
+    it('should delete fine and restore amount to player balance', async () => {
+      const fineId = 'fine-del-1';
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`, { id: PLAYER_ID, balance: -10 });
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}/fines/${fineId}`, {
+        id: fineId,
+        userId: PLAYER_ID,
+        teamId: TEAM_ID,
+        reason: 'Late',
+        amount: 10,
+        date: '2024-01-01T00:00:00.000Z',
+        paid: false,
+        amountPaid: 0,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+      } satisfies Fine);
+
+      const result = await service.deleteFine(fineId);
+
+      expect(result.success).toBe(true);
+      expect(mockFirestoreFunctions.runTransaction).toHaveBeenCalled();
+
+      const playerDoc = getMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`);
+      expect(playerDoc.balance).toBe(0);
+    });
+
+    it('should restore only the outstanding amount when deleting a partially-paid fine', async () => {
+      const fineId = 'fine-partial';
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`, { id: PLAYER_ID, balance: -4 });
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}/fines/${fineId}`, {
+        id: fineId,
+        userId: PLAYER_ID,
+        teamId: TEAM_ID,
+        reason: 'Late',
+        amount: 10,
+        date: '2024-01-01T00:00:00.000Z',
+        paid: false,
+        amountPaid: 6,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+      } satisfies Fine);
+
+      const result = await service.deleteFine(fineId);
+
+      expect(result.success).toBe(true);
+      const playerDoc = getMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`);
+      expect(playerDoc.balance).toBe(0); // only 4 outstanding restored, not full 10
+    });
+
+    it('should not change player balance when deleting a fully-paid fine', async () => {
+      const fineId = 'fine-paid';
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`, { id: PLAYER_ID, balance: 0 });
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}/fines/${fineId}`, {
+        id: fineId,
+        userId: PLAYER_ID,
+        teamId: TEAM_ID,
+        reason: 'Yellow card',
+        amount: 10,
+        date: '2024-01-01T00:00:00.000Z',
+        paid: true,
+        amountPaid: 10,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+      } satisfies Fine);
+
+      const result = await service.deleteFine(fineId);
+
+      expect(result.success).toBe(true);
+      const playerDoc = getMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`);
+      expect(playerDoc.balance).toBe(0); // nothing to restore, fine was fully paid
+    });
+
+    it('should return error when fine does not exist', async () => {
+      setMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`, { id: PLAYER_ID, balance: 0 });
+
+      const result = await service.deleteFine('nonexistent-fine');
+
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBe('Fine not found');
+    });
+  });
+
   describe('toggleFinePaid (transactional + balance adjustment)', () => {
     it('should mark unpaid fine as paid and credit the remaining debit back to player balance', async () => {
       const fineId = 'fine-1';
@@ -142,6 +277,23 @@ describe('FinesService', () => {
 
       const playerDoc = getMockDocument(`teams/${TEAM_ID}/players/${PLAYER_ID}`);
       expect(playerDoc.balance).toBe(0);
+    });
+  });
+
+  describe('isBeverageFine helper', () => {
+    it('should return true for fines with fineType=beverage', () => {
+      const fine = { fineType: 'beverage' } as Fine;
+      expect(isBeverageFine(fine)).toBe(true);
+    });
+
+    it('should return false for fines with fineType=regular', () => {
+      const fine = { fineType: 'regular' } as Fine;
+      expect(isBeverageFine(fine)).toBe(false);
+    });
+
+    it('should return false for fines without fineType (defaults to regular)', () => {
+      const fine = {} as Fine;
+      expect(isBeverageFine(fine)).toBe(false);
     });
   });
 });

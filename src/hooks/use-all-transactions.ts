@@ -153,6 +153,7 @@ export function useAllDuePayments(options?: { limit?: number; teamId?: string | 
 
 /**
  * Hook to get all beverage consumptions across all players using collection group query
+ * @deprecated Use useAllFines() and filter by fineType='beverage' instead. Will be removed in PR 4.
  */
 export function useAllBeverageConsumptions(options?: { limit?: number; teamId?: string | null }) {
   const firebase = useFirebaseOptional();

@@ -24,7 +24,7 @@ import {
 import { useMemo } from 'react';
 import { BaseFirebaseService } from './base.service';
 import type { ServiceResult, CreateOptions, UpdateOptions, DeleteOptions } from './types';
-import type { Fine } from '@/lib/types';
+import type { Fine, Beverage } from '@/lib/types';
 import { useMemoFirebase, useCollection } from '@/firebase';
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 
@@ -121,6 +121,33 @@ export class FinesService extends BaseFirebaseService<Fine> {
         error: error as Error,
       };
     }
+  }
+
+  /**
+   * Create a beverage fine — convenience wrapper around createFine
+   * Maps beverage catalog data to Fine fields with fineType='beverage'
+   *
+   * @param beverage Beverage catalog item (name + price)
+   * @param date ISO date string for when the consumption occurred
+   * @param options Create options including playerBalance for auto-payment
+   * @returns Service result with created fine
+   */
+  async createBeverageFine(
+    beverage: Pick<Beverage, 'id' | 'name' | 'price'>,
+    date: string,
+    options: FineCreateOptions = {}
+  ): Promise<ServiceResult<Fine>> {
+    return this.createFine(
+      {
+        userId: this.playerId, // overridden by createFine, kept for type satisfaction
+        reason: beverage.name,
+        amount: beverage.price,
+        date,
+        fineType: 'beverage',
+        beverageId: beverage.id,
+      },
+      options
+    );
   }
 
   /**
@@ -256,17 +283,41 @@ export class FinesService extends BaseFirebaseService<Fine> {
   }
 
   /**
-   * Delete a fine
+   * Delete a fine with transactional balance restore
+   * Reads the fine amount and restores it to the player's balance atomically
    *
    * @param fineId Fine ID
-   * @param options Delete options
+   * @param _options Delete options (unused, kept for API compatibility)
    * @returns Service result indicating success or failure
    */
   async deleteFine(
     fineId: string,
-    options: DeleteOptions = {}
+    _options: DeleteOptions = {}
   ): Promise<ServiceResult<void>> {
-    return this.delete(fineId, options);
+    try {
+      const docRef = this.getDocRef(fineId);
+      const playerRef = doc(this.firestore, 'teams', this.teamId, 'players', this.playerId);
+
+      await runTransaction(this.firestore, async (transaction) => {
+        const docSnap = await transaction.get(docRef);
+        if (!docSnap.exists()) {
+          throw new Error('Fine not found');
+        }
+        const fine = docSnap.data() as Fine;
+
+        // Only restore the outstanding (unpaid) portion to balance
+        const outstanding = fine.amount - (fine.amountPaid ?? 0);
+
+        transaction.delete(docRef);
+        if (outstanding !== 0) {
+          transaction.update(playerRef, { balance: increment(outstanding) });
+        }
+      });
+
+      return { success: true, data: undefined };
+    } catch (error) {
+      return { success: false, error: error as Error };
+    }
   }
 
   /**

@@ -6,21 +6,23 @@
  * - Balance is NEVER stored in Firestore - always calculated dynamically
  * - Balance = Total Credits - Total Debits
  * - Credits = Sum of paid payments
- * - Debits = Sum of unpaid amounts from fines, dues, and beverages
+ * - Debits = Sum of unpaid amounts from fines (regular + beverage) and dues
+ * - Beverage debits are derived from fines with fineType='beverage'
  * - Supports partial payments via amountPaid field
  *
  * Balance Calculation Formula:
  * ```
- * Balance = Σ(paid payments) - Σ(unpaid fines) - Σ(unpaid dues) - Σ(unpaid beverages)
+ * Balance = Σ(paid payments) - Σ(unpaid regular fines) - Σ(unpaid dues) - Σ(unpaid beverage fines)
  *
- * For each fine/due/beverage:
+ * For each fine/due:
  *   Unpaid Amount = total amount - (amountPaid || 0)
  * ```
  */
 
 'use client';
 
-import type { Player, Fine, Payment, DuePayment, BeverageConsumption } from '@/lib/types';
+import type { Player, Fine, Payment, DuePayment } from '@/lib/types';
+import { isBeverageFine } from '@/lib/types';
 
 /**
  * Payment status for a transaction
@@ -44,31 +46,43 @@ export interface BalanceBreakdown {
   balance: number;
   /** Total credits from payments */
   totalCredits: number;
-  /** Total debits from fines */
+  /** Total debits from regular fines */
   totalFineDebits: number;
   /** Total debits from dues */
   totalDueDebits: number;
-  /** Total debits from beverages */
+  /** Total debits from beverage fines */
   totalBeverageDebits: number;
   /** Combined total of all debits */
   totalDebits: number;
 }
 
 /**
+ * Calculate unpaid debit for a single fine-like item
+ */
+function calcUnpaidDebit(item: { paid: boolean; amount: number; amountPaid?: number | null }): number {
+  if (item.paid) return 0;
+  const amountPaid = item.amountPaid || 0;
+  return Math.max(0, item.amount - amountPaid);
+}
+
+/**
  * Service class for balance calculations
  * Does not interact with Firestore - all calculations are in-memory
+ *
+ * Beverage debits are now derived from fines with fineType='beverage'
+ * instead of from a separate beverageConsumptions array.
  */
 export class BalanceService {
   /**
    * Calculate a player's balance dynamically from all transactions
    *
-   * Balance = Credits (Payments) - Debits (Unpaid Fines/Dues/Beverages)
+   * Balance = Credits (Payments) - Debits (Unpaid Fines/Dues)
+   * Beverage debits are derived from fines with fineType='beverage'
    *
    * @param playerId Player ID to calculate balance for
    * @param payments All payments to consider
-   * @param fines All fines to consider
+   * @param fines All fines to consider (includes both regular and beverage fines)
    * @param duePayments All due payments to consider
-   * @param beverageConsumptions All beverage consumptions to consider
    * @returns Calculated balance
    */
   calculatePlayerBalance(
@@ -76,54 +90,19 @@ export class BalanceService {
     payments: Payment[] = [],
     fines: Fine[] = [],
     duePayments: DuePayment[] = [],
-    beverageConsumptions: BeverageConsumption[] = []
   ): number {
-    // Total credits from payments
-    const totalCredits = payments
-      .filter(p => p.userId === playerId && p.paid)
-      .reduce((sum, p) => sum + p.amount, 0);
-
-    // Total debits from unpaid fines (or partially paid)
-    const totalFineDebits = fines
-      .filter(f => f.userId === playerId)
-      .reduce((sum, f) => {
-        if (f.paid) return sum; // Fully paid, no debit
-        const amountPaid = f.amountPaid || 0;
-        const remaining = f.amount - amountPaid;
-        return sum + remaining;
-      }, 0);
-
-    // Total debits from unpaid dues (or partially paid)
-    const totalDueDebits = duePayments
-      .filter(dp => dp.userId === playerId && !dp.exempt)
-      .reduce((sum, dp) => {
-        if (dp.paid) return sum; // Fully paid, no debit
-        const amountPaid = dp.amountPaid || 0;
-        const remaining = dp.amountDue - amountPaid;
-        return sum + remaining;
-      }, 0);
-
-    // Total debits from unpaid beverages (or partially paid)
-    const totalBeverageDebits = beverageConsumptions
-      .filter(bc => bc.userId === playerId)
-      .reduce((sum, bc) => {
-        if (bc.paid) return sum; // Fully paid, no debit
-        const amountPaid = bc.amountPaid || 0;
-        const remaining = bc.amount - amountPaid;
-        return sum + remaining;
-      }, 0);
-
-    return totalCredits - totalFineDebits - totalDueDebits - totalBeverageDebits;
+    const breakdown = this.calculatePlayerBalanceBreakdown(playerId, payments, fines, duePayments);
+    return breakdown.balance;
   }
 
   /**
    * Calculate a player's balance with detailed breakdown
+   * Splits fines internally by fineType for the breakdown (fines vs beverages)
    *
    * @param playerId Player ID to calculate balance for
    * @param payments All payments to consider
-   * @param fines All fines to consider
+   * @param fines All fines to consider (includes both regular and beverage fines)
    * @param duePayments All due payments to consider
-   * @param beverageConsumptions All beverage consumptions to consider
    * @returns Detailed balance breakdown
    */
   calculatePlayerBalanceBreakdown(
@@ -131,22 +110,24 @@ export class BalanceService {
     payments: Payment[] = [],
     fines: Fine[] = [],
     duePayments: DuePayment[] = [],
-    beverageConsumptions: BeverageConsumption[] = []
   ): BalanceBreakdown {
     // Total credits from payments
     const totalCredits = payments
       .filter(p => p.userId === playerId && p.paid)
       .reduce((sum, p) => sum + p.amount, 0);
 
-    // Total debits from unpaid fines (or partially paid)
-    const totalFineDebits = fines
-      .filter(f => f.userId === playerId)
-      .reduce((sum, f) => {
-        if (f.paid) return sum;
-        const amountPaid = f.amountPaid || 0;
-        const remaining = f.amount - amountPaid;
-        return sum + remaining;
-      }, 0);
+    // Split fines by type for the player
+    const playerFines = fines.filter(f => f.userId === playerId);
+
+    // Total debits from unpaid regular fines
+    const totalFineDebits = playerFines
+      .filter(f => !isBeverageFine(f))
+      .reduce((sum, f) => sum + calcUnpaidDebit(f), 0);
+
+    // Total debits from unpaid beverage fines
+    const totalBeverageDebits = playerFines
+      .filter(f => isBeverageFine(f))
+      .reduce((sum, f) => sum + calcUnpaidDebit(f), 0);
 
     // Total debits from unpaid dues (or partially paid)
     const totalDueDebits = duePayments
@@ -154,17 +135,7 @@ export class BalanceService {
       .reduce((sum, dp) => {
         if (dp.paid) return sum;
         const amountPaid = dp.amountPaid || 0;
-        const remaining = dp.amountDue - amountPaid;
-        return sum + remaining;
-      }, 0);
-
-    // Total debits from unpaid beverages (or partially paid)
-    const totalBeverageDebits = beverageConsumptions
-      .filter(bc => bc.userId === playerId)
-      .reduce((sum, bc) => {
-        if (bc.paid) return sum;
-        const amountPaid = bc.amountPaid || 0;
-        const remaining = bc.amount - amountPaid;
+        const remaining = Math.max(0, dp.amountDue - amountPaid);
         return sum + remaining;
       }, 0);
 
@@ -186,9 +157,8 @@ export class BalanceService {
    *
    * @param players Array of players
    * @param payments All payments
-   * @param fines All fines
+   * @param fines All fines (includes regular + beverage)
    * @param duePayments All due payments
-   * @param beverageConsumptions All beverage consumptions
    * @returns Players with updated balance field
    */
   updatePlayersWithBalances(
@@ -196,7 +166,6 @@ export class BalanceService {
     payments: Payment[] = [],
     fines: Fine[] = [],
     duePayments: DuePayment[] = [],
-    beverageConsumptions: BeverageConsumption[] = []
   ): Player[] {
     return players.map(player => ({
       ...player,
@@ -205,7 +174,6 @@ export class BalanceService {
         payments,
         fines,
         duePayments,
-        beverageConsumptions
       ),
     }));
   }
@@ -233,7 +201,7 @@ export class BalanceService {
     }
 
     const actualAmountPaid = amountPaid || 0;
-    const remaining = totalAmount - actualAmountPaid;
+    const remaining = Math.max(0, totalAmount - actualAmountPaid);
 
     return {
       isPaid: false,
@@ -284,23 +252,20 @@ export class BalanceService {
    * Calculate total unpaid amount for a player
    *
    * @param playerId Player ID
-   * @param fines All fines
+   * @param fines All fines (includes regular + beverage)
    * @param duePayments All due payments
-   * @param beverageConsumptions All beverage consumptions
    * @returns Total unpaid amount (total debits)
    */
   calculateTotalUnpaid(
     playerId: string,
     fines: Fine[] = [],
     duePayments: DuePayment[] = [],
-    beverageConsumptions: BeverageConsumption[] = []
   ): number {
     const breakdown = this.calculatePlayerBalanceBreakdown(
       playerId,
       [], // No payments needed for unpaid calculation
       fines,
       duePayments,
-      beverageConsumptions
     );
 
     return breakdown.totalDebits;

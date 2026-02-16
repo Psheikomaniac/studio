@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Payment, Fine, Due, DuePayment, BeverageConsumption, PaymentCategory } from '@/lib/types';
+import { Payment, Fine, Due, DuePayment, PaymentCategory } from '@/lib/types';
+import { isBeverageFine } from '@/lib/types';
 
 export type BalanceBreakdown = {
   guthaben: number;
@@ -16,7 +17,6 @@ export function usePlayerBalances(
   payments: Payment[],
   fines: Fine[],
   duePayments: DuePayment[],
-  beverageConsumptions: BeverageConsumption[],
   dues: Due[] = []
 ) {
   const dueById = useMemo(() => {
@@ -56,9 +56,6 @@ export function usePlayerBalances(
       }
 
       // Fallback: String Matching
-      // - explizit "guthaben rest" oder enthält es → Guthaben Rest
-      // - enthält "guthaben" (z. B. "Strafen: Name (Guthaben)") → Guthaben
-      // - beginnt mit "einzahlung" (z. B. "Einzahlung: Name") → Guthaben
       if (r === 'guthaben rest' || r.includes('guthaben rest')) {
         ensure(p.userId).guthabenRest += amt;
       } else if (r === 'guthaben' || r.includes('guthaben') || r.startsWith('einzahlung')) {
@@ -66,7 +63,7 @@ export function usePlayerBalances(
       }
     }
 
-    // Fines: Nur offene Restbeträge (unbezahlt/teilbezahlt)
+    // Fines: Split by fineType — regular fines vs beverage fines
     for (const f of fines) {
       if (!f?.userId) continue;
       let remaining = 0;
@@ -75,7 +72,11 @@ export function usePlayerBalances(
         const amtPaid = Number(f.amountPaid || 0);
         remaining = Math.max(0, amt - amtPaid);
       }
-      ensure(f.userId).fines += remaining;
+      if (isBeverageFine(f)) {
+        ensure(f.userId).beverages += remaining;
+      } else {
+        ensure(f.userId).fines += remaining;
+      }
     }
 
     // Dues: Nur offene Restbeträge (exempt ausgeschlossen) und nur für nicht archivierte Dues
@@ -93,26 +94,13 @@ export function usePlayerBalances(
       ensure(d.userId).dues += remaining;
     }
 
-    // Beverages: Nur offene Restbeträge (unbezahlt/teilbezahlt)
-    for (const b of beverageConsumptions) {
-      if (!b?.userId || typeof b.amount !== 'number') continue;
-      let remaining = 0;
-      if (!b.paid) {
-        const amt = Number(b.amount) || 0;
-        const amtPaid = Number(b.amountPaid || 0);
-        remaining = Math.max(0, amt - amtPaid);
-      }
-      ensure(b.userId).beverages += remaining;
-    }
-
     // Final totals per user
-    for (const [userId, v] of m) {
+    for (const [, v] of m) {
       v.totalCredits = (v.guthaben || 0) + (v.guthabenRest || 0);
       v.totalLiabilities = (v.fines || 0) + (v.dues || 0) + (v.beverages || 0);
       v.balance = v.totalCredits - v.totalLiabilities;
-      m.set(userId, v);
     }
 
     return m;
-  }, [payments, fines, duePayments, beverageConsumptions, dueById]);
+  }, [payments, fines, duePayments, dueById]);
 }

@@ -49,6 +49,8 @@ export interface Player {
   updatedAt?: string;
 }
 
+export type FineType = 'regular' | 'beverage';
+
 export interface Fine {
   id: string;
   userId: string;
@@ -59,8 +61,15 @@ export interface Fine {
   paid: boolean;
   paidAt?: string | null; // ISO string for when it was paid
   amountPaid?: number | null; // Amount already paid (for partial payments)
+  fineType?: FineType; // undefined defaults to 'regular'
+  beverageId?: string; // Reference to Beverage catalog item (only for beverage fines)
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
+}
+
+/** Type guard: checks if a Fine is a beverage fine */
+export function isBeverageFine(fine: Fine): boolean {
+  return fine.fineType === 'beverage';
 }
 
 export interface PredefinedFine {
@@ -98,6 +107,7 @@ export interface Beverage {
   price: number;
 }
 
+/** @deprecated Use Fine with fineType='beverage' instead. Will be removed in PR 4. */
 export interface BeverageConsumption {
   id: string;
   userId: string;
