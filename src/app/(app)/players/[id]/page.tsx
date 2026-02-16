@@ -10,13 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SafeLocaleDate } from "@/components/shared/safe-locale-date";
-import type { Fine, Payment, DuePayment, BeverageConsumption } from "@/lib/types";
+import type { Fine, Payment, DuePayment } from "@/lib/types";
+import { isBeverageFine } from "@/lib/types";
 import { usePlayer } from "@/services/players.service";
 import { useTeam } from "@/team";
 import { usePlayerFines } from "@/services/fines.service";
 import { usePlayerPayments } from "@/services/payments.service";
 import { usePlayerDuePayments } from "@/services/dues.service";
-import { usePlayerConsumptions } from "@/services/beverages.service";
 import { formatEuro } from "@/lib/csv-utils";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { groupPaymentsByDay } from "@/lib/stats";
@@ -46,25 +46,27 @@ export default function PlayerDetailsPage() {
   const { data: fines, isLoading: finesLoading, error: finesError } = usePlayerFines(teamId, playerId);
   const { data: payments, isLoading: paymentsLoading, error: paymentsError } = usePlayerPayments(teamId, playerId);
   const { data: duePayments, isLoading: dueLoading, error: dueError } = usePlayerDuePayments(teamId, playerId);
-  const { data: consumptions, isLoading: consLoading, error: consError } = usePlayerConsumptions(teamId, playerId);
 
-  const isLoading = playerLoading || finesLoading || paymentsLoading || dueLoading || consLoading;
-  const anyError = playerError || finesError || paymentsError || dueError || consError;
+  const isLoading = playerLoading || finesLoading || paymentsLoading || dueLoading;
+  const anyError = playerError || finesError || paymentsError || dueError;
 
   const stats = useMemo(() => {
     const finesList = fines || [];
     const paymentsList = payments || [];
     const duesList = duePayments || [];
-    const consList = consumptions || [];
 
-    const finesTotal = finesList.reduce((sum, f) => sum + f.amount, 0);
-    const finesPaid = finesList.reduce((sum, f) => sum + (f.paid ? f.amount : (f.amountPaid || 0)), 0);
+    // Split fines into regular and beverage
+    const regularFines = finesList.filter(f => !isBeverageFine(f));
+    const beverageFines = finesList.filter(f => isBeverageFine(f));
+
+    const finesTotal = regularFines.reduce((sum, f) => sum + f.amount, 0);
+    const finesPaid = regularFines.reduce((sum, f) => sum + (f.paid ? f.amount : (f.amountPaid || 0)), 0);
     const finesUnpaid = Math.max(0, finesTotal - finesPaid);
 
     const paymentsTotal = paymentsList.reduce((sum, p) => sum + p.amount, 0);
 
-    const beveragesTotal = consList.reduce((sum, c) => sum + c.amount, 0);
-    const beveragesPaid = consList.reduce((sum, c) => sum + (c.paid ? c.amount : (c.amountPaid || 0)), 0);
+    const beveragesTotal = beverageFines.reduce((sum, f) => sum + f.amount, 0);
+    const beveragesPaid = beverageFines.reduce((sum, f) => sum + (f.paid ? f.amount : (f.amountPaid || 0)), 0);
     const beveragesUnpaid = Math.max(0, beveragesTotal - beveragesPaid);
 
     const duesTotal = duesList.reduce((sum, d) => sum + d.amountDue, 0);
@@ -85,7 +87,7 @@ export default function PlayerDetailsPage() {
       duesUnpaid,
       duesExemptCount,
     };
-  }, [fines, payments, duePayments, consumptions]);
+  }, [fines, payments, duePayments]);
 
   // Pagination for fines (Strafen)
   const FINES_PAGE_SIZE = 20;
@@ -110,11 +112,12 @@ export default function PlayerDetailsPage() {
     const items: ActivityItem[] = [];
 
     (fines || []).forEach((f: Fine) => {
+      const isBev = isBeverageFine(f);
       items.push({
-        id: `fine-${f.id}`,
+        id: `${isBev ? 'bev' : 'fine'}-${f.id}`,
         date: f.date,
-        description: f.reason,
-        type: "fine",
+        description: isBev ? (f.reason || t('playerDetailPage.beveragePlaceholder')) : f.reason,
+        type: isBev ? "beverage" : "fine",
         amount: -f.amount,
         paid: !!f.paid,
       });
@@ -144,21 +147,10 @@ export default function PlayerDetailsPage() {
       });
     });
 
-    (consumptions || []).forEach((c: BeverageConsumption) => {
-      items.push({
-        id: `bev-${c.id}`,
-        date: c.date,
-        description: c.beverageName || t('playerDetailPage.beveragePlaceholder'),
-        type: "beverage",
-        amount: -c.amount,
-        paid: !!c.paid,
-      });
-    });
-
     return items
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 10);
-  }, [fines, payments, duePayments, consumptions, t]);
+  }, [fines, payments, duePayments, t]);
 
   // Build timeline series for last 90 days
   const end90 = useMemo(() => new Date(), []);
@@ -186,7 +178,7 @@ export default function PlayerDetailsPage() {
 
   const paymentsSeries = useMemo(() => groupPaymentsByDay((payments || []), start90, end90), [payments, start90, end90]);
   const finesSeries = useMemo(() => groupByDay((fines || []), f => f.date, f => Math.max(0, Number(f.amount) || 0)), [fines, start90, end90]);
-  const beveragesSeries = useMemo(() => groupByDay((consumptions || []), c => c.date, c => Math.max(0, Number(c.amount) || 0)), [consumptions, start90, end90]);
+  const beveragesSeries = useMemo(() => groupByDay((fines || []).filter(f => isBeverageFine(f)), f => f.date, f => Math.max(0, Number(f.amount) || 0)), [fines, start90, end90]);
 
   if (anyError) {
     return (

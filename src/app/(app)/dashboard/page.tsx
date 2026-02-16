@@ -9,11 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Receipt, Wallet, Beer, TrendingDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Due, Beverage } from '@/lib/types';
+import { isBeverageFine } from '@/lib/types';
 import { Stats } from '@/components/dashboard/stats';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { usePlayers } from '@/services/players.service';
 import { useTeam } from '@/team';
-import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
+import { useAllFines, useAllPayments, useAllDuePayments } from '@/hooks/use-all-transactions';
 import {
   dues as staticDues,
   beverages as staticBeverages
@@ -55,7 +56,6 @@ export default function DashboardPage() {
   const { data: finesData, isLoading: finesLoading } = useAllFines({ teamId });
   const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments({ teamId });
-  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ teamId });
   const { data: predefinedFines, isLoading: predefinedFinesLoading } = useTeamPredefinedFines(teamId);
 
   // Keep static data for catalogs (dues, beverages)
@@ -66,7 +66,6 @@ export default function DashboardPage() {
   const fines = finesData || [];
   const payments = paymentsData || [];
   const duePayments = duePaymentsData || [];
-  const beverageConsumptions = consumptionsData || [];
 
   // Calculate player balances dynamically based on all transactions
   const players = useMemo(() => {
@@ -77,13 +76,12 @@ export default function DashboardPage() {
       payments,
       fines,
       duePayments,
-      beverageConsumptions
     );
-  }, [playersData, payments, fines, duePayments, beverageConsumptions]);
+  }, [playersData, payments, fines, duePayments]);
 
   // Determine overall loading state
   const isLoading = playersLoading || finesLoading || paymentsLoading ||
-    duePaymentsLoading || consumptionsLoading;
+    duePaymentsLoading;
 
   // Dialog states
   const [isAddFineOpen, setAddFineOpen] = useState(false);
@@ -106,9 +104,9 @@ export default function DashboardPage() {
         date: fine.date,
         userId: fine.userId,
         userName: getPlayerName(fine.userId),
-        description: fine.reason,
+        description: isBeverageFine(fine) ? `Beverage: ${fine.reason}` : fine.reason,
         amount: -fine.amount,
-        type: 'fine',
+        type: isBeverageFine(fine) ? 'beverage' : 'fine',
         status: fine.paid ? 'paid' : (isPartiallyPaid ? 'partially_paid' : 'unpaid'),
         amountPaid: fine.amountPaid,
         totalAmount: fine.amount,
@@ -144,24 +142,8 @@ export default function DashboardPage() {
       });
     });
 
-    beverageConsumptions.forEach(beverage => {
-      const isPartiallyPaid = !beverage.paid && beverage.amountPaid && beverage.amountPaid > 0;
-      transactions.push({
-        id: beverage.id,
-        date: beverage.date,
-        userId: beverage.userId,
-        userName: getPlayerName(beverage.userId),
-        description: `Beverage: ${beverage.beverageName}`,
-        amount: -beverage.amount,
-        type: 'beverage',
-        status: beverage.paid ? 'paid' : (isPartiallyPaid ? 'partially_paid' : 'unpaid'),
-        amountPaid: beverage.amountPaid,
-        totalAmount: beverage.amount,
-      });
-    });
-
     return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [fines, payments, duePayments, beverageConsumptions, players, dues]);
+  }, [fines, payments, duePayments, players, dues]);
 
   // Get top 3 debtors
   const topDebtors = useMemo(() => {
@@ -263,7 +245,7 @@ export default function DashboardPage() {
                   {t('dashboard.lastUpdate')}: {maxDateFromCollections ? (
                     <>
                       {(() => {
-                        const d = maxDateFromCollections([payments, fines, duePayments, beverageConsumptions]);
+                        const d = maxDateFromCollections([payments, fines, duePayments]);
                         return d ? <SafeLocaleDate dateString={d} /> : 'Unknown';
                       })()}
                     </>
@@ -331,9 +313,9 @@ export default function DashboardPage() {
                   <CardContent>
                     {(() => {
                       const counts = new Map<string, { name: string; count: number }>();
-                      for (const c of beverageConsumptions) {
-                        if (!c) continue;
-                        const name = c.beverageName || (beverages.find(b => b.id === c.beverageId)?.name ?? 'Unknown');
+                      for (const f of fines) {
+                        if (!f || !isBeverageFine(f)) continue;
+                        const name = f.reason || (beverages.find(b => b.id === f.beverageId)?.name ?? 'Unknown');
                         const item = counts.get(name) || { name, count: 0 };
                         item.count += 1;
                         counts.set(name, item);
@@ -385,7 +367,11 @@ export default function DashboardPage() {
                       const k = keyOf(f.date);
                       if (!k) continue;
                       const row = map.get(k) || { date: k, payments: 0, fines: 0, dues: 0, beverages: 0 };
-                      row.fines += Math.max(0, Number(f.amount) || 0);
+                      if (isBeverageFine(f)) {
+                        row.beverages += Math.max(0, Number(f.amount) || 0);
+                      } else {
+                        row.fines += Math.max(0, Number(f.amount) || 0);
+                      }
                       map.set(k, row);
                     }
                     for (const d of duePayments) {
@@ -393,13 +379,6 @@ export default function DashboardPage() {
                       if (!k) continue;
                       const row = map.get(k) || { date: k, payments: 0, fines: 0, dues: 0, beverages: 0 };
                       row.dues += Math.max(0, Number(d.amountDue) || 0);
-                      map.set(k, row);
-                    }
-                    for (const b of beverageConsumptions) {
-                      const k = keyOf(b.date);
-                      if (!k) continue;
-                      const row = map.get(k) || { date: k, payments: 0, fines: 0, dues: 0, beverages: 0 };
-                      row.beverages += Math.max(0, Number(b.amount) || 0);
                       map.set(k, row);
                     }
                     const data = Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
