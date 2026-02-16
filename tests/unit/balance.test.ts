@@ -19,7 +19,7 @@ import {
   generatePayment,
   generateFine,
   generateDuePayment,
-  generateBeverageConsumption,
+  generateBeverageFine,
   generatePlayers
 } from '../fixtures/generators';
 
@@ -210,7 +210,7 @@ describe('calculatePlayerBalance', () => {
   });
 
   describe('Scenario 5: Complex scenario with all transaction types', () => {
-    it('should calculate balance with payments, fines, dues, and beverages', () => {
+    it('should calculate balance with payments, fines, dues, and beverage fines', () => {
       const payments = [
         generatePayment({ userId: PLAYER_ID, amount: 100, paid: true })
       ];
@@ -220,6 +220,11 @@ describe('calculatePlayerBalance', () => {
           amount: 10,
           paid: false,
           amountPaid: 3 // -7 debit
+        }),
+        generateBeverageFine({
+          userId: PLAYER_ID,
+          amount: 5,
+          paid: false // -5 debit
         })
       ];
       const duePayments = [
@@ -230,20 +235,12 @@ describe('calculatePlayerBalance', () => {
           exempt: false // -50 debit
         })
       ];
-      const beverages = [
-        generateBeverageConsumption({
-          userId: PLAYER_ID,
-          amount: 5,
-          paid: false // -5 debit
-        })
-      ];
 
       const balance = calculatePlayerBalance(
         PLAYER_ID,
         payments,
         fines,
         duePayments,
-        beverages
       );
 
       expect(balance).toBe(38); // 100 - 7 - 50 - 5 = 38
@@ -261,6 +258,16 @@ describe('calculatePlayerBalance', () => {
           amount: 15,
           paid: false,
           amountPaid: 5 // -10
+        }),
+        generateBeverageFine({
+          userId: PLAYER_ID,
+          amount: 5,
+          paid: false // -5
+        }),
+        generateBeverageFine({
+          userId: PLAYER_ID,
+          amount: 3,
+          paid: true // paid, no debit
         })
       ];
       const duePayments = [
@@ -277,25 +284,12 @@ describe('calculatePlayerBalance', () => {
           exempt: false
         })
       ];
-      const beverages = [
-        generateBeverageConsumption({
-          userId: PLAYER_ID,
-          amount: 5,
-          paid: false // -5
-        }),
-        generateBeverageConsumption({
-          userId: PLAYER_ID,
-          amount: 3,
-          paid: true // paid, no debit
-        })
-      ];
 
       const balance = calculatePlayerBalance(
         PLAYER_ID,
         payments,
         fines,
         duePayments,
-        beverages
       );
 
       expect(balance).toBe(125); // 200 - 10 - 10 - 50 - 5 = 125
@@ -366,12 +360,12 @@ describe('calculatePlayerBalance', () => {
       expect(balance).toBe(70); // 100 - 30
     });
 
-    it('should handle partially paid beverages', () => {
+    it('should handle partially paid beverage fines', () => {
       const payments = [
         generatePayment({ userId: PLAYER_ID, amount: 100, paid: true })
       ];
-      const beverages = [
-        generateBeverageConsumption({
+      const fines = [
+        generateBeverageFine({
           userId: PLAYER_ID,
           amount: 10,
           paid: false,
@@ -379,7 +373,7 @@ describe('calculatePlayerBalance', () => {
         })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], [], beverages);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, []);
 
       expect(balance).toBe(93); // 100 - 7
     });
@@ -428,15 +422,13 @@ describe('calculatePlayerBalance', () => {
       ];
       const fines = [
         generateFine({ userId: PLAYER_ID, amount: 10, paid: false }),
-        generateFine({ userId: 'player-2', amount: 5, paid: false })
+        generateFine({ userId: 'player-2', amount: 5, paid: false }),
+        generateBeverageFine({ userId: PLAYER_ID, amount: 5, paid: false }),
+        generateBeverageFine({ userId: 'player-2', amount: 3, paid: false })
       ];
       const duePayments = [
         generateDuePayment({ userId: PLAYER_ID, amountDue: 20, paid: false, exempt: false }),
         generateDuePayment({ userId: 'player-2', amountDue: 30, paid: false, exempt: false })
-      ];
-      const beverages = [
-        generateBeverageConsumption({ userId: PLAYER_ID, amount: 5, paid: false }),
-        generateBeverageConsumption({ userId: 'player-2', amount: 3, paid: false })
       ];
 
       const balance = calculatePlayerBalance(
@@ -444,7 +436,6 @@ describe('calculatePlayerBalance', () => {
         payments,
         fines,
         duePayments,
-        beverages
       );
 
       expect(balance).toBe(65); // 100 - 10 - 20 - 5 = 65

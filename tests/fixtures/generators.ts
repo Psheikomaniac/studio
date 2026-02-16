@@ -79,7 +79,29 @@ export function generateDuePayment(overrides?: Partial<DuePayment>): DuePayment 
 }
 
 /**
+ * Generate a test beverage fine (Fine with fineType='beverage')
+ */
+export function generateBeverageFine(overrides?: Partial<Fine>): Fine {
+  const id = overrides?.id || `bev-fine-${Math.random().toString(36).substr(2, 9)}`;
+  const now = new Date().toISOString();
+  return {
+    id,
+    userId: 'player-1',
+    reason: 'Beer',
+    amount: 5,
+    date: now,
+    paid: false,
+    fineType: 'beverage',
+    beverageId: 'bev-1',
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  };
+}
+
+/**
  * Generate a test beverage consumption with optional overrides
+ * @deprecated Use generateBeverageFine instead
  */
 export function generateBeverageConsumption(overrides?: Partial<BeverageConsumption>): BeverageConsumption {
   const id = overrides?.id || `beverage-${Math.random().toString(36).substr(2, 9)}`;

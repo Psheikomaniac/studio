@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { Payment, Fine, DuePayment, BeverageConsumption } from '@/lib/types';
+import { Payment, Fine, DuePayment } from '@/lib/types';
+import { isBeverageFine } from '@/lib/types';
 
 export function usePlayerStats(
   payments: Payment[],
   fines: Fine[],
   duePayments: DuePayment[],
-  beverageConsumptions: BeverageConsumption[]
 ) {
   const lastActivityByUser = useMemo(() => {
     const map = new Map<string, string>();
@@ -18,18 +18,17 @@ export function usePlayerStats(
     fines.forEach(f => setIfMax(f.userId, f.date));
     payments.forEach(p => setIfMax(p.userId, p.date));
     duePayments.forEach(d => setIfMax(d.userId, d.createdAt));
-    beverageConsumptions.forEach(b => setIfMax(b.userId, b.date));
     return map;
-  }, [fines, payments, duePayments, beverageConsumptions]);
+  }, [fines, payments, duePayments]);
 
   const beverageCountByUser = useMemo(() => {
     const m = new Map<string, number>();
-    for (const c of beverageConsumptions) {
-      if (!c?.userId) continue;
-      m.set(c.userId, (m.get(c.userId) ?? 0) + 1);
+    for (const f of fines) {
+      if (!f?.userId || !isBeverageFine(f)) continue;
+      m.set(f.userId, (m.get(f.userId) ?? 0) + 1);
     }
     return m;
-  }, [beverageConsumptions]);
+  }, [fines]);
 
   // Build last 6 months keys and labels
   const last6Months = useMemo(() => {

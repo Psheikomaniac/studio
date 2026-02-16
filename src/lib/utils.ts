@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { Player, Fine, Payment, DuePayment, BeverageConsumption, PaymentCategory } from "./types"
+import { Player, Fine, Payment, DuePayment, PaymentCategory } from "./types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -8,14 +8,17 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Calculate a player's balance dynamically from all transactions
- * Balance = Credits (Payments) - Debits (Unpaid Fines/Dues/Beverages)
+ * Balance = Credits (Payments) - Debits (Unpaid Fines/Dues)
+ * Beverage debits are derived from fines with fineType='beverage'
+ *
+ * @param beverageConsumptions @deprecated Pass beverage fines in the fines array instead
  */
 export function calculatePlayerBalance(
   playerId: string,
   payments: Payment[],
   fines: Fine[],
   duePayments: DuePayment[],
-  beverageConsumptions: BeverageConsumption[]
+  _beverageConsumptions?: unknown[]
 ): number {
   // Total credits from payments
   const totalCredits = payments
@@ -30,14 +33,11 @@ export function calculatePlayerBalance(
       // Legacy/Default Logic: Paid payments are credits
       if (p.paid) return true;
 
-      // Note: Logic for 'paid: false' "Guthaben" strings (from usePlayerBalances) is not included here 
-      // to avoid complexity, assuming standard Payments are 'paid: true'.
-
       return false;
     })
     .reduce((sum, p) => sum + p.amount, 0);
 
-  // Total debits from unpaid fines (or partially paid)
+  // Total debits from unpaid fines — all types (regular + beverage)
   const totalFineDebits = fines
     .filter(f => f.userId === playerId)
     .reduce((sum, f) => {
@@ -57,32 +57,24 @@ export function calculatePlayerBalance(
       return sum + remaining;
     }, 0);
 
-  // Total debits from unpaid beverages (or partially paid)
-  const totalBeverageDebits = beverageConsumptions
-    .filter(bc => bc.userId === playerId)
-    .reduce((sum, bc) => {
-      if (bc.paid) return sum; // Fully paid, no debit
-      const amountPaid = bc.amountPaid || 0;
-      const remaining = bc.amount - amountPaid;
-      return sum + remaining;
-    }, 0);
-
-  return totalCredits - totalFineDebits - totalDueDebits - totalBeverageDebits;
+  return totalCredits - totalFineDebits - totalDueDebits;
 }
 
 /**
  * Update all players with calculated balances
+ *
+ * @param beverageConsumptions @deprecated Pass beverage fines in the fines array instead
  */
 export function updatePlayersWithCalculatedBalances(
   players: Player[],
   payments: Payment[],
   fines: Fine[],
   duePayments: DuePayment[],
-  beverageConsumptions: BeverageConsumption[]
+  _beverageConsumptions?: unknown[]
 ): Player[] {
   return players.map(player => ({
     ...player,
-    balance: calculatePlayerBalance(player.id, payments, fines, duePayments, beverageConsumptions)
+    balance: calculatePlayerBalance(player.id, payments, fines, duePayments)
   }));
 }
 

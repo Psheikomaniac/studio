@@ -54,15 +54,13 @@ export default function PlayersPage() {
     payments,
     fines,
     duePayments,
-    beverageConsumptions
   );
 
   const balanceBreakdownByUser = usePlayerBalances(
     payments,
     fines,
     duePayments,
-    beverageConsumptions,
-    dues
+    dues,
   );
 
   const [sortState, setSortState] = useState<PlayersTableSortState>({
