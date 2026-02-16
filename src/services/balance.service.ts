@@ -201,7 +201,7 @@ export class BalanceService {
     }
 
     const actualAmountPaid = amountPaid || 0;
-    const remaining = totalAmount - actualAmountPaid;
+    const remaining = Math.max(0, totalAmount - actualAmountPaid);
 
     return {
       isPaid: false,

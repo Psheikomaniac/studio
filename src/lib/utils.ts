@@ -43,7 +43,7 @@ export function calculatePlayerBalance(
     .reduce((sum, f) => {
       if (f.paid) return sum; // Fully paid, no debit
       const amountPaid = f.amountPaid || 0;
-      const remaining = f.amount - amountPaid;
+      const remaining = Math.max(0, f.amount - amountPaid);
       return sum + remaining;
     }, 0);
 
@@ -53,7 +53,7 @@ export function calculatePlayerBalance(
     .reduce((sum, dp) => {
       if (dp.paid) return sum; // Fully paid, no debit
       const amountPaid = dp.amountPaid || 0;
-      const remaining = dp.amountDue - amountPaid;
+      const remaining = Math.max(0, dp.amountDue - amountPaid);
       return sum + remaining;
     }, 0);
 
