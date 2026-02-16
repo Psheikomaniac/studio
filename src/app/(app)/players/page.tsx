@@ -21,7 +21,7 @@ import {
   PlayersTableSortState,
   PlayersTableSortableColumn,
 } from '@/components/players/players-table';
-import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
+import { useAllFines, useAllPayments, useAllDuePayments } from '@/hooks/use-all-transactions';
 import { usePlayerBalances } from '@/hooks/use-player-balances';
 import { usePlayerStats } from '@/hooks/use-player-stats';
 import { dues as staticDues } from '@/lib/static-data';
@@ -40,13 +40,11 @@ export default function PlayersPage() {
   const { data: finesData, isLoading: finesLoading } = useAllFines({ teamId });
   const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments({ teamId });
-  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ teamId });
 
   // Use Firebase data or empty arrays while loading
   const fines = finesData || [];
   const payments = paymentsData || [];
   const duePayments = duePaymentsData || [];
-  const beverageConsumptions = consumptionsData || [];
   const dues = staticDues;
 
   // Calculate player statistics and balances
@@ -175,7 +173,7 @@ export default function PlayersPage() {
 
   // Determine overall loading state
   const isLoading = playersLoading || finesLoading || paymentsLoading ||
-    duePaymentsLoading || consumptionsLoading;
+    duePaymentsLoading;
 
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);

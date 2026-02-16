@@ -62,7 +62,7 @@ export interface BalanceBreakdown {
 function calcUnpaidDebit(item: { paid: boolean; amount: number; amountPaid?: number | null }): number {
   if (item.paid) return 0;
   const amountPaid = item.amountPaid || 0;
-  return item.amount - amountPaid;
+  return Math.max(0, item.amount - amountPaid);
 }
 
 /**
@@ -135,7 +135,7 @@ export class BalanceService {
       .reduce((sum, dp) => {
         if (dp.paid) return sum;
         const amountPaid = dp.amountPaid || 0;
-        const remaining = dp.amountDue - amountPaid;
+        const remaining = Math.max(0, dp.amountDue - amountPaid);
         return sum + remaining;
       }, 0);
 

@@ -83,6 +83,7 @@ export function generateDuePayment(overrides?: Partial<DuePayment>): DuePayment 
  */
 export function generateBeverageFine(overrides?: Partial<Fine>): Fine {
   const id = overrides?.id || `bev-fine-${Math.random().toString(36).substr(2, 9)}`;
+  const beverageId = overrides?.beverageId || `bev-${Math.random().toString(36).substr(2, 9)}`;
   const now = new Date().toISOString();
   return {
     id,
@@ -92,7 +93,7 @@ export function generateBeverageFine(overrides?: Partial<Fine>): Fine {
     date: now,
     paid: false,
     fineType: 'beverage',
-    beverageId: 'bev-1',
+    beverageId,
     createdAt: now,
     updatedAt: now,
     ...overrides,

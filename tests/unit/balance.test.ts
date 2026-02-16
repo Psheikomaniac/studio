@@ -33,7 +33,6 @@ describe('calculatePlayerBalance', () => {
         [], // no payments
         [], // no fines
         [], // no dues
-        []  // no beverages
       );
 
       expect(balance).toBe(0);
@@ -46,7 +45,7 @@ describe('calculatePlayerBalance', () => {
         generatePayment({ userId: PLAYER_ID, amount: 50, paid: true })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], []);
 
       expect(balance).toBe(50);
     });
@@ -58,7 +57,7 @@ describe('calculatePlayerBalance', () => {
         generatePayment({ userId: PLAYER_ID, amount: 20, paid: true })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], []);
 
       expect(balance).toBe(100);
     });
@@ -69,7 +68,7 @@ describe('calculatePlayerBalance', () => {
         generatePayment({ userId: PLAYER_ID, amount: 30, paid: false }) // not paid
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], []);
 
       expect(balance).toBe(50);
     });
@@ -80,7 +79,7 @@ describe('calculatePlayerBalance', () => {
         generatePayment({ userId: 'player-2', amount: 100, paid: true }) // different player
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], []);
 
       expect(balance).toBe(50);
     });
@@ -95,7 +94,7 @@ describe('calculatePlayerBalance', () => {
         generateFine({ userId: PLAYER_ID, amount: 10, paid: false })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, []);
 
       expect(balance).toBe(40); // 50 - 10
     });
@@ -108,7 +107,7 @@ describe('calculatePlayerBalance', () => {
         generateFine({ userId: PLAYER_ID, amount: 10, paid: true }) // fully paid
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, []);
 
       expect(balance).toBe(50); // fine is paid, no debit
     });
@@ -123,7 +122,7 @@ describe('calculatePlayerBalance', () => {
         generateFine({ userId: PLAYER_ID, amount: 5, paid: true }) // paid, no debit
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, []);
 
       expect(balance).toBe(75); // 100 - 10 - 15
     });
@@ -143,7 +142,7 @@ describe('calculatePlayerBalance', () => {
         })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, []);
 
       expect(balance).toBe(43); // 50 - (10 - 3)
     });
@@ -161,7 +160,7 @@ describe('calculatePlayerBalance', () => {
         })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, []);
 
       expect(balance).toBe(40); // 50 - 10
     });
@@ -179,7 +178,7 @@ describe('calculatePlayerBalance', () => {
         })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, []);
 
       expect(balance).toBe(40); // 50 - 10
     });
@@ -203,7 +202,7 @@ describe('calculatePlayerBalance', () => {
         })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, fines, []);
 
       expect(balance).toBe(65); // 100 - 15 - 20
     });
@@ -310,7 +309,7 @@ describe('calculatePlayerBalance', () => {
         })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], duePayments, []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], duePayments);
 
       expect(balance).toBe(100); // exempt dues don't affect balance
     });
@@ -334,7 +333,7 @@ describe('calculatePlayerBalance', () => {
         })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], duePayments, []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], duePayments);
 
       expect(balance).toBe(70); // 100 - 30
     });
@@ -355,7 +354,7 @@ describe('calculatePlayerBalance', () => {
         })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], duePayments, []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], duePayments);
 
       expect(balance).toBe(70); // 100 - 30
     });
@@ -392,7 +391,7 @@ describe('calculatePlayerBalance', () => {
         })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], duePayments, []);
+      const balance = calculatePlayerBalance(PLAYER_ID, payments, [], duePayments);
 
       expect(balance).toBe(50); // 100 - 50
     });
@@ -404,13 +403,13 @@ describe('calculatePlayerBalance', () => {
         generateFine({ userId: PLAYER_ID, amount: 100, paid: false })
       ];
 
-      const balance = calculatePlayerBalance(PLAYER_ID, [], fines, [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, [], fines, []);
 
       expect(balance).toBe(-100);
     });
 
     it('should handle empty arrays for all transaction types', () => {
-      const balance = calculatePlayerBalance(PLAYER_ID, [], [], [], []);
+      const balance = calculatePlayerBalance(PLAYER_ID, [], [], []);
 
       expect(balance).toBe(0);
     });
@@ -459,7 +458,6 @@ describe('updatePlayersWithCalculatedBalances', () => {
       payments,
       fines,
       [],
-      []
     );
 
     expect(updatedPlayers[0].balance).toBe(40); // 50 - 10
@@ -467,7 +465,7 @@ describe('updatePlayersWithCalculatedBalances', () => {
   });
 
   it('should handle empty player array', () => {
-    const updatedPlayers = updatePlayersWithCalculatedBalances([], [], [], [], []);
+    const updatedPlayers = updatePlayersWithCalculatedBalances([], [], [], []);
 
     expect(updatedPlayers).toEqual([]);
   });
@@ -490,7 +488,6 @@ describe('updatePlayersWithCalculatedBalances', () => {
       payments,
       [],
       [],
-      []
     );
 
     expect(updatedPlayers[0].id).toBe('player-1');
