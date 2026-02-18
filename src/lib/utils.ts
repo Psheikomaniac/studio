@@ -10,15 +10,12 @@ export function cn(...inputs: ClassValue[]) {
  * Calculate a player's balance dynamically from all transactions
  * Balance = Credits (Payments) - Debits (Unpaid Fines/Dues)
  * Beverage debits are derived from fines with fineType='beverage'
- *
- * @param beverageConsumptions @deprecated Pass beverage fines in the fines array instead
  */
 export function calculatePlayerBalance(
   playerId: string,
   payments: Payment[],
   fines: Fine[],
-  duePayments: DuePayment[],
-  _beverageConsumptions?: unknown[]
+  duePayments: DuePayment[]
 ): number {
   // Total credits from payments
   const totalCredits = payments
@@ -62,15 +59,12 @@ export function calculatePlayerBalance(
 
 /**
  * Update all players with calculated balances
- *
- * @param beverageConsumptions @deprecated Pass beverage fines in the fines array instead
  */
 export function updatePlayersWithCalculatedBalances(
   players: Player[],
   payments: Payment[],
   fines: Fine[],
-  duePayments: DuePayment[],
-  _beverageConsumptions?: unknown[]
+  duePayments: DuePayment[]
 ): Player[] {
   return players.map(player => ({
     ...player,

@@ -14,14 +14,12 @@ import {
   seedTeamPayment,
   seedTeamFine,
   seedBeverage,
-  seedTeamBeverageConsumption,
 } from './helpers/seed-data';
 import {
   createPlayer,
   createFine,
   createPayment,
   createBeverage,
-  createBeverageConsumption,
 } from './helpers/test-builders';
 import { getDocs, collection, runTransaction } from 'firebase/firestore';
 
@@ -250,10 +248,14 @@ describe('Integration: Transaction Workflows', () => {
 
       const beverage = createBeverage('bev1').withName('Beer').withPrice(3.5).build();
       await seedBeverage(firestore, beverage);
-      const consumption = createBeverageConsumption(testPlayerId, beverage.id, beverage.name)
-        .withAmount(3.5)
-        .build();
-      await seedTeamBeverageConsumption(firestore, TEAM_ID, testPlayerId, { ...consumption, teamId: TEAM_ID, userId: testPlayerId });
+      const beverageFine = {
+        ...createFine(testPlayerId).withAmount(3.5).build(),
+        fineType: 'beverage' as const,
+        beverageId: beverage.id,
+        teamId: TEAM_ID,
+        userId: testPlayerId,
+      };
+      await seedTeamFine(firestore, TEAM_ID, testPlayerId, beverageFine);
 
       // When: Calculating balance
       const paymentsService = new PaymentsService(firestore, TEAM_ID, testPlayerId);
@@ -267,10 +269,9 @@ describe('Integration: Transaction Workflows', () => {
         paymentsResult.data || [],
         finesResult.data || [],
         [],
-        [consumption]
       );
 
-      // Then: Balance = 150 (payments) - 15 (fine1) - 5 (fine2 remaining) - 3.5 (beverage) = 126.5
+      // Then: Balance = 150 (payments) - 15 (fine1) - 5 (fine2 remaining) - 3.5 (beverage fine) = 126.5
       expect(balance).toBe(126.5);
     });
 
@@ -294,7 +295,6 @@ describe('Integration: Transaction Workflows', () => {
         paymentsResult.data || [],
         finesResult.data || [],
         [],
-        []
       );
 
       // Then: Balance = 10 - 50 = -40

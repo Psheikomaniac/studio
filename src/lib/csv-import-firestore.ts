@@ -17,7 +17,7 @@ import {
   where,
   Firestore,
 } from 'firebase/firestore';
-import { Player, Fine, Payment, Due, DuePayment, Beverage, BeverageConsumption } from './types';
+import { Player, Fine, Payment, Due, DuePayment, Beverage } from './types';
 import { parsePunishmentCSV } from './csv-parse-punishments';
 
 export interface SkippedItem {
@@ -479,7 +479,6 @@ export async function importPunishmentsCSVToFirestore(
     const playersToCreate: Player[] = [];
     const beveragesToCreate: Beverage[] = [];
     const finesToCreate: { userId: string; fine: Fine }[] = [];
-    const consumptionsToCreate: { userId: string; consumption: BeverageConsumption }[] = [];
     const paymentsToCreate: { userId: string; payment: Payment }[] = [];
 
     // Process parsed rows — only player/beverage lookup and record creation
@@ -521,19 +520,22 @@ export async function importPunishmentsCSVToFirestore(
           beveragesToCreate.push(beverage);
         }
 
-        const consumption: BeverageConsumption = {
-          id: generateId('bc'),
+        // Create beverage fine
+        const fine: Fine = {
+          id: generateId('fine'),
           userId: player.id,
           teamId,
-          beverageId: beverage.id,
-          beverageName: beverage.name,
+          reason: beverage.name,
           amount: row.amount,
           date: row.date,
           paid: row.paid,
           paidAt: row.paidAt,
-          createdAt: row.date
+          fineType: 'beverage',
+          beverageId: beverage.id,
+          createdAt: row.date,
+          updatedAt: row.paidAt || row.date
         };
-        consumptionsToCreate.push({ userId: player.id, consumption });
+        finesToCreate.push({ userId: player.id, fine });
         result.recordsCreated++;
 
       } else {
@@ -604,19 +606,6 @@ export async function importPunishmentsCSVToFirestore(
       for (const { userId, fine } of batchFines) {
         const fineRef = doc(firestore, `teams/${teamId}/players/${userId}/fines`, fine.id);
         batch.set(fineRef, sanitizeFirestoreData({ ...fine, teamId } as any));
-      }
-
-      await batch.commit();
-    }
-
-    // Write beverage consumptions (in team/player subcollections)
-    for (let i = 0; i < consumptionsToCreate.length; i += BATCH_SIZE) {
-      const batch = writeBatch(firestore);
-      const batchConsumptions = consumptionsToCreate.slice(i, i + BATCH_SIZE);
-
-      for (const { userId, consumption } of batchConsumptions) {
-        const consumptionRef = doc(firestore, `teams/${teamId}/players/${userId}/beverageConsumptions`, consumption.id);
-        batch.set(consumptionRef, sanitizeFirestoreData({ ...consumption, teamId } as any));
       }
 
       await batch.commit();

@@ -1,6 +1,6 @@
 
 
-import type { Player, Fine, Payment, Beverage, Transaction, Due, DuePayment, BeverageConsumption } from './types';
+import type { Player, Fine, Payment, Beverage, Transaction, Due, DuePayment } from './types';
 
 export const players: Player[] = [
   // Added common English names used in AI suggestion tests to ensure mapping works
@@ -362,4 +362,3 @@ export const duePayments: DuePayment[] = [
     },
 ];
 
-export const beverageConsumptions: BeverageConsumption[] = [];

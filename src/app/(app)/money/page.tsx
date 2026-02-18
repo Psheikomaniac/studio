@@ -11,15 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusCircle, Receipt, Wallet, Beer, Search, X, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Due, Beverage } from "@/lib/types";
+import { isBeverageFine } from "@/lib/types";
 import { usePlayers } from '@/services/players.service';
 import { useTeam } from '@/team';
 import { useMemoFirebase, useCollection } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
+import { useAllFines, useAllPayments, useAllDuePayments } from '@/hooks/use-all-transactions';
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 import { FinesService } from '@/services/fines.service';
 import { DuesService } from '@/services/dues.service';
-import { BeveragesService } from '@/services/beverages.service';
 import { PaymentsService } from '@/services/payments.service';
 import {
   dues as staticDues,
@@ -73,7 +73,6 @@ export default function MoneyPage() {
   const { data: finesData, isLoading: finesLoading } = useAllFines({ teamId });
   const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments();
-  const { data: consumptionsData, isLoading: consumptionsLoading } = useAllBeverageConsumptions({ teamId });
   const { data: predefinedFines, isLoading: predefinedFinesLoading } = useTeamPredefinedFines(teamId);
 
   // Keep static data for catalogs (dues, beverages)
@@ -84,7 +83,6 @@ export default function MoneyPage() {
   const fines = finesData || [];
   const payments = paymentsData || [];
   const duePayments = duePaymentsData || [];
-  const beverageConsumptions = consumptionsData || [];
 
   // Load dues metadata to filter archived/inactive dues
 const duesQuery = useMemoFirebase(() => {
@@ -116,13 +114,12 @@ const duesQuery = useMemoFirebase(() => {
       payments,
       fines,
       filteredDuePayments,
-      beverageConsumptions
     );
-  }, [playersData, payments, fines, filteredDuePayments, beverageConsumptions]);
+  }, [playersData, payments, fines, filteredDuePayments]);
 
   // Determine overall loading state
   const isLoading = playersLoading || finesLoading || paymentsLoading ||
-    duePaymentsLoading || consumptionsLoading;
+    duePaymentsLoading;
 
   // Dialog states
   const [isAddFineOpen, setAddFineOpen] = useState(false);
@@ -147,17 +144,18 @@ const duesQuery = useMemoFirebase(() => {
   const unifiedTransactions = useMemo<UnifiedTransaction[]>(() => {
     const transactions: UnifiedTransaction[] = [];
 
-    // Fines (debit)
+    // Fines (debit) — includes both regular and beverage fines
     fines.forEach(fine => {
       const isPartiallyPaid = !fine.paid && fine.amountPaid && fine.amountPaid > 0;
+      const isBev = isBeverageFine(fine);
       transactions.push({
         id: fine.id,
         date: fine.date,
         userId: fine.userId,
         userName: getPlayerName(fine.userId),
-        description: fine.reason,
+        description: isBev ? `Beverage: ${fine.reason}` : fine.reason,
         amount: -fine.amount, // negative for debit
-        type: 'fine',
+        type: isBev ? 'beverage' : 'fine',
         status: fine.paid ? 'paid' : (isPartiallyPaid ? 'partially_paid' : 'unpaid'),
         paidAt: fine.paidAt,
         amountPaid: fine.amountPaid,
@@ -199,27 +197,9 @@ const duesQuery = useMemoFirebase(() => {
       });
     });
 
-    // Beverage Consumptions (debit)
-    beverageConsumptions.forEach(beverage => {
-      const isPartiallyPaid = !beverage.paid && beverage.amountPaid && beverage.amountPaid > 0;
-      transactions.push({
-        id: beverage.id,
-        date: beverage.date,
-        userId: beverage.userId,
-        userName: getPlayerName(beverage.userId),
-        description: `Beverage: ${beverage.beverageName}`,
-        amount: -beverage.amount, // negative for debit
-        type: 'beverage',
-        status: beverage.paid ? 'paid' : (isPartiallyPaid ? 'partially_paid' : 'unpaid'),
-        paidAt: beverage.paidAt,
-        amountPaid: beverage.amountPaid,
-        totalAmount: beverage.amount,
-      });
-    });
-
     // Sort by date descending (newest first)
     return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [fines, payments, duePayments, beverageConsumptions, players, dues]);
+  }, [fines, payments, duePayments, players, dues]);
 
   // Apply filters
   const filteredTransactions = useMemo(() => {
@@ -341,8 +321,8 @@ const duesQuery = useMemoFirebase(() => {
   const monthlyCohorts = useMemo(() => buildFirstPayersAndCumulativeRevenueByMonth(payments), [payments]);
 
   const lastDataDate = useMemo(() => {
-    return maxDateFromCollections([payments, fines, duePayments, beverageConsumptions]);
-  }, [payments, fines, duePayments, beverageConsumptions]);
+    return maxDateFromCollections([payments, fines, duePayments]);
+  }, [payments, fines, duePayments]);
 
   const topPayersThisMonth = useMemo(() => {
     // Sum payments per user for current calendar month
@@ -424,8 +404,8 @@ const duesQuery = useMemoFirebase(() => {
 
         case 'beverage': {
           if (!teamId) throw new Error('Team is not set');
-          const beveragesService = new BeveragesService(firestore, teamId, transaction.userId);
-          await beveragesService.toggleConsumptionPaid(transaction.id, newStatus);
+          const bevFinesService = new FinesService(firestore, teamId, transaction.userId);
+          await bevFinesService.toggleFinePaid(transaction.id, newStatus);
           break;
         }
 

@@ -248,7 +248,7 @@ const resources = {
                 "errorTitle": "Error",
                 "unknownError": "An unknown error occurred.",
                 "deleteSuccessTitle": "Data deleted",
-                "deleteSuccessDesc": "Deleted {{total}} documents. Details: Fines {{deletedFines}}, Payments {{deletedPayments}}, DuePayments {{deletedDuePayments}}, BeverageConsumptions {{deletedConsumptions}}, Dues {{deletedDues}}, Beverages {{deletedBeverages}}, Users {{deletedUsers}}."
+                "deleteSuccessDesc": "Deleted {{total}} documents. Details: Fines {{deletedFines}}, Payments {{deletedPayments}}, DuePayments {{deletedDuePayments}}, Dues {{deletedDues}}, Beverages {{deletedBeverages}}, Users {{deletedUsers}}."
             },
             "playersPage": {
                 "title": "Player Management",

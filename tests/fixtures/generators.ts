@@ -3,7 +3,7 @@
  * Provides factory functions for creating test data fixtures
  */
 
-import type { Player, Fine, Payment, DuePayment, BeverageConsumption } from '@/lib/types';
+import type { Player, Fine, Payment, DuePayment } from '@/lib/types';
 
 /**
  * Generate a test player with optional overrides
@@ -100,25 +100,6 @@ export function generateBeverageFine(overrides?: Partial<Fine>): Fine {
   };
 }
 
-/**
- * Generate a test beverage consumption with optional overrides
- * @deprecated Use generateBeverageFine instead
- */
-export function generateBeverageConsumption(overrides?: Partial<BeverageConsumption>): BeverageConsumption {
-  const id = overrides?.id || `beverage-${Math.random().toString(36).substr(2, 9)}`;
-  const now = new Date().toISOString();
-  return {
-    id,
-    userId: 'player-1',
-    beverageId: 'bev-1',
-    beverageName: 'Beer',
-    amount: 5,
-    date: now,
-    paid: false,
-    createdAt: now,
-    ...overrides,
-  };
-}
 
 /**
  * Generate multiple test players

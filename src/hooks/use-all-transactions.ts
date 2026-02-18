@@ -18,7 +18,7 @@ import {
   type Query,
 } from 'firebase/firestore';
 import { useMemoFirebase, type UseCollectionResult, type WithId } from '@/firebase';
-import type { Fine, Payment, DuePayment, BeverageConsumption } from '@/lib/types';
+import type { Fine, Payment, DuePayment } from '@/lib/types';
 
 const DEBUG_LOGS = process.env.NEXT_PUBLIC_FIREBASE_DEBUG_LOGS === 'true';
 
@@ -151,25 +151,3 @@ export function useAllDuePayments(options?: { limit?: number; teamId?: string | 
   return useQueryOnce<DuePayment>(duePaymentsQuery);
 }
 
-/**
- * Hook to get all beverage consumptions across all players using collection group query
- * @deprecated Use useAllFines() and filter by fineType='beverage' instead. Will be removed in PR 4.
- */
-export function useAllBeverageConsumptions(options?: { limit?: number; teamId?: string | null }) {
-  const firebase = useFirebaseOptional();
-  const teamId = options?.teamId;
-
-  const consumptionsQuery = useMemoFirebase(() => {
-    if (!firebase?.firestore) return null;
-    // Use collection group query to get all beverage consumptions from all users
-    const consumptionsGroup = collectionGroup(firebase.firestore, 'beverageConsumptions');
-    const constraints = [
-      ...(teamId ? [where('teamId', '==', teamId)] : []),
-      firestoreOrderBy('date', 'desc'),
-      ...(options?.limit ? [firestoreLimit(options.limit)] : []),
-    ];
-    return query(consumptionsGroup, ...constraints);
-  }, [firebase?.firestore, options?.limit, teamId]);
-
-  return useQueryOnce<BeverageConsumption>(consumptionsQuery);
-}
