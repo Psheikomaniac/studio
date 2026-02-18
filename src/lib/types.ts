@@ -107,21 +107,6 @@ export interface Beverage {
   price: number;
 }
 
-/** @deprecated Use Fine with fineType='beverage' instead. Will be removed in PR 4. */
-export interface BeverageConsumption {
-  id: string;
-  userId: string;
-  teamId?: string;
-  beverageId: string;
-  beverageName: string;
-  amount: number;           // Price of beverage
-  date: string;             // ISO string
-  paid: boolean;
-  paidAt?: string | null;          // ISO string
-  amountPaid?: number | null;      // Amount already paid (for partial payments)
-  createdAt: string;        // ISO string
-  updatedAt?: string;       // ISO string
-}
 
 export interface Transaction {
   id: string;

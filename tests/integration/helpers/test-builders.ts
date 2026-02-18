@@ -10,7 +10,6 @@ import type {
   Due,
   DuePayment,
   Beverage,
-  BeverageConsumption,
 } from '@/lib/types';
 
 /**
@@ -259,47 +258,6 @@ export class BeverageBuilder {
   }
 }
 
-/**
- * Builder for creating test beverage consumptions
- */
-export class BeverageConsumptionBuilder {
-  private consumption: Partial<BeverageConsumption> = {};
-
-  constructor(userId: string, beverageId: string, beverageName: string, id?: string) {
-    const now = new Date().toISOString();
-    this.consumption.id = id || `bc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    this.consumption.userId = userId;
-    this.consumption.beverageId = beverageId;
-    this.consumption.beverageName = beverageName;
-    this.consumption.amount = 3.5;
-    this.consumption.date = now;
-    this.consumption.paid = false;
-    this.consumption.createdAt = now;
-  }
-
-  withAmount(amount: number): this {
-    this.consumption.amount = amount;
-    return this;
-  }
-
-  paid(paidAt?: string): this {
-    this.consumption.paid = true;
-    this.consumption.paidAt = paidAt || new Date().toISOString();
-    this.consumption.amountPaid = this.consumption.amount;
-    return this;
-  }
-
-  partiallyPaid(amountPaid: number): this {
-    this.consumption.paid = false;
-    this.consumption.amountPaid = amountPaid;
-    return this;
-  }
-
-  build(): BeverageConsumption {
-    return this.consumption as BeverageConsumption;
-  }
-}
-
 // Export convenience functions
 export const createPlayer = (id?: string) => new PlayerBuilder(id);
 export const createFine = (userId: string, id?: string) => new FineBuilder(userId, id);
@@ -308,9 +266,3 @@ export const createDue = (id?: string) => new DueBuilder(id);
 export const createDuePayment = (dueId: string, userId: string, userName: string, id?: string) =>
   new DuePaymentBuilder(dueId, userId, userName, id);
 export const createBeverage = (id?: string) => new BeverageBuilder(id);
-export const createBeverageConsumption = (
-  userId: string,
-  beverageId: string,
-  beverageName: string,
-  id?: string
-) => new BeverageConsumptionBuilder(userId, beverageId, beverageName, id);

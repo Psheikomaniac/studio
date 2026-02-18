@@ -152,12 +152,11 @@ Jane Smith;Wasser;250;18-10-2024;STATUS_UNPAID`;
       const finesSnapshot = await getDocs(
         collection(firestore, `teams/${TEAM_ID}/players/${johnDoc!.id}/fines`)
       );
-      expect(finesSnapshot.size).toBe(1); // "Late to practice"
-
-      const beverageConsumptionsSnapshot = await getDocs(
-        collection(firestore, `teams/${TEAM_ID}/players/${johnDoc!.id}/beverageConsumptions`)
-      );
-      expect(beverageConsumptionsSnapshot.size).toBe(1); // "Beer"
+      // "Late to practice" (regular fine) + "Beer" (beverage fine with fineType='beverage')
+      expect(finesSnapshot.size).toBe(2);
+      const beverageFine = finesSnapshot.docs.find(d => d.data().fineType === 'beverage');
+      expect(beverageFine).toBeDefined();
+      expect(beverageFine!.data().beverageId).toBeDefined();
 
       // Verify beverages collection
       const beveragesSnapshot = await getDocs(collection(firestore, 'beverages'));

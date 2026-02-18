@@ -28,7 +28,8 @@ import {
 import { collection, collectionGroup, getDocs, query, limit, writeBatch, where, addDoc } from "firebase/firestore";
 import { useFirebaseOptional } from "@/firebase/use-firebase-optional";
 import { Progress } from "@/components/ui/progress";
-import { useAllFines, useAllPayments, useAllDuePayments, useAllBeverageConsumptions } from '@/hooks/use-all-transactions';
+import { useAllFines, useAllPayments, useAllDuePayments } from '@/hooks/use-all-transactions';
+import { isBeverageFine } from '@/lib/types';
 import { maxDateFromCollections } from '@/lib/stats';
 // Use live Firestore data instead of static catalogs
 import type { Due, Beverage } from '@/lib/types';
@@ -61,12 +62,11 @@ export default function SettingsPage() {
   const { data: finesData } = useAllFines({ teamId });
   const { data: paymentsData } = useAllPayments({ teamId });
   const { data: duePaymentsData } = useAllDuePayments({ teamId });
-  const { data: consumptionsData } = useAllBeverageConsumptions({ teamId });
 
   const fines = finesData || [];
   const payments = paymentsData || [];
   const duePayments = duePaymentsData || [];
-  const beverageConsumptions = consumptionsData || [];
+  const beverageFines = fines.filter(isBeverageFine);
 
   // Live catalog data from Firestore (top-level collections)
   const duesCollection = useMemoFirebase(() => {
@@ -279,16 +279,6 @@ export default function SettingsPage() {
           transactionCount++;
         });
 
-        // Mark all beverages as paid
-        const beveragesSnapshot = await getDocs(collection(firestore, `teams/${teamId}/players/${playerId}/beverageConsumptions`));
-        beveragesSnapshot.docs.forEach((bevDoc) => {
-          batch.update(bevDoc.ref, {
-            paid: true,
-            paidAt: new Date().toISOString(),
-            amountPaid: bevDoc.data().amount
-          });
-          transactionCount++;
-        });
       }
 
       await batch.commit();
@@ -367,8 +357,7 @@ export default function SettingsPage() {
       const deletedFines = await deleteCollectionGroupInBatches('fines');
       const deletedPayments = await deleteCollectionGroupInBatches('payments');
       const deletedDuePayments = await deleteCollectionGroupInBatches('duePayments');
-      const deletedConsumptions = await deleteCollectionGroupInBatches('beverageConsumptions');
-      totalDeleted += deletedFines + deletedPayments + deletedDuePayments + deletedConsumptions;
+      totalDeleted += deletedFines + deletedPayments + deletedDuePayments;
 
       // 2) Delete top-level collections
       const deletedDues = await deleteTopLevelCollectionInBatches('dues');
@@ -383,7 +372,6 @@ export default function SettingsPage() {
           deletedFines,
           deletedPayments,
           deletedDuePayments,
-          deletedConsumptions,
           deletedDues,
           deletedBeverages,
           deletedUsers,
@@ -707,7 +695,7 @@ export default function SettingsPage() {
           <CardContent>
             <div className="mb-4 text-xs text-muted-foreground">
               {t('settingsPage.lastUpdate')}: {(() => {
-                const d = maxDateFromCollections([payments, fines, duePayments, beverageConsumptions]);
+                const d = maxDateFromCollections([payments, fines, duePayments]);
                 return d ? <SafeLocaleDate dateString={d} /> : 'Unknown';
               })()}
             </div>
@@ -715,7 +703,7 @@ export default function SettingsPage() {
               {(() => {
                 const negFines = fines.filter(f => !f || Number(f.amount) <= 0).length;
                 const orphanPayments = payments.filter(p => !p?.userId).length;
-                const missingBevId = beverageConsumptions.filter(c => !c?.beverageId).length;
+                const missingBevId = beverageFines.filter(f => !f?.beverageId).length;
                 const item = (label: string, count: number, help: string) => (
                   <div className="rounded border p-3">
                     <div className="text-sm text-muted-foreground">{label}</div>
@@ -727,7 +715,7 @@ export default function SettingsPage() {
                   <>
                     {item('Negative/Zero Fines', negFines, 'Fines with amount <= 0')}
                     {item('Orphan Payments', orphanPayments, 'Payments without userId')}
-                    {item('Consumptions missing beverageId', missingBevId, 'Katalog-Verknüpfung fehlt')}
+                    {item('Beverage fines missing beverageId', missingBevId, 'Katalog-Verknüpfung fehlt')}
                   </>
                 );
               })()}
@@ -785,14 +773,14 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             {(() => {
-              // Build averages from beverageConsumptions
+              // Build averages from beverage fines
               const sumById = new Map<string, { sum: number; count: number }>();
-              for (const c of beverageConsumptions) {
-                if (!c?.beverageId || typeof c.amount !== 'number') continue;
-                const cur = sumById.get(c.beverageId) || { sum: 0, count: 0 };
-                cur.sum += Number(c.amount) || 0;
+              for (const f of beverageFines) {
+                if (!f?.beverageId || typeof f.amount !== 'number') continue;
+                const cur = sumById.get(f.beverageId) || { sum: 0, count: 0 };
+                cur.sum += Number(f.amount) || 0;
                 cur.count += 1;
-                sumById.set(c.beverageId, cur);
+                sumById.set(f.beverageId, cur);
               }
               const byIdAvg = new Map<string, number>();
               sumById.forEach((v, k) => {

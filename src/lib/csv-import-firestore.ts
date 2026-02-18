@@ -520,7 +520,7 @@ export async function importPunishmentsCSVToFirestore(
           beveragesToCreate.push(beverage);
         }
 
-        // Create beverage fine instead of BeverageConsumption
+        // Create beverage fine
         const fine: Fine = {
           id: generateId('fine'),
           userId: player.id,

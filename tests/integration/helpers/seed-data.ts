@@ -16,7 +16,6 @@ import type {
   Due,
   DuePayment,
   Beverage,
-  BeverageConsumption,
 } from '@/lib/types';
 
 function nowIso() {
@@ -212,26 +211,6 @@ export async function seedBeverage(firestore: Firestore, beverage: Beverage): Pr
   return beverage.id;
 }
 
-/**
- * Seed a beverage consumption into Firestore under a team-scoped player subcollection
- */
-export async function seedTeamBeverageConsumption(
-  firestore: Firestore,
-  teamId: string,
-  playerId: string,
-  consumption: BeverageConsumption
-): Promise<string> {
-  await seedTeam(firestore, teamId);
-  const consumptionRef = doc(
-    firestore,
-    `teams/${teamId}/players/${playerId}/beverageConsumptions`,
-    consumption.id
-  );
-  const batch = writeBatch(firestore);
-  batch.set(consumptionRef, consumption);
-  await batch.commit();
-  return consumption.id;
-}
 
 /**
  * Clear all data from a collection
@@ -246,10 +225,10 @@ export async function clearCollection(firestore: Firestore, collectionPath: stri
   if (snapshot.empty) return;
 
   // Known subcollections under user documents that need cleanup between tests
-  const userSubcollections = ['fines', 'payments', 'duePayments', 'beverageConsumptions'];
+  const userSubcollections = ['fines', 'payments', 'duePayments'];
 
   // Known subcollections under team player documents
-  const teamPlayerSubcollections = ['fines', 'payments', 'beverageConsumptions', 'duePayments'];
+  const teamPlayerSubcollections = ['fines', 'payments', 'duePayments'];
 
   // Known subcollections directly under team documents
   const teamSubcollections = ['predefinedFines', 'teamMembers'];

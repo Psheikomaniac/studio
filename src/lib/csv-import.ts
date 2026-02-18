@@ -4,7 +4,6 @@ import {
   Fine,
   Payment,
   Beverage,
-  BeverageConsumption,
   Due,
   DuePayment
 } from './types';
@@ -13,7 +12,6 @@ import {
   fines,
   payments,
   beverages,
-  beverageConsumptions,
   dues,
   duePayments
 } from './static-data';
@@ -320,18 +318,20 @@ export async function importPunishmentsCSV(text: string): Promise<ImportResult> 
 
     } else if (row.type === 'DRINK') {
       const beverage = findOrCreateBeverage(row.reason, row.amount);
-      const consumption: BeverageConsumption = {
-        id: generateId('bc'),
+      const fine: Fine = {
+        id: generateId('fine'),
         userId: player.id,
-        beverageId: beverage.id,
-        beverageName: beverage.name,
+        reason: row.reason,
         amount: row.amount,
         date: row.date,
         paid: row.paid,
         paidAt: row.paidAt,
-        createdAt: row.date
+        createdAt: row.date,
+        updatedAt: row.paidAt || row.date,
+        fineType: 'beverage',
+        beverageId: beverage.id,
       };
-      beverageConsumptions.push(consumption);
+      fines.push(fine);
       result.recordsCreated++;
 
     } else {
