@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { getPerformance } from 'firebase/performance';
 import { getAnalytics, isSupported } from 'firebase/analytics';
+import { initializeFirebaseAppCheck } from './app-check';
 
 function parseHostPort(
   value: string | undefined,
@@ -264,6 +265,11 @@ export function getSdks(firebaseApp: FirebaseApp) {
 
   // Connect to emulators (dev only, best-effort) before any reads/writes.
   connectFirebaseEmulatorsOnce({ auth, firestore });
+
+  // Initialize App Check for security (client-side only, production-critical)
+  if (typeof window !== 'undefined') {
+    initializeFirebaseAppCheck(firebaseApp);
+  }
 
   // Initialize monitoring services asynchronously (non-blocking)
   initializePerformanceMonitoring(firebaseApp);

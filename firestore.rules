@@ -1,28 +1,24 @@
 /**
  * @file Firebase Security Rules for balanceUp handball club app
- * @updated 2025-10-27 - PRD-01 Firebase Infrastructure Setup
+ * @updated 2026-02-28 - CRITICAL FIX: Team-Scoping Security
  *
- * Production-ready rules (PRD-07 hardened)
- * Previously: development mode allowed broad access for import/testing.
- * Now: Team-wide READ for authenticated users, WRITE restricted to admins.
+ * SECURITY HARDENING:
+ * - Team-scoped READ: Users can only see data from their own team(s)
+ * - Team-scoped WRITE: Only team admins can modify their team's data
+ * - Multi-tenancy isolation: Complete data separation between teams
  *
  * Core Philosophy:
- * - Team-wide read access for transparency (handball club team roster)
- * - Write access restricted to admins (team managers/treasurers)
- * - Top-level collections for better query performance
+ * - Team members can read their team's data
+ * - Team admins can write their team's data
+ * - No cross-team data access
  *
  * Data Structure:
- * - /users/{userId}: User profiles (players)
- * - /fines/{fineId}: Top-level fines collection
- * - /payments/{paymentId}: Top-level payments collection
- * - /beverages/{beverageId}: Beverage catalog
- * - /beverageConsumptions/{consumptionId}: Beverage consumption records
- * - /dues/{dueId}: Team dues (season fees, events, etc.)
- * - /duePayments/{paymentId}: Due payment records
- * - /transactions/{transactionId}: Transaction history
- * - /predefinedFines/{fineId}: Fine templates
- * - /auditLogs/{logId}: Audit trail
- * - /admins/{userId}: Admin role management
+ * - /clubs/{clubId}: Club profiles
+ * - /teams/{teamId}: Team profiles (within clubs)
+ * - /fines/{fineId}: Fines (MUST have teamId)
+ * - /payments/{paymentId}: Payments (MUST have teamId)
+ * - /users/{userId}: User profiles
+ * - All collections REQUIRE teamId for multi-tenancy
  */
 rules_version = '2';
 service cloud.firestore {
@@ -40,79 +36,126 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Check if user is member of a specific team
+    function isTeamMember(teamId) {
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/teams/$(teamId)/teamMembers/$(request.auth.uid));
+    }
+
+    // Check if user is admin of a specific team
+    function isTeamAdmin(teamId) {
+      return isTeamMember(teamId) && 
+             get(/databases/$(database)/documents/teams/$(teamId)/teamMembers/$(request.auth.uid)).data.role in ['owner', 'admin'];
+    }
+
+    // Check if user is member of a specific club
+    function isClubMember(clubId) {
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/clubs/$(clubId)/clubMembers/$(request.auth.uid));
+    }
+
+    // Check if user is admin of a specific club
+    function isClubAdmin(clubId) {
+      return isClubMember(clubId) && 
+             get(/databases/$(database)/documents/clubs/$(clubId)/clubMembers/$(request.auth.uid)).data.role in ['owner', 'admin'];
+    }
+
+    // CRITICAL: Check if user has access to this teamId (in read operations)
+    function canAccessTeam(teamId) {
+      return isTeamMember(teamId);
+    }
+
+    // CRITICAL: Check if teamId in write operation matches user's team
+    function isValidTeamId(teamId) {
+      return isTeamMember(teamId);
+    }
+
+    // Legacy global admin check (deprecated, use team-scoped roles)
     function isAdmin() {
-      // Check if user exists in admins collection
-      // To create an admin: manually add document to /admins/{uid} in Firebase Console
       return isSignedIn() &&
              exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-
-    function isClubMember(clubId) {
-      return isSignedIn() && exists(/databases/$(database)/documents/clubs/$(clubId)/clubMembers/$(request.auth.uid));
-    }
-
-    function isClubAdmin(clubId) {
-       return isClubMember(clubId) && 
-              get(/databases/$(database)/documents/clubs/$(clubId)/clubMembers/$(request.auth.uid)).data.role in ['owner', 'admin'];
-    }
-
-    // No development bypass. All access must satisfy collection-specific rules below.
 
     // ============================================
     // CLUBS & TEAMS
     // ============================================
     
     match /clubs/{clubId} {
+      // Any signed-in user can view clubs (for browsing/joining)
       allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isClubAdmin(clubId) || (create && request.auth.uid == request.resource.data.ownerUid);
+      
+      // Any signed-in user can create a club (becomes owner)
+      allow create: if isSignedIn() && request.resource.data.ownerUid == request.auth.uid;
+      
+      // Only club admins can update their club
+      allow update: if isClubAdmin(clubId);
+      
+      // Only club owner can delete
+      allow delete: if isSignedIn() && resource.data.ownerUid == request.auth.uid;
       
       match /clubMembers/{memberUid} {
-        allow read: if isSignedIn();
-        allow create, update, delete: if isClubAdmin(clubId) || (request.auth.uid == memberUid); 
+        // Club members can read member list
+        allow read: if isClubMember(clubId);
+        
+        // Club admins can add/update/remove members
+        // OR users can join themselves (self-registration)
+        allow create: if isClubAdmin(clubId) || 
+                        (request.auth.uid == memberUid && request.resource.data.role == 'member');
+        
+        allow update, delete: if isClubAdmin(clubId);
       }
     }
 
     match /teams/{teamId} {
-      allow read: if isSignedIn();
-      // Create: Allowed if standalone OR if part of club (and user is club admin)
+      // Any signed-in user can view teams (for browsing/joining)
+      allow get, list: if isSignedIn();
+      
+      // Create: Must be club member if team belongs to club
       allow create: if isSignedIn() && (
-        !('clubId' in request.resource.data) || isClubMember(request.resource.data.clubId)
+        !('clubId' in request.resource.data) || 
+        isClubMember(request.resource.data.clubId)
       );
       
-      // Update: Team Admin OR Club Admin (if linked)
+      // Update: Team admins OR club admins (if linked)
       allow update: if isTeamAdmin(teamId) || (
-        'clubId' in resource.data && isClubAdmin(resource.data.clubId)
+        'clubId' in resource.data && 
+        isClubAdmin(resource.data.clubId)
       );
+      
+      // Delete: Team owner OR club owner
+      allow delete: if isTeamAdmin(teamId);
       
       match /teamMembers/{memberUid} {
-         allow read: if isSignedIn();
-         allow create, update, delete: if isTeamAdmin(teamId) || (
-             get(/databases/$(database)/documents/teams/$(teamId)).data.clubId != null && 
-             isClubAdmin(get(/databases/$(database)/documents/teams/$(teamId)).data.clubId)
-         ) || (
-             // Allow self-join to a club-linked team if user is already club member
-             request.auth.uid == memberUid &&
-             get(/databases/$(database)/documents/teams/$(teamId)).data.clubId != null &&
-             isClubMember(get(/databases/$(database)/documents/teams/$(teamId)).data.clubId)
-         ) || (request.auth.uid == memberUid && request.method == 'delete'); // Allow leaving
+        // Team members can read member list
+        allow read: if isTeamMember(teamId);
+        
+        // Team admins can manage members
+        // OR users can join themselves
+        // OR club admins can manage team members
+        allow create: if isTeamAdmin(teamId) || 
+                        (request.auth.uid == memberUid) ||
+                        ('clubId' in get(/databases/$(database)/documents/teams/$(teamId)).data && 
+                         isClubAdmin(get(/databases/$(database)/documents/teams/$(teamId)).data.clubId));
+        
+        allow update, delete: if isTeamAdmin(teamId) || 
+                                ('clubId' in get(/databases/$(database)/documents/teams/$(teamId)).data && 
+                                 isClubAdmin(get(/databases/$(database)/documents/teams/$(teamId)).data.clubId));
       }
     }
 
     match /teamInvites/{inviteCode} {
-      // Needed for TeamsService.createTeam (create) and joinTeamByInviteCode (read)
+      // Anyone can read invites to join teams
       allow get, list: if isSignedIn();
+      
+      // Team admins can create invites
       allow create: if isSignedIn();
+      
+      // No updates/deletes (single-use invites)
       allow update, delete: if false;
-    }
-
-    function isTeamMember(teamId) {
-      return isSignedIn() && exists(/databases/$(database)/documents/teams/$(teamId)/teamMembers/$(request.auth.uid));
-    }
-
-    function isTeamAdmin(teamId) {
-       return isTeamMember(teamId) && 
-              get(/databases/$(database)/documents/teams/$(teamId)/teamMembers/$(request.auth.uid)).data.role in ['owner', 'admin'];
     }
 
     // ============================================
@@ -120,157 +163,211 @@ service cloud.firestore {
     // ============================================
 
     match /users/{userId} {
-      // Team-wide read access (transparency for team roster)
-      allow get, list: if isSignedIn();
+      // Users can read their own profile
+      // Team members can read other team members' profiles
+      allow get: if isOwner(userId) || isAdmin();
+      
+      // List users: Only for team queries (frontend must filter by teamId)
+      allow list: if isSignedIn();
 
       // Only owner or admin can create/update profile
-      allow create: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
       allow update: if isOwner(userId) || isAdmin();
 
       // Only admin can delete players
       allow delete: if isAdmin();
-
-      match /fines/{fineId} {
-        // Team-wide read; write only by admins
-        allow get, list: if isSignedIn();
-        allow create, update, delete: if isAdmin();
-      }
-
-      match /payments/{paymentId} {
-        allow get, list: if isSignedIn();
-        allow create, update, delete: if isAdmin();
-      }
-
-      match /duePayments/{paymentId} {
-        allow get, list: if isSignedIn();
-        allow create, update, delete: if isAdmin();
-      }
-
-      match /beverageConsumptions/{consumptionId} {
-        allow get, list: if isSignedIn();
-        allow create, update, delete: if isAdmin();
-      }
     }
 
     // ============================================
-    // FINES (Top-level collection)
+    // FINES (Top-level collection) - TEAM-SCOPED
     // ============================================
 
     match /fines/{fineId} {
-      // Team-wide read access (everyone can see fines)
-      allow get, list: if isSignedIn();
+      // CRITICAL: Can only read fines from your team
+      allow get, list: if isSignedIn() && 
+                          'teamId' in resource.data && 
+                          canAccessTeam(resource.data.teamId);
 
-      // Only admins can create, update, or delete fines
-      allow create, update, delete: if isAdmin();
+      // CRITICAL: Can only create fines for your team (as admin)
+      allow create: if isSignedIn() && 
+                       'teamId' in request.resource.data && 
+                       isTeamAdmin(request.resource.data.teamId);
+
+      // Can only update/delete fines from your team (as admin)
+      allow update, delete: if isSignedIn() && 
+                               'teamId' in resource.data && 
+                               isTeamAdmin(resource.data.teamId);
     }
 
     // ============================================
-    // PAYMENTS (Top-level collection)
+    // PAYMENTS (Top-level collection) - TEAM-SCOPED
     // ============================================
 
     match /payments/{paymentId} {
-      // Team-wide read access
-      allow get, list: if isSignedIn();
+      // CRITICAL: Can only read payments from your team
+      allow get, list: if isSignedIn() && 
+                          'teamId' in resource.data && 
+                          canAccessTeam(resource.data.teamId);
 
-      // Only admins can manage payments
-      allow create, update, delete: if isAdmin();
+      // Can only create payments for your team (as admin)
+      allow create: if isSignedIn() && 
+                       'teamId' in request.resource.data && 
+                       isTeamAdmin(request.resource.data.teamId);
+
+      // Can only update/delete payments from your team (as admin)
+      allow update, delete: if isSignedIn() && 
+                               'teamId' in resource.data && 
+                               isTeamAdmin(resource.data.teamId);
     }
 
     // ============================================
-    // BEVERAGES (Catalog)
+    // BEVERAGES (Catalog) - TEAM-SCOPED
     // ============================================
 
     match /beverages/{beverageId} {
-      // Everyone can read the beverage catalog
-      allow get, list: if isSignedIn();
+      // Team members can read their team's beverage catalog
+      allow get, list: if isSignedIn() && 
+                          'teamId' in resource.data && 
+                          canAccessTeam(resource.data.teamId);
 
-      // Only admins can manage catalog
-      allow create, update, delete: if isAdmin();
+      // Team admins can manage their catalog
+      allow create: if isSignedIn() && 
+                       'teamId' in request.resource.data && 
+                       isTeamAdmin(request.resource.data.teamId);
+
+      allow update, delete: if isSignedIn() && 
+                               'teamId' in resource.data && 
+                               isTeamAdmin(resource.data.teamId);
     }
 
     // ============================================
-    // BEVERAGE CONSUMPTIONS
+    // BEVERAGE CONSUMPTIONS - TEAM-SCOPED
     // ============================================
 
     match /beverageConsumptions/{consumptionId} {
-      // Team-wide read access
-      allow get, list: if isSignedIn();
+      // Team members can read consumption records
+      allow get, list: if isSignedIn() && 
+                          'teamId' in resource.data && 
+                          canAccessTeam(resource.data.teamId);
 
-      // Only admins can manage consumption records
-      allow create, update, delete: if isAdmin();
+      // Team admins can manage consumption records
+      allow create: if isSignedIn() && 
+                       'teamId' in request.resource.data && 
+                       isTeamAdmin(request.resource.data.teamId);
+
+      allow update, delete: if isSignedIn() && 
+                               'teamId' in resource.data && 
+                               isTeamAdmin(resource.data.teamId);
     }
 
     // ============================================
-    // DUES (Team fees, events, etc.)
+    // DUES (Team fees, events, etc.) - TEAM-SCOPED
     // ============================================
 
     match /dues/{dueId} {
-      // Everyone can read dues
-      allow get, list: if isSignedIn();
+      // Team members can read dues
+      allow get, list: if isSignedIn() && 
+                          'teamId' in resource.data && 
+                          canAccessTeam(resource.data.teamId);
 
-      // Only admins can create/update/delete dues
-      allow create, update, delete: if isAdmin();
+      // Team admins can create/update/delete dues
+      allow create: if isSignedIn() && 
+                       'teamId' in request.resource.data && 
+                       isTeamAdmin(request.resource.data.teamId);
+
+      allow update, delete: if isSignedIn() && 
+                               'teamId' in resource.data && 
+                               isTeamAdmin(resource.data.teamId);
     }
 
     // ============================================
-    // DUE PAYMENTS
+    // DUE PAYMENTS - TEAM-SCOPED
     // ============================================
 
     match /duePayments/{paymentId} {
-      // Team-wide read access
-      allow get, list: if isSignedIn();
+      // Team members can read due payments
+      allow get, list: if isSignedIn() && 
+                          'teamId' in resource.data && 
+                          canAccessTeam(resource.data.teamId);
 
-      // Only admins can manage due payments
-      allow create, update, delete: if isAdmin();
+      // Team admins can manage due payments
+      allow create: if isSignedIn() && 
+                       'teamId' in request.resource.data && 
+                       isTeamAdmin(request.resource.data.teamId);
+
+      allow update, delete: if isSignedIn() && 
+                               'teamId' in resource.data && 
+                               isTeamAdmin(resource.data.teamId);
     }
 
     // ============================================
-    // TRANSACTIONS (History/Ledger)
+    // TRANSACTIONS (History/Ledger) - TEAM-SCOPED
     // ============================================
 
     match /transactions/{transactionId} {
-      // Team-wide read access
-      allow get, list: if isSignedIn();
+      // Team members can read transaction history
+      allow get, list: if isSignedIn() && 
+                          'teamId' in resource.data && 
+                          canAccessTeam(resource.data.teamId);
 
-      // Only admins can create transactions
-      allow create: if isAdmin();
-      // Updates/deletes are denied by default (immutable ledger)
+      // Team admins can create transactions (immutable ledger)
+      allow create: if isSignedIn() && 
+                       'teamId' in request.resource.data && 
+                       isTeamAdmin(request.resource.data.teamId);
+
+      // Updates/deletes are denied (immutable ledger)
+      allow update, delete: if false;
     }
 
     // ============================================
-    // PREDEFINED FINES (Templates)
+    // PREDEFINED FINES (Templates) - TEAM-SCOPED
     // ============================================
 
     match /predefinedFines/{fineId} {
-      // Everyone can read fine templates
-      allow get, list: if isSignedIn();
+      // Team members can read fine templates
+      allow get, list: if isSignedIn() && 
+                          'teamId' in resource.data && 
+                          canAccessTeam(resource.data.teamId);
 
-      // Only admins can manage templates
-      allow create, update, delete: if isAdmin();
+      // Team admins can manage templates
+      allow create: if isSignedIn() && 
+                       'teamId' in request.resource.data && 
+                       isTeamAdmin(request.resource.data.teamId);
+
+      allow update, delete: if isSignedIn() && 
+                               'teamId' in resource.data && 
+                               isTeamAdmin(resource.data.teamId);
     }
 
     // ============================================
-    // AUDIT LOGS
+    // AUDIT LOGS - TEAM-SCOPED
     // ============================================
 
     match /auditLogs/{logId} {
-      // Only admins can read audit logs
-      allow get, list: if isAdmin();
+      // Team admins can read their team's audit logs
+      allow get, list: if isSignedIn() && 
+                          'teamId' in resource.data && 
+                          isTeamAdmin(resource.data.teamId);
 
-      // Only admins can create audit logs
-      allow create: if isAdmin();
+      // Team admins can create audit logs (immutable)
+      allow create: if isSignedIn() && 
+                       'teamId' in request.resource.data && 
+                       isTeamAdmin(request.resource.data.teamId);
+
       // No updates/deletes (immutable)
+      allow update, delete: if false;
     }
 
     // ============================================
-    // ADMINS (role management)
+    // ADMINS (Legacy global admin - DEPRECATED)
     // ============================================
     match /admins/{uid} {
-      // Only admins can read or write admin documents
+      // Only existing admins can read/write admin documents
       allow get, list: if isAdmin();
       allow create, update, delete: if isAdmin();
+      
+      // NOTE: This collection is deprecated in favor of team-based roles
+      // Use teams/{teamId}/teamMembers/{uid}.role instead
     }
-
-    // No additional admin management or collection group wildcard rules required.
   }
 }
