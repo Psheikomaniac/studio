@@ -1,4 +1,57 @@
 import type { NextConfig } from 'next';
+import withPWAInit from 'next-pwa';
+
+// PWA Configuration
+const withPWA = withPWAInit({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  register: true,
+  skipWaiting: true,
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'google-fonts',
+        expiration: {
+          maxEntries: 4,
+          maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year
+        },
+      },
+    },
+    {
+      urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'static-image-assets',
+        expiration: {
+          maxEntries: 64,
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+      },
+    },
+    {
+      urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'firestore-data',
+        networkTimeoutSeconds: 10,
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+      },
+    },
+    {
+      urlPattern: /^https:\/\/.*\.firebaseio\.com\/.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'firebase-realtime',
+        networkTimeoutSeconds: 10,
+      },
+    },
+  ],
+});
 
 // Lazily enable bundle analyzer only when requested and available.
 let withBundleAnalyzer: (config: NextConfig) => NextConfig = (config) => config;
@@ -135,4 +188,5 @@ const nextConfig = {
   },
 } satisfies NextConfig;
 
-export default withBundleAnalyzer(nextConfig);
+// Apply PWA wrapper first, then bundle analyzer
+export default withBundleAnalyzer(withPWA(nextConfig));
