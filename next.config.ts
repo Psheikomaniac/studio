@@ -70,6 +70,38 @@ if (process.env.ANALYZE === 'true') {
 
 const nextConfig = {
   /* config options here */
+  
+  // Bundle Optimization (Issue #9)
+  experimental: {
+    // Optimize package imports (tree-shaking)
+    optimizePackageImports: [
+      '@radix-ui/react-icons',
+      'lucide-react',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-select',
+      '@radix-ui/react-toast',
+    ],
+  },
+  
+  // Compiler optimizations
+  compiler: {
+    // Remove console.log in production
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
+  
+  // Production optimizations
+  ...(process.env.NODE_ENV === 'production' && {
+    // Minimize output
+    compress: true,
+    
+    // Production source maps (smaller, for debugging)
+    productionBrowserSourceMaps: false,
+  }),
+  
   typescript: {
     // Enforce TypeScript errors to fail the build as required by PRD-08
     ignoreBuildErrors: false,
