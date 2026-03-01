@@ -1,8 +1,13 @@
 /**
- * Next.js Middleware with Rate Limiting
+ * Next.js Middleware with Rate Limiting & CORS
  * 
- * This middleware protects API routes from abuse by rate limiting requests.
+ * This middleware protects API routes from abuse and handles CORS.
  * Different endpoints have different limits based on their sensitivity.
+ * 
+ * Features:
+ * - Rate limiting (auth/admin/api endpoints)
+ * - CORS headers for API routes
+ * - Security headers (via next.config.ts)
  * 
  * Rate Limiting Strategy:
  * - Auth endpoints: Strict (5 req/15min) - prevent brute-force
@@ -19,6 +24,43 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+
+/**
+ * Allowed origins for CORS
+ * Add production domains here
+ */
+const ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'http://localhost:9002',
+  process.env.NEXT_PUBLIC_APP_URL,
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+].filter(Boolean) as string[];
+
+/**
+ * Handle CORS for API routes
+ */
+function handleCors(request: NextRequest, response: NextResponse): NextResponse {
+  const origin = request.headers.get('origin');
+  
+  // Check if origin is allowed
+  if (origin && (ALLOWED_ORIGINS.includes(origin) || process.env.NODE_ENV === 'development')) {
+    response.headers.set('Access-Control-Allow-Origin', origin);
+    response.headers.set('Access-Control-Allow-Credentials', 'true');
+  }
+  
+  // Set CORS headers for all API routes
+  response.headers.set(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+  );
+  response.headers.set(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token'
+  );
+  response.headers.set('Access-Control-Max-Age', '86400'); // 24 hours
+  
+  return response;
+}
 
 /**
  * Get client IP address from request
@@ -95,13 +137,20 @@ let rateLimiters: ReturnType<typeof createRateLimiters> | null | undefined;
 /**
  * Middleware function
  * Runs on every request to /api/* routes
+ * Handles CORS, rate limiting, and preflight requests
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip rate limiting for non-API routes
+  // Skip middleware for non-API routes
   if (!pathname.startsWith('/api/')) {
     return NextResponse.next();
+  }
+
+  // Handle CORS preflight (OPTIONS requests)
+  if (request.method === 'OPTIONS') {
+    const preflightResponse = new NextResponse(null, { status: 204 });
+    return handleCors(request, preflightResponse);
   }
 
   // Initialize rate limiters on first request
@@ -109,9 +158,10 @@ export async function middleware(request: NextRequest) {
     rateLimiters = createRateLimiters();
   }
 
-  // If rate limiting is not configured, allow all requests
+  // If rate limiting is not configured, allow all requests (with CORS)
   if (!rateLimiters) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    return handleCors(request, response);
   }
 
   // Get client IP
@@ -132,33 +182,21 @@ export async function middleware(request: NextRequest) {
   // Check rate limit
   const { success, limit, reset, remaining } = await ratelimiter.limit(ip);
 
-  // Add rate limit headers to response
-  const response = success
-    ? NextResponse.next()
-    : new NextResponse('Too Many Requests', {
-        status: 429,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-  // Add rate limit info to headers (useful for debugging)
-  response.headers.set('X-RateLimit-Limit', limit.toString());
-  response.headers.set('X-RateLimit-Remaining', remaining.toString());
-  response.headers.set('X-RateLimit-Reset', new Date(reset).toISOString());
-
-  // If rate limited, add Retry-After header
-  if (!success) {
+  // Create response (success or rate limited)
+  let response: NextResponse;
+  
+  if (success) {
+    response = NextResponse.next();
+  } else {
     const retryAfter = Math.ceil((reset - Date.now()) / 1000);
-    response.headers.set('Retry-After', retryAfter.toString());
-
+    
     // Log rate limit violations in production
     if (process.env.NODE_ENV === 'production') {
       console.warn(`[Rate Limit] IP ${ip} exceeded limit on ${pathname}`);
     }
 
     // Return JSON error
-    return new NextResponse(
+    response = new NextResponse(
       JSON.stringify({
         error: 'Too Many Requests',
         message: `Rate limit exceeded. Please retry after ${retryAfter} seconds.`,
@@ -168,16 +206,19 @@ export async function middleware(request: NextRequest) {
         status: 429,
         headers: {
           'Content-Type': 'application/json',
-          'X-RateLimit-Limit': limit.toString(),
-          'X-RateLimit-Remaining': remaining.toString(),
-          'X-RateLimit-Reset': new Date(reset).toISOString(),
           'Retry-After': retryAfter.toString(),
         },
       }
     );
   }
 
-  return response;
+  // Add rate limit headers
+  response.headers.set('X-RateLimit-Limit', limit.toString());
+  response.headers.set('X-RateLimit-Remaining', remaining.toString());
+  response.headers.set('X-RateLimit-Reset', new Date(reset).toISOString());
+
+  // Add CORS headers
+  return handleCors(request, response);
 }
 
 /**
