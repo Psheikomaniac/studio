@@ -207,7 +207,7 @@ export async function multiJoin<TMain extends Record<string, any>>(
     const enriched = { ...doc };
     
     joinResults.forEach(({ field, as, data }) => {
-      enriched[as] = data.get(doc[field] as string);
+      (enriched as Record<string, unknown>)[as] = data.get(doc[field] as string);
     });
     
     return enriched;
@@ -263,7 +263,7 @@ export function denormalize<TMain, TForeign>(
   // Copy fields with prefix
   fields.forEach(field => {
     const denormKey = `${prefix}${String(field).charAt(0).toUpperCase()}${String(field).slice(1)}`;
-    denormalized[denormKey] = foreignDoc[field];
+    (denormalized as Record<string, unknown>)[denormKey] = foreignDoc[field];
   });
   
   return denormalized;

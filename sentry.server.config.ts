@@ -32,7 +32,7 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
     ],
 
     // Before sending event
-    beforeSend(event, hint) {
+    beforeSend(event, _hint) {
       // Don't send in development
       if (process.env.NODE_ENV === 'development' && process.env.SENTRY_ENABLED !== 'true') {
         console.log('[Sentry Server] Error captured (dev mode, not sent):', event);

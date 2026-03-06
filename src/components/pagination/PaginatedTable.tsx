@@ -27,14 +27,14 @@
 'use client';
 
 import { useState } from 'react';
-import { UseInfiniteQueryResult } from '@tanstack/react-query';
+import { UseInfiniteQueryResult, InfiniteData } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PaginatedPage } from '@/hooks/usePaginatedQuery';
 
 interface PaginatedTableProps<T> {
   /** React Query infinite query result */
-  query: UseInfiniteQueryResult<PaginatedPage<T>, Error>;
+  query: UseInfiniteQueryResult<InfiniteData<PaginatedPage<T>>, Error>;
   
   /** Render table header */
   renderHeader: () => React.ReactNode;

@@ -33,7 +33,7 @@ export async function register() {
         // Integrations
         integrations: [
           // Automatic error context
-          new Sentry.Integrations.Http({ tracing: true }),
+          Sentry.httpIntegration(),
         ],
         
         // Ignore specific errors
@@ -52,7 +52,7 @@ export async function register() {
         ],
         
         // Before sending, scrub sensitive data
-        beforeSend(event, hint) {
+        beforeSend(event, _hint) {
           // Don't send errors in development unless explicitly enabled
           if (process.env.NODE_ENV === 'development' && process.env.SENTRY_ENABLED !== 'true') {
             return null;
@@ -60,7 +60,7 @@ export async function register() {
           
           // Filter out non-error exceptions
           if (event.exception) {
-            const error = hint.originalException;
+            const error = _hint.originalException;
             if (error && typeof error === 'object' && 'message' in error) {
               // Ignore specific error messages
               const message = (error as Error).message;

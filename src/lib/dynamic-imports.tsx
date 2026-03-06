@@ -42,6 +42,7 @@ const CardSkeleton = () => (
 
 // Charts (if using recharts/chart.js - heavy libraries)
 export const DynamicCharts = dynamic(
+  // @ts-ignore – placeholder component, not yet implemented
   () => import('@/components/charts/Charts').catch(() => ({ default: () => <div>Charts not available</div> })),
   {
     loading: DefaultLoading,
@@ -51,6 +52,7 @@ export const DynamicCharts = dynamic(
 
 // Admin Panel (heavy with many components)
 export const DynamicAdminPanel = dynamic(
+  // @ts-ignore – placeholder component, not yet implemented
   () => import('@/components/admin/AdminPanel').catch(() => ({ default: () => <div>Admin not available</div> })),
   {
     loading: DefaultLoading,
@@ -60,6 +62,7 @@ export const DynamicAdminPanel = dynamic(
 
 // PDF Export (heavy PDF library)
 export const DynamicPDFExport = dynamic(
+  // @ts-ignore – placeholder component, not yet implemented
   () => import('@/components/export/PDFExport').catch(() => ({ default: () => <div>PDF export not available</div> })),
   {
     loading: () => (
@@ -74,6 +77,7 @@ export const DynamicPDFExport = dynamic(
 
 // Rich Text Editor (if used - very heavy)
 export const DynamicEditor = dynamic(
+  // @ts-ignore – placeholder component, not yet implemented
   () => import('@/components/editor/RichEditor').catch(() => ({ default: () => <div>Editor not available</div> })),
   {
     loading: DefaultLoading,
@@ -83,6 +87,7 @@ export const DynamicEditor = dynamic(
 
 // Data Tables with heavy features (sorting, filtering, etc.)
 export const DynamicDataTable = dynamic(
+  // @ts-ignore – placeholder component, not yet implemented
   () => import('@/components/tables/DataTable').catch(() => ({ default: () => <div>Table not available</div> })),
   {
     loading: () => (

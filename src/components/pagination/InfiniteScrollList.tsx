@@ -18,13 +18,13 @@
 
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { UseInfiniteQueryResult } from '@tanstack/react-query';
+import { UseInfiniteQueryResult, InfiniteData } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { PaginatedPage } from '@/hooks/usePaginatedQuery';
 
 interface InfiniteScrollListProps<T> {
   /** React Query infinite query result */
-  query: UseInfiniteQueryResult<PaginatedPage<T>, Error>;
+  query: UseInfiniteQueryResult<InfiniteData<PaginatedPage<T>>, Error>;
   
   /** Render function for each item */
   renderItem: (item: T, index: number) => React.ReactNode;

@@ -25,25 +25,14 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
     // Only send errors in production (unless explicitly enabled)
     enabled: process.env.NODE_ENV === 'production' || process.env.SENTRY_ENABLED === 'true',
 
+    tracePropagationTargets: ['localhost', /^\//, /^https:\/\/[^/]*\.vercel\.app/, /^https:\/\/[^/]*\.web\.app/],
+
     // Integrations
     integrations: [
-      new Sentry.BrowserTracing({
-        // Performance monitoring for navigation
-        tracePropagationTargets: [
-          'localhost',
-          /^https:\/\/[^/]*\.vercel\.app/,
-          /^https:\/\/[^/]*\.web\.app/,
-        ],
-      }),
-      new Sentry.Replay({
-        // Mask all text and block all media by default (GDPR)
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration({
         maskAllText: true,
         blockAllMedia: true,
-        
-        // Network details
-        networkDetailAllowUrls: [
-          window.location.origin,
-        ],
       }),
     ],
 
@@ -64,7 +53,7 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
     ],
 
     // Before sending event, scrub sensitive data
-    beforeSend(event, hint) {
+    beforeSend(event, _hint) {
       // Don't send in development unless explicitly enabled
       if (process.env.NODE_ENV === 'development' && process.env.SENTRY_ENABLED !== 'true') {
         console.log('[Sentry] Error captured (dev mode, not sent):', event);
@@ -78,13 +67,13 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
 
       // Scrub sensitive data from breadcrumbs
       if (event.breadcrumbs) {
-        event.breadcrumbs = event.breadcrumbs.map(breadcrumb => {
-          if (breadcrumb.data) {
-            if (breadcrumb.data.url) {
-              breadcrumb.data.url = breadcrumb.data.url.replace(/([?&])(token|apikey|password)=[^&]*/gi, '$1$2=REDACTED');
+        event.breadcrumbs = event.breadcrumbs.map(_breadcrumb => {
+          if (_breadcrumb.data) {
+            if (_breadcrumb.data.url) {
+              _breadcrumb.data.url = _breadcrumb.data.url.replace(/([?&])(token|apikey|password)=[^&]*/gi, '$1$2=REDACTED');
             }
           }
-          return breadcrumb;
+          return _breadcrumb;
         });
       }
 

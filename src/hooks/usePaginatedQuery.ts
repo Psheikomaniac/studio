@@ -23,7 +23,7 @@
 
 'use client';
 
-import { useInfiniteQuery, UseInfiniteQueryResult } from '@tanstack/react-query';
+import { useInfiniteQuery, UseInfiniteQueryResult, InfiniteData } from '@tanstack/react-query';
 import {
   collection,
   query,
@@ -70,12 +70,14 @@ export function usePaginatedQuery<T extends { id: string }>(
   orderByField: string = 'createdAt',
   orderDirection: 'asc' | 'desc' = 'desc',
   options: UsePaginatedQueryOptions = {}
-): UseInfiniteQueryResult<PaginatedPage<T>, Error> {
+): UseInfiniteQueryResult<InfiniteData<PaginatedPage<T>>, Error> {
   const { queryConstraints = [], enabled = true, firestore: customFirestore } = options;
 
-  return useInfiniteQuery<PaginatedPage<T>, Error>({
+  return useInfiniteQuery<PaginatedPage<T>, Error, InfiniteData<PaginatedPage<T>>>({
     queryKey: [collectionName, pageSize, orderByField, orderDirection, ...queryConstraints],
-    
+
+    initialPageParam: null,
+
     queryFn: async ({ pageParam }): Promise<PaginatedPage<T>> => {
       // Get Firestore instance
       const { firestore } = customFirestore ? { firestore: customFirestore } : initializeFirebase();
@@ -146,7 +148,7 @@ export function useSearchPaginated<T extends { id: string }>(
   searchField: string,
   searchValue: string,
   pageSize: number = 25
-): UseInfiniteQueryResult<PaginatedPage<T>, Error> {
+): UseInfiniteQueryResult<InfiniteData<PaginatedPage<T>>, Error> {
   return usePaginatedQuery<T>(
     collectionName,
     pageSize,
@@ -180,7 +182,7 @@ export function useTeamPaginatedQuery<T extends { id: string }>(
   teamId: string,
   pageSize: number = 50,
   orderByField: string = 'createdAt'
-): UseInfiniteQueryResult<PaginatedPage<T>, Error> {
+): UseInfiniteQueryResult<InfiniteData<PaginatedPage<T>>, Error> {
   return usePaginatedQuery<T>(
     collectionName,
     pageSize,
