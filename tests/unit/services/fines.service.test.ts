@@ -295,5 +295,15 @@ describe('FinesService', () => {
       const fine = {} as Fine;
       expect(isBeverageFine(fine)).toBe(false);
     });
+
+    it('should return true for legacy beverage fines with beverageId but no fineType', () => {
+      const fine = { beverageId: 'bev-1' } as Fine;
+      expect(isBeverageFine(fine)).toBe(true);
+    });
+
+    it('should return false for fines with no fineType and no beverageId', () => {
+      const fine = { reason: 'Late to practice', amount: 5 } as Fine;
+      expect(isBeverageFine(fine)).toBe(false);
+    });
   });
 });
