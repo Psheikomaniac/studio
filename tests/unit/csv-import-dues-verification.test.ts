@@ -38,8 +38,8 @@ Test Due;1000;01-01-2025;NO;Test User;user1;STATUS_PAID;02-01-2025`;
         expect(result.success).toBe(true);
     });
 
-    it('auto-exempts old unpaid dues (> 18 months)', async () => {
-        // Create a date 2 years ago
+    it('imports old unpaid dues (> 18 months) as-is without auto-exempting', async () => {
+        // Historical dues must be preserved with their original paid/exempt status
         const oldDate = new Date();
         oldDate.setFullYear(oldDate.getFullYear() - 2);
         const oldDateStr = `${oldDate.getDate().toString().padStart(2, '0')}-${(oldDate.getMonth() + 1).toString().padStart(2, '0')}-${oldDate.getFullYear()}`;
@@ -49,11 +49,11 @@ Old Due;1000;${oldDateStr};NO;Test User;user1;NO;`;
 
         const result = await importDuesCSVToFirestore(mockFirestore, 'test-team', csv);
         expect(result.success).toBe(true);
-        expect(result.warnings.length).toBeGreaterThan(0);
-        expect(result.warnings[0]).toContain('Auto-exempted old due');
-        // Note: Auto-exempted items are NOT skipped, they are imported as exempt.
-        // So skippedItems should be empty for this case.
+        // Must NOT auto-exempt historical dues
+        const exemptWarnings = result.warnings.filter(w => w.includes('Auto-exempted'));
+        expect(exemptWarnings).toHaveLength(0);
         expect(result.skippedItems).toHaveLength(0);
+        expect(result.rowsProcessed).toBe(1);
     });
 
     it('skips invalid amount and reports it in skippedItems', async () => {

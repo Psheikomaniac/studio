@@ -107,33 +107,34 @@ describe('importPunishmentsCSVToFirestore Beverage Logic', () => {
         expect(fineCall).toBeDefined();
     });
 
-    it('maps "Bier" to "Beer/Lemonade"', async () => {
+    it('uses actual drink name "Bier" (not generic category) for beverage catalog entry', async () => {
         const csvContent = `penatly_date;penatly_amount;penatly_reason;penatly_user
 01.01.2024;150;Bier;Max Mustermann`;
 
         await importPunishmentsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
-        const beverageCall = findSetCallInData((data) => data.name === 'Beer/Lemonade');
+        // Beverage catalog entry must use the actual drink name from the CSV, not the generic category
+        const beverageCall = findSetCallInData((data) => data.name === 'Bier');
         expect(beverageCall).toBeDefined();
     });
 
-    it('maps "Apfelwein" to "Appler"', async () => {
+    it('uses actual drink name "Apfelwein" (not "Appler" category) for beverage catalog entry', async () => {
         const csvContent = `penatly_date;penatly_amount;penatly_reason;penatly_user
 01.01.2024;200;Apfelwein;Max Mustermann`;
 
         await importPunishmentsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
-        const beverageCall = findSetCallInData((data) => data.name === 'Appler');
+        const beverageCall = findSetCallInData((data) => data.name === 'Apfelwein');
         expect(beverageCall).toBeDefined();
     });
 
-    it('maps unknown drink to "Beverages"', async () => {
+    it('uses actual drink name for unknown/uncategorized drinks', async () => {
         const csvContent = `penatly_date;penatly_amount;penatly_reason;penatly_user
 01.01.2024;500;Mystery Drink;Max Mustermann`;
 
         await importPunishmentsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
-        const beverageCall = findSetCallInData((data) => data.name === 'Beverages');
+        const beverageCall = findSetCallInData((data) => data.name === 'Mystery Drink');
         expect(beverageCall).toBeDefined();
     });
 });
