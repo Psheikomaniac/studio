@@ -356,20 +356,9 @@ export async function importDuesCSVToFirestore(
         const { paid: isPaid, paidAt: parsedPaidAt } = parsePaidStatus(row.user_paid);
         let isExempt = row.user_paid === 'STATUS_EXEMPT';
 
-        // Option B: Guard against counting old dues for ANY player (new or existing)
-        // If the due is significantly old (> 18 months) and unpaid, mark as exempt.
-        // This prevents historical debt from appearing for players who joined recently or data inconsistencies.
+        // Historical dues are imported as-is with their original paid/exempt status.
+        // The isArchivedDue flag is informational only — do not auto-exempt based on age.
         const isArchivedDue = !!due.archived;
-        const dueCreatedTs = new Date(dueCreated).getTime();
-        // 18 months in milliseconds: 18 * 30.44 * 24 * 60 * 60 * 1000 approx
-        const EIGHTEEN_MONTHS_MS = 18 * 30.44 * 24 * 60 * 60 * 1000;
-
-        if (!isPaid && !isExempt && (isArchivedDue || (!isNaN(dueCreatedTs) && (Date.now() - dueCreatedTs) > EIGHTEEN_MONTHS_MS))) {
-          isExempt = true;
-          const msg = `Auto-exempted old due for player "${player.name}" on "${due.name}" (${new Date(dueCreatedTs).toISOString()})`;
-          result.warnings.push(msg);
-          // Note: We don't add to skippedItems here because it IS imported, just as exempt.
-        }
 
         // Create DuePayment record
         const duePayment: DuePayment = {
@@ -512,8 +501,10 @@ export async function importPunishmentsCSVToFirestore(
         result.recordsCreated++;
 
       } else if (row.type === 'DRINK') {
+        // Use the actual drink name (row.reason) not the generic category label
+        const beverageName = row.reason || row.beverageCategory!;
         const beverage = await findOrCreateBeverage(
-          firestore, row.beverageCategory!, row.amount, existingBeverages
+          firestore, beverageName, row.amount, existingBeverages
         );
 
         if ((beverage as any).__isNew && !beveragesToCreate.some(b => b.id === beverage.id)) {
@@ -692,46 +683,21 @@ export async function importTransactionsCSVToFirestore(
         let playerName = '';
         let category = '';
 
-        // Special handling for Beiträge (membership dues)
-        // Format: "Beiträge: User Name (Due Name)"
+        // Skip Beiträge (membership dues) — handled exclusively by the Dues CSV importer.
+        // Creating a Payment here would double-count credits already recorded as DuePayments.
         const subjectPrefix = subject.split(':')[0].trim().toLowerCase();
         if (subjectPrefix.includes('beitr')) { // matches "beitrag", "beiträge"
-          // Try to parse "Beiträge: User (Due name)"
-          const match = subject.match(/^Beiträge:\s*(.+?)\s*\((.+)\)$/i);
-
-          if (match) {
-            playerName = match[1].trim();
-            const _dueName = match[2].trim();
-
-            // Use the due name as the reason/description
-            // We treat this as a generic payment for now, but linked to the user
-            // The user will be found/created below based on playerName
-
-            // Override the subject with the due name for clarity
-            // And let the logic proceed to find/create player
-
-            // We need to set category to something meaningful if needed, 
-            // but the main thing is extracting the player name so it's not skipped.
-
-            // Note: We are NOT setting 'category' here because the logic below 
-            // uses 'category' to determine if it's a fine or payment.
-            // By default, if not fine/drink, it's a payment.
-
-            // We just need to ensure playerName is set so the user lookup works.
-          } else {
-            // Fallback: If format doesn't match, skip it as before
-            result.warnings.push(`Row ${i + 1}: Skipped Beiträge transaction (handled via dues CSV): ${subject}`);
-            result.skippedItems.push({
-              date: transactionDate,
-              user: 'Unknown (Subject Parse)',
-              reason: subject,
-              amount: amountEUR,
-              paid: true, // Transactions are usually paid
-              skipReason: 'Beiträge handled via Dues CSV',
-              type: 'transaction'
-            });
-            continue;
-          }
+          result.warnings.push(`Row ${i + 1}: Skipped Beiträge transaction (handled via dues CSV): ${subject}`);
+          result.skippedItems.push({
+            date: transactionDate,
+            user: 'Unknown (Subject Parse)',
+            reason: subject,
+            amount: amountEUR,
+            paid: true,
+            skipReason: 'Beiträge handled via Dues CSV',
+            type: 'transaction'
+          });
+          continue;
         }
 
         // Only attempt standard parsing if we haven't found a player name yet
@@ -758,6 +724,24 @@ export async function importTransactionsCSVToFirestore(
 
         if (!playerName) {
           result.warnings.push(`Row ${i + 1}: Could not extract player name from subject: ${subject}`);
+          continue;
+        }
+
+        // Skip Strafen settlement transactions — fine paid-status is set via the punishments CSV.
+        // Only Guthaben top-ups within a Strafen subject are kept as payments.
+        const categoryLower = (category || '').trim().toLowerCase();
+        const isGuthabenCategory = categoryLower === 'guthaben' || categoryLower === 'guthaben rest';
+        if (subjectPrefix.includes('straf') && !isGuthabenCategory) {
+          result.warnings.push(`Row ${i + 1}: Skipped Strafen settlement transaction (handled via punishments CSV): ${subject}`);
+          result.skippedItems.push({
+            date: transactionDate,
+            user: playerName,
+            reason: subject,
+            amount: amountEUR,
+            paid: true,
+            skipReason: 'Strafen settlement handled via punishments CSV',
+            type: 'transaction'
+          });
           continue;
         }
 

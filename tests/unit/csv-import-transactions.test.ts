@@ -30,30 +30,47 @@ describe('importTransactionsCSVToFirestore Logic', () => {
         });
     });
 
-    it('correctly parses Beiträge transaction with embedded user and due name', async () => {
+    it('skips Beiträge transaction — handled via dues CSV to avoid double-counting', async () => {
         const csvContent = `transaction_date; transaction_amount; transaction_subject
 01.01.2024; 1200; Beiträge: Max Mustermann(Jahresbeitrag 2024)`;
 
         const result = await importTransactionsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
-        // Should NOT be skipped
-        expect(result.skippedItems).toHaveLength(0);
-
-        // Should be processed
-        expect(result.recordsCreated).toBe(1);
-
-        // Should identify the player
-        expect(result.playersCreated).toBe(1); // Or 0 if we mock existing players, but here we assume new
+        // Beiträge must always be skipped (DuePayment is created by the dues CSV importer)
+        expect(result.skippedItems).toHaveLength(1);
+        expect(result.skippedItems[0].skipReason).toContain('Beiträge handled via Dues CSV');
+        expect(result.recordsCreated).toBe(0);
     });
 
-    it('skips Beiträge transaction if format is invalid', async () => {
+    it('skips Beiträge transaction even if format is invalid', async () => {
         const csvContent = `transaction_date; transaction_amount; transaction_subject
 01.01.2024; 1200; Beiträge: Invalid Format`;
 
         const result = await importTransactionsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
-        // Should be skipped
         expect(result.skippedItems).toHaveLength(1);
         expect(result.skippedItems[0].skipReason).toContain('Beiträge handled via Dues CSV');
+    });
+
+    it('skips Strafen settlement transaction — fine paid-status comes from punishments CSV', async () => {
+        const csvContent = `transaction_date; transaction_amount; transaction_subject
+01.01.2024; 500; Strafen: Max Mustermann (Zu spät)`;
+
+        const result = await importTransactionsCSVToFirestore(mockFirestore, 'test-team', csvContent);
+
+        expect(result.skippedItems).toHaveLength(1);
+        expect(result.skippedItems[0].skipReason).toContain('Strafen settlement');
+        expect(result.recordsCreated).toBe(0);
+    });
+
+    it('does NOT skip Strafen transaction when category is Guthaben', async () => {
+        const csvContent = `transaction_date; transaction_amount; transaction_subject
+01.01.2024; 500; Strafen: Max Mustermann (Guthaben)`;
+
+        const result = await importTransactionsCSVToFirestore(mockFirestore, 'test-team', csvContent);
+
+        // Guthaben top-up within a Strafen subject is a real credit — should NOT be skipped
+        expect(result.skippedItems).toHaveLength(0);
+        expect(result.recordsCreated).toBe(1);
     });
 });
