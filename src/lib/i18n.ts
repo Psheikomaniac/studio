@@ -371,6 +371,8 @@ const resources = {
             "playerDetailPage": {
                 "errorLoadingTitle": "Error Loading Player",
                 "errorLoadingDesc": "Player data could not be loaded.",
+                "notFoundTitle": "Player not found",
+                "notFoundDesc": "This player does not exist or has been deleted.",
                 "backToPlayers": "Back to Players",
                 "balanceTitle": "Balance",
                 "totalDebtTitle": "Total Debt",
@@ -766,6 +768,8 @@ const resources = {
             "playerDetailPage": {
                 "errorLoadingTitle": "Fehler beim Laden",
                 "errorLoadingDesc": "Spielerdaten konnten nicht geladen werden.",
+                "notFoundTitle": "Spieler nicht gefunden",
+                "notFoundDesc": "Dieser Spieler existiert nicht oder wurde gelöscht.",
                 "backToPlayers": "Zurück zur Spielerliste",
                 "balanceTitle": "Kontostand",
                 "totalDebtTitle": "Gesamtschulden",
