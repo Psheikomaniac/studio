@@ -778,7 +778,7 @@ const duesQuery = useMemoFirebase(() => {
                         <XAxis dataKey="month" />
                         <YAxis yAxisId="left" tickFormatter={(v) => `${v}`} />
                         <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `€${v}`} />
-                        <Tooltip formatter={(value: number, name) => name === 'Cumulative Revenue' ? formatEuro(value as number) : (value as number)} />
+                        <Tooltip formatter={(value: number, name) => name === 'Cumulative Revenue' ? formatEuro(value as number) : String(value as number)} />
                         <Bar yAxisId="left" dataKey="firstPayers" name="First Payers" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                         <Line yAxisId="right" type="monotone" dataKey="cumulativeRevenue" name="Cumulative Revenue" stroke="hsl(var(--muted-foreground))" strokeWidth={2} dot={false} />
                       </ComposedChart>

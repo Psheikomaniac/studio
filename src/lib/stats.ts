@@ -20,6 +20,17 @@ export function groupPaymentsByDay(payments: Payment[], start?: Date, end?: Date
     const key = d.toISOString().slice(0, 10);
     map.set(key, (map.get(key) ?? 0) + (Number(p.amount) || 0));
   }
+  // Zero-fill every day in the range so the chart shows a continuous timeline.
+  // Use UTC-based arithmetic to avoid local-timezone drift on the date keys.
+  if (start && end) {
+    let curMs = new Date(start.toISOString().slice(0, 10) + 'T00:00:00.000Z').getTime();
+    const endMs = new Date(end.toISOString().slice(0, 10) + 'T00:00:00.000Z').getTime();
+    while (curMs <= endMs) {
+      const key = new Date(curMs).toISOString().slice(0, 10);
+      if (!map.has(key)) map.set(key, 0);
+      curMs += 86_400_000; // advance by exactly 24 h (UTC, no DST issues)
+    }
+  }
   // Sort by date asc
   return [...map.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))
