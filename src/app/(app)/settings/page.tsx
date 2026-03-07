@@ -359,11 +359,22 @@ export default function SettingsPage() {
       const deletedDuePayments = await deleteCollectionGroupInBatches('duePayments');
       totalDeleted += deletedFines + deletedPayments + deletedDuePayments;
 
-      // 2) Delete top-level collections
+      // 2) Delete membership docs first — these are the root cause of clubs/teams
+      //    reappearing after deletion (ClubProvider/TeamProvider listen to these)
+      const deletedClubMembers = await deleteCollectionGroupInBatches('clubMembers');
+      const deletedTeamMembers = await deleteCollectionGroupInBatches('teamMembers');
+      // Delete player documents (the docs themselves, not just their subcollections)
+      const deletedPlayers = await deleteCollectionGroupInBatches('players');
+      totalDeleted += deletedClubMembers + deletedTeamMembers + deletedPlayers;
+
+      // 3) Delete top-level collections (clubs, teams, invites, dues, beverages, users)
       const deletedDues = await deleteTopLevelCollectionInBatches('dues');
       const deletedBeverages = await deleteTopLevelCollectionInBatches('beverages');
       const deletedUsers = await deleteTopLevelCollectionInBatches('users');
-      totalDeleted += deletedDues + deletedBeverages + deletedUsers;
+      const deletedClubs = await deleteTopLevelCollectionInBatches('clubs');
+      const deletedTeams = await deleteTopLevelCollectionInBatches('teams');
+      const deletedInvites = await deleteTopLevelCollectionInBatches('teamInvites');
+      totalDeleted += deletedDues + deletedBeverages + deletedUsers + deletedClubs + deletedTeams + deletedInvites;
 
       toast({
         title: t('settingsPage.deleteSuccessTitle'),

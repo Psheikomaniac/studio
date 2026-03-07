@@ -173,6 +173,7 @@ export default function OnboardingPage() {
       }
 
       setClubId(club.id);
+      setCreateClubName(''); // clear search input so the useEffect doesn't re-fire
       setClubSuggestions([]);
       toast({ title: 'Verein ausgewählt', description: club.name });
     } catch (err) {
