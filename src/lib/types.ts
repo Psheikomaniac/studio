@@ -67,9 +67,11 @@ export interface Fine {
   updatedAt: string; // ISO string
 }
 
-/** Type guard: checks if a Fine is a beverage fine */
+/** Type guard: checks if a Fine is a beverage fine.
+ * Detects both new fines (fineType='beverage') and legacy fines
+ * created before V9 migration that have beverageId set but no fineType. */
 export function isBeverageFine(fine: Fine): boolean {
-  return fine.fineType === 'beverage';
+  return fine.fineType === 'beverage' || !!fine.beverageId;
 }
 
 export interface PredefinedFine {

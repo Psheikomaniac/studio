@@ -38,27 +38,31 @@ export function usePlayerBalances(
 
     const norm = (s?: string) => (s || '').trim().toLowerCase();
 
-    // Credits: Guthaben + Guthaben Rest (nur offene/unbezahlte Credits werden berücksichtigt)
+    // Credits: Guthaben + Guthaben Rest
+    // paid=true bedeutet "Zahlung eingegangen" (Kredit erhalten).
+    // DEPOSIT/PAYMENT-Kategorie zählt immer als Kredit (auch bei paid=false für Legacy-Importe).
     for (const p of payments) {
       if (!p?.userId) continue;
-      if (p.paid) continue; // nur unpaid Guthaben/Guthaben Rest zählen
       const r = norm(p.reason);
       const amt = Number(p.amount) || 0;
 
-      // Robustere Klassifikation via Category
+      // Kategorie-basierte Klassifikation (hat Vorrang vor paid-Check)
       if (p.category === PaymentCategory.DEPOSIT || p.category === PaymentCategory.PAYMENT) {
           ensure(p.userId).guthaben += amt;
           continue;
       }
-      // Wenn Category gesetzt ist (z.B. TRANSFER), aber wir es oben nicht behandelt haben:
-      if (p.category) {
-          continue;
-      }
+      // Andere Kategorien (z.B. TRANSFER) sind keine Kredite
+      if (p.category) continue;
 
-      // Fallback: String Matching
+      // Ohne Kategorie: nur bezahlte Payments sind Kredite (paid=true = eingegangen)
+      if (!p.paid) continue;
+
+      // Fallback: String Matching für unkategorisierte bezahlte Payments
       if (r === 'guthaben rest' || r.includes('guthaben rest')) {
         ensure(p.userId).guthabenRest += amt;
       } else if (r === 'guthaben' || r.includes('guthaben') || r.startsWith('einzahlung')) {
+        ensure(p.userId).guthaben += amt;
+      } else {
         ensure(p.userId).guthaben += amt;
       }
     }
