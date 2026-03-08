@@ -348,6 +348,10 @@ export default function DashboardPage() {
                             </LineChart>
                           </ResponsiveContainer>
                         </div>
+                      ) : transactionDataError ? (
+                        <p className="text-center text-sm text-destructive py-4">
+                          {t('dashboard.dataLoadError')}
+                        </p>
                       ) : (
                         <p className="text-sm text-muted-foreground">No payments available to chart.</p>
                       );
@@ -455,6 +459,10 @@ export default function DashboardPage() {
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
+                    ) : transactionDataError ? (
+                      <p className="text-center text-sm text-destructive py-4">
+                        {t('dashboard.dataLoadError')}
+                      </p>
                     ) : (
                       <p className="text-sm text-muted-foreground">No transactions available to chart.</p>
                     );
