@@ -971,14 +971,14 @@ const duesQuery = useMemoFirebase(() => {
         setOpen={setRecordDueOpen}
         players={players}
         dues={dues}
-        onRecord={() => { }} // Kept for backwards compatibility
+        onRecord={async () => { }} // Kept for backwards compatibility
       />
       <RecordConsumptionDialog
         isOpen={isRecordBeverageOpen}
         setOpen={setRecordBeverageOpen}
         players={players}
         beverages={beverages}
-        onRecord={() => { }} // Kept for backwards compatibility
+        onRecord={async () => { }} // Kept for backwards compatibility
       />
     </>
   );

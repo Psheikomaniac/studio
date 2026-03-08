@@ -39,7 +39,7 @@ type RecordConsumptionDialogProps = {
   setOpen: (open: boolean) => void;
   players: Player[];
   beverages: Beverage[];
-  onRecord: (data: { playerIds: string[], beverageId: string }) => void;
+  onRecord: (data: { playerIds: string[], beverageId: string }) => Promise<void>;
 };
 
 export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, onRecord }: RecordConsumptionDialogProps) {
@@ -67,9 +67,13 @@ export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, o
     }
   }, [isOpen, form]);
 
-  const onSubmit = (values: z.infer<typeof consumptionSchema>) => {
-    onRecord({ playerIds: values.playerIds, beverageId: values.beverageId });
-    setOpen(false);
+  const onSubmit = async (values: z.infer<typeof consumptionSchema>) => {
+    try {
+      await onRecord({ playerIds: values.playerIds, beverageId: values.beverageId });
+      setOpen(false);
+    } catch {
+      // onRecord handles error display; keep dialog open so user can retry
+    }
   };
 
   return (
