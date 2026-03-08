@@ -68,8 +68,12 @@ export function RecordConsumptionDialog({ isOpen, setOpen, players, beverages, o
   }, [isOpen, form]);
 
   const onSubmit = async (values: z.infer<typeof consumptionSchema>) => {
-    await onRecord({ playerIds: values.playerIds, beverageId: values.beverageId });
-    setOpen(false);
+    try {
+      await onRecord({ playerIds: values.playerIds, beverageId: values.beverageId });
+      setOpen(false);
+    } catch {
+      // onRecord handles error display; keep dialog open so user can retry
+    }
   };
 
   return (

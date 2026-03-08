@@ -117,17 +117,18 @@ export default function DashboardPage() {
     if (!beverage) return;
     const date = new Date().toISOString();
     const results = await Promise.all(
-      playerIds.map(playerId =>
-        new FinesService(firestore, teamId, playerId).createBeverageFine(beverage, date)
-      )
+      playerIds.map(playerId => {
+        const playerBalance = players.find(p => p.id === playerId)?.balance ?? 0;
+        return new FinesService(firestore, teamId, playerId).createBeverageFine(beverage, date, { playerBalance });
+      })
     );
     const failed = results.filter(r => !r.success).length;
     refetchFines();
     if (failed > 0) {
       toast({ variant: 'destructive', title: t('error') });
-    } else {
-      toast({ title: t('dialogs.recordConsumptionTitle') });
+      throw new Error('Some beverage fines failed to record');
     }
+    toast({ title: t('dialogs.recordConsumptionTitle') });
   };
 
   const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Unknown';
