@@ -6,7 +6,7 @@
 'use client';
 
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   collectionGroup,
   getDocs,
@@ -37,6 +37,9 @@ function useQueryOnce<T>(
   const [data, setData] = useState<Array<WithId<T>> | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  const [refetchToken, setRefetchToken] = useState(0);
+
+  const refetch = useCallback(() => setRefetchToken(t => t + 1), []);
 
   useEffect(() => {
     if (!memoizedQuery) {
@@ -73,9 +76,10 @@ function useQueryOnce<T>(
     return () => {
       cancelled = true;
     };
-  }, [memoizedQuery]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memoizedQuery, refetchToken]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, refetch };
 }
 
 /**
