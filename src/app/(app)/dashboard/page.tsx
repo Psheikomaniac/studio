@@ -122,11 +122,11 @@ export default function DashboardPage() {
       )
     );
     const failed = results.filter(r => !r.success).length;
+    refetchFines();
     if (failed > 0) {
       toast({ variant: 'destructive', title: t('error') });
     } else {
       toast({ title: t('dialogs.recordConsumptionTitle') });
-      refetchFines();
     }
   };
 
