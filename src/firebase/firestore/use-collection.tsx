@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Query,
   onSnapshot,
@@ -45,6 +45,8 @@ export interface UseCollectionResult<T> {
   data: WithId<T>[] | null; // Document data with ID, or null.
   isLoading: boolean;       // True if loading.
   error: FirestoreError | Error | null; // Error object, or null.
+  /** Re-fetch the collection. In DISABLE_REALTIME mode this runs a fresh getDocs. */
+  refetch: () => void;
 }
 
 /* Internal implementation of Query:
@@ -82,8 +84,15 @@ export function useCollection<T = any>(
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
+  const [refetchToken, setRefetchToken] = useState(0);
+  const prevQueryRef = useRef<typeof memoizedTargetRefOrQuery>(undefined);
+
+  const refetch = useCallback(() => setRefetchToken(t => t + 1), []);
 
   useEffect(() => {
+    const queryChanged = prevQueryRef.current !== memoizedTargetRefOrQuery;
+    prevQueryRef.current = memoizedTargetRefOrQuery;
+
     if (!memoizedTargetRefOrQuery) {
       setData(null);
       setIsLoading(false);
@@ -91,7 +100,11 @@ export function useCollection<T = any>(
       return;
     }
 
-    setIsLoading(true);
+    // Only show loading spinner when the query itself changes (initial load or new query),
+    // not on explicit refetch() calls — avoids a full-page skeleton flash on mutations.
+    if (queryChanged) {
+      setIsLoading(true);
+    }
     setError(null);
 
     const computePath = (): string => {
@@ -215,9 +228,10 @@ export function useCollection<T = any>(
     );
 
     return () => unsubscribe();
-  }, [memoizedTargetRefOrQuery]); // Re-run if the target query/reference changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memoizedTargetRefOrQuery, refetchToken]); // Re-run if the target query/reference changes or refetch is called.
   if(memoizedTargetRefOrQuery && !memoizedTargetRefOrQuery.__memo) {
     throw new Error('useCollection was not properly memoized using useMemoFirebase. The query was: ' + memoizedTargetRefOrQuery);
   }
-  return { data, isLoading, error };
+  return { data, isLoading, error, refetch };
 }

@@ -33,7 +33,7 @@ export default function PlayersPage() {
   const { teamId } = useTeam();
 
   // Firebase hooks for real-time data
-  const { data: playersData, isLoading: playersLoading, error } = usePlayers(teamId);
+  const { data: playersData, isLoading: playersLoading, error, refetch: refetchPlayers } = usePlayers(teamId);
   const playersService = usePlayersService(teamId);
 
   // Load all transaction data
@@ -226,6 +226,7 @@ export default function PlayersPage() {
         });
       }
       setAddEditDialogOpen(false);
+      refetchPlayers();
     } catch (error) {
       toast({
         variant: "destructive",
@@ -247,6 +248,7 @@ export default function PlayersPage() {
       });
       setDeleteDialogOpen(false);
       setSelectedPlayer(null);
+      refetchPlayers();
     } catch (error) {
       toast({
         variant: "destructive",
@@ -261,6 +263,7 @@ export default function PlayersPage() {
     const nextActive = !(player.active !== false);
     try {
       await playersService.updatePlayer(player.id, { active: nextActive } as any);
+      refetchPlayers();
       toast({
         title: nextActive ? t('playersPage.statusActivatedTitle') : t('playersPage.statusDeactivatedTitle'),
         description: nextActive
