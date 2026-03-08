@@ -199,7 +199,7 @@ const duesQuery = useMemoFirebase(() => {
 
     // Sort by date descending (newest first)
     return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [fines, payments, duePayments, players, dues]);
+  }, [fines, payments, duePayments, players, dues, dueById]);
 
   // Apply filters
   const filteredTransactions = useMemo(() => {

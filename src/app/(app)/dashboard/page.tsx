@@ -160,7 +160,7 @@ export default function DashboardPage() {
     });
 
     return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [fines, payments, duePayments, players, dues]);
+  }, [fines, payments, duePayments, players, dues, dueById]);
 
   // Get top 3 debtors
   const topDebtors = useMemo(() => {
