@@ -80,6 +80,7 @@ const resources = {
                 "recentActivityDesc": "Last 5 transactions",
                 "noPlayersInDebt": "No players in debt",
                 "noRecentActivity": "No recent activity",
+                "dataLoadError": "Could not load data. Check Firestore indexes and connectivity.",
                 "errorLoading": "Error Loading Dashboard",
                 "errorLoadingDesc": "Failed to load dashboard data. Please try again later.",
                 "lastUpdate": "Last data update"
@@ -492,6 +493,7 @@ const resources = {
                 "recentActivityDesc": "Die letzten 5 Transaktionen",
                 "noPlayersInDebt": "Keine Spieler mit Schulden",
                 "noRecentActivity": "Keine aktuellen Aktivitäten",
+                "dataLoadError": "Daten konnten nicht geladen werden. Bitte Firestore-Indizes und Verbindung prüfen.",
                 "errorLoading": "Fehler beim Laden der Übersicht",
                 "errorLoadingDesc": "Daten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
                 "lastUpdate": "Letzte Aktualisierung"
@@ -889,6 +891,7 @@ const resources = {
                 "recentActivityDesc": "5 dernières transactions",
                 "noPlayersInDebt": "Aucun joueur endetté",
                 "noRecentActivity": "Aucune activité récente",
+                "dataLoadError": "Impossible de charger les données. Vérifiez les index Firestore et la connectivité.",
                 "errorLoading": "Erreur de chargement",
                 "errorLoadingDesc": "Impossible de charger les données.",
                 "lastUpdate": "Dernière mise à jour"
@@ -1121,6 +1124,7 @@ const resources = {
                 "recentActivityDesc": "Últimas 5 transacciones",
                 "noPlayersInDebt": "No hay jugadores con deuda",
                 "noRecentActivity": "No hay actividad reciente",
+                "dataLoadError": "No se pudieron cargar los datos. Verifique los índices de Firestore y la conectividad.",
                 "errorLoading": "Error al cargar",
                 "errorLoadingDesc": "No se pudieron cargar los datos.",
                 "lastUpdate": "Última actualización"
@@ -1354,6 +1358,7 @@ const resources = {
                 "recentActivityDesc": "Últimas 5 transações",
                 "noPlayersInDebt": "Nenhum jogador em dívida",
                 "noRecentActivity": "Nenhuma atividade recente",
+                "dataLoadError": "Não foi possível carregar os dados. Verifique os índices do Firestore e a conectividade.",
                 "errorLoading": "Erro ao Carregar Painel",
                 "errorLoadingDesc": "Falha ao carregar dados do painel. Tente novamente mais tarde.",
                 "lastUpdate": "Última atualização de dados"
@@ -1587,6 +1592,7 @@ const resources = {
                 "recentActivityDesc": "最近 5 笔交易",
                 "noPlayersInDebt": "没有玩家负债",
                 "noRecentActivity": "没有最近活动",
+                "dataLoadError": "无法加载数据。请检查 Firestore 索引和连接。",
                 "errorLoading": "加载仪表盘错误",
                 "errorLoadingDesc": "加载仪表盘数据失败。请稍后再试。",
                 "lastUpdate": "最后数据更新"
@@ -1820,6 +1826,7 @@ const resources = {
                 "recentActivityDesc": "Son 5 işlem",
                 "noPlayersInDebt": "Borçlu oyuncu yok",
                 "noRecentActivity": "Son etkinlik yok",
+                "dataLoadError": "Veriler yüklenemedi. Firestore indekslerini ve bağlantıyı kontrol edin.",
                 "errorLoading": "Panel Yükleme Hatası",
                 "errorLoadingDesc": "Panel verileri yüklenemedi. Lütfen daha sonra tekrar deneyin.",
                 "lastUpdate": "Son veri güncellemesi"
@@ -2053,6 +2060,7 @@ const resources = {
                 "recentActivityDesc": "Ostatnie 5 transakcji",
                 "noPlayersInDebt": "Brak zadłużonych graczy",
                 "noRecentActivity": "Brak ostatniej aktywności",
+                "dataLoadError": "Nie można załadować danych. Sprawdź indeksy Firestore i łączność.",
                 "errorLoading": "Błąd ładowania panelu",
                 "errorLoadingDesc": "Nie udało się załadować danych panelu. Spróbuj ponownie później.",
                 "lastUpdate": "Ostatnia aktualizacja danych"
@@ -2286,6 +2294,7 @@ const resources = {
                 "recentActivityDesc": "Последние 5 транзакций",
                 "noPlayersInDebt": "Нет должников",
                 "noRecentActivity": "Нет недавней активности",
+                "dataLoadError": "Не удалось загрузить данные. Проверьте индексы Firestore и подключение.",
                 "errorLoading": "Ошибка загрузки панели",
                 "errorLoadingDesc": "Не удалось загрузить данные панели. Пожалуйста, попробуйте позже.",
                 "lastUpdate": "Последнее обновление данных"

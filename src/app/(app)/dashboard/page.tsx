@@ -60,9 +60,9 @@ export default function DashboardPage() {
   const { teamId } = useTeam();
   // Fetch all players and their transactions from Firebase
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers(teamId);
-  const { data: finesData, isLoading: finesLoading, refetch: refetchFines } = useAllFines({ teamId });
-  const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
-  const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments({ teamId });
+  const { data: finesData, isLoading: finesLoading, refetch: refetchFines, error: finesError } = useAllFines({ teamId });
+  const { data: paymentsData, isLoading: paymentsLoading, error: paymentsError } = useAllPayments({ teamId });
+  const { data: duePaymentsData, isLoading: duePaymentsLoading, error: duePaymentsError } = useAllDuePayments({ teamId });
   const { data: predefinedFines, isLoading: predefinedFinesLoading } = useTeamPredefinedFines(teamId);
 
   // Keep static data for catalogs (dues, beverages)
@@ -87,6 +87,10 @@ export default function DashboardPage() {
   const fines = finesData || [];
   const payments = paymentsData || [];
   const duePayments = duePaymentsData || [];
+
+  // True when all three collection-group queries have completed but returned no data due to an error.
+  // Used to distinguish a genuine "no data" state from a query failure (missing index, permission, etc.).
+  const transactionDataError = !!(finesError || paymentsError || duePaymentsError);
 
   // Calculate player balances dynamically based on all transactions
   const players = useMemo(() => {
@@ -331,7 +335,7 @@ export default function DashboardPage() {
                       const series = groupPaymentsByDay(payments, start, end);
                       const ma = movingAverage(series, 7);
                       const chartData = series.map((p, i) => ({ ...p, ma7: ma[i]?.value ?? null }));
-                      return chartData.length > 0 ? (
+                      return chartData.some(d => d.value > 0) ? (
                         <div className="w-full h-64">
                           <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={chartData} margin={{ left: 12, right: 12 }}>
@@ -426,8 +430,17 @@ export default function DashboardPage() {
                       row.dues += Math.max(0, Number(d.amountDue) || 0);
                       map.set(k, row);
                     }
+                    // Zero-fill every day in the window so the chart shows a continuous timeline
+                    let curMs = new Date(start.toISOString().slice(0, 10) + 'T00:00:00.000Z').getTime();
+                    const endMs = new Date(end.toISOString().slice(0, 10) + 'T00:00:00.000Z').getTime();
+                    while (curMs <= endMs) {
+                      const k = new Date(curMs).toISOString().slice(0, 10);
+                      if (!map.has(k)) map.set(k, { date: k, payments: 0, fines: 0, dues: 0, beverages: 0 });
+                      curMs += 86_400_000;
+                    }
                     const data = Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
-                    return data.length > 0 ? (
+                    const hasData = data.some(d => d.payments + d.fines + d.dues + d.beverages > 0);
+                    return hasData ? (
                       <div className="w-full h-64">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={data} margin={{ left: 12, right: 12 }}>
@@ -509,6 +522,10 @@ export default function DashboardPage() {
                           </div>
                         ))}
                       </div>
+                    ) : transactionDataError ? (
+                      <p className="text-center text-sm text-destructive py-4">
+                        {t('dashboard.dataLoadError')}
+                      </p>
                     ) : (
                       <p className="text-center text-sm text-muted-foreground py-4">
                         {t('dashboard.noPlayersInDebt')}
@@ -545,6 +562,10 @@ export default function DashboardPage() {
                           ))}
                         </TableBody>
                       </Table>
+                    ) : transactionDataError ? (
+                      <p className="text-center text-sm text-destructive py-4">
+                        {t('dashboard.dataLoadError')}
+                      </p>
                     ) : (
                       <p className="text-center text-sm text-muted-foreground py-4">
                         {t('dashboard.noRecentActivity')}
