@@ -45,6 +45,7 @@ type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
 interface UnifiedTransaction {
   id: string;
   date: string;
+  createdAt: string; // used for sorting – when the record was entered into the system
   userId: string;
   userName: string;
   description: string;
@@ -151,6 +152,7 @@ const duesQuery = useMemoFirebase(() => {
       transactions.push({
         id: fine.id,
         date: fine.date,
+        createdAt: fine.createdAt,
         userId: fine.userId,
         userName: getPlayerName(fine.userId),
         description: isBev ? `Beverage: ${fine.reason}` : fine.reason,
@@ -168,6 +170,7 @@ const duesQuery = useMemoFirebase(() => {
       transactions.push({
         id: payment.id,
         date: payment.date,
+        createdAt: payment.createdAt || payment.date,
         userId: payment.userId,
         userName: getPlayerName(payment.userId),
         description: payment.reason,
@@ -180,11 +183,11 @@ const duesQuery = useMemoFirebase(() => {
 
     // Due Payments (debit)
     duePayments.forEach(duePayment => {
-      const _due = dues.find(d => d.id === duePayment.dueId);
       const isPartiallyPaid = !duePayment.paid && duePayment.amountPaid && duePayment.amountPaid > 0;
       transactions.push({
         id: duePayment.id,
         date: duePayment.createdAt,
+        createdAt: duePayment.createdAt,
         userId: duePayment.userId,
         userName: duePayment.userName,
         description: `Due: ${getDueName(duePayment.dueId)}`,
@@ -197,8 +200,8 @@ const duesQuery = useMemoFirebase(() => {
       });
     });
 
-    // Sort by date descending (newest first)
-    return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // Sort by createdAt descending (newest entry first)
+    return transactions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [fines, payments, duePayments, players, dues, dueById]);
 
   // Apply filters

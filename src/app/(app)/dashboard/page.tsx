@@ -41,6 +41,7 @@ type TransactionType = 'fine' | 'payment' | 'due' | 'beverage';
 interface UnifiedTransaction {
   id: string;
   date: string;
+  createdAt: string; // used for sorting – when the record was entered into the system
   userId: string;
   userName: string;
   description: string;
@@ -119,6 +120,7 @@ export default function DashboardPage() {
       transactions.push({
         id: fine.id,
         date: fine.date,
+        createdAt: fine.createdAt,
         userId: fine.userId,
         userName: getPlayerName(fine.userId),
         description: isBeverageFine(fine) ? `Beverage: ${fine.reason}` : fine.reason,
@@ -134,6 +136,7 @@ export default function DashboardPage() {
       transactions.push({
         id: payment.id,
         date: payment.date,
+        createdAt: payment.createdAt || payment.date,
         userId: payment.userId,
         userName: getPlayerName(payment.userId),
         description: payment.reason,
@@ -148,6 +151,7 @@ export default function DashboardPage() {
       transactions.push({
         id: duePayment.id,
         date: duePayment.createdAt,
+        createdAt: duePayment.createdAt,
         userId: duePayment.userId,
         userName: duePayment.userName,
         description: `Due: ${getDueName(duePayment.dueId)}`,
@@ -159,7 +163,8 @@ export default function DashboardPage() {
       });
     });
 
-    return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // Sort by createdAt descending (newest entry first)
+    return transactions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [fines, payments, duePayments, players, dues, dueById]);
 
   // Get top 3 debtors
