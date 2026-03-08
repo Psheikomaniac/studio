@@ -136,7 +136,7 @@ const duesQuery = useMemoFirebase(() => {
   const { toast } = useToast();
 
   const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Unknown';
-  const getDueName = (id: string) => dues.find(d => d.id === id)?.name || 'Unknown';
+  const getDueName = (id: string) => dueById.get(id)?.name || dues.find(d => d.id === id)?.name || 'Unknown';
 
   // Note: Loading and error UI are handled via conditional rendering in the JSX below to keep hook order stable.
 
