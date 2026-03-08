@@ -17,7 +17,7 @@ import {
   where,
   Firestore,
 } from 'firebase/firestore';
-import { Player, Fine, Payment, Due, DuePayment, Beverage } from './types';
+import { Player, Fine, Payment, Due, DuePayment, Beverage, PaymentCategory } from './types';
 import { parsePunishmentCSV } from './csv-parse-punishments';
 
 export interface SkippedItem {
@@ -491,6 +491,7 @@ export async function importPunishmentsCSVToFirestore(
           id: generateId('payment'),
           userId: player.id,
           teamId,
+          category: PaymentCategory.PAYMENT,
           reason: row.reason,
           amount: row.amount,
           date: row.date,

@@ -88,6 +88,18 @@ describe('usePlayerBalances', () => {
     });
   });
 
+  describe('CSV-imported payments', () => {
+    it('counts PAYMENT category payments as credits even when paid=false', () => {
+      // CSV imports set category=PAYMENT but may leave paid=false when the paid column is empty
+      const payments = [
+        generatePayment({ userId: PLAYER_ID, amount: 75, paid: false, category: PaymentCategory.PAYMENT }),
+      ];
+      const { result } = renderHook(() => usePlayerBalances(payments, [], []));
+      const b = result.current.get(PLAYER_ID);
+      expect(b?.totalCredits).toBe(75);
+    });
+  });
+
   describe('Balance calculation', () => {
     it('should compute balance = credits - liabilities', () => {
       const payments = [generatePayment({ userId: PLAYER_ID, amount: 100, paid: true, reason: 'Guthaben' })];
