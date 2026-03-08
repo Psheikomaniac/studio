@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { collection } from 'firebase/firestore';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,8 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { usePlayers } from '@/services/players.service';
 import { useTeam } from '@/team';
 import { useAllFines, useAllPayments, useAllDuePayments } from '@/hooks/use-all-transactions';
+import { useMemoFirebase, useCollection } from '@/firebase';
+import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 import {
   dues as staticDues,
   beverages as staticBeverages
@@ -62,6 +65,20 @@ export default function DashboardPage() {
   const [dues] = useState<Due[]>(staticDues);
   const [beverages] = useState<Beverage[]>(staticBeverages);
 
+  // Load dues from Firestore for name lookups
+  const firebase = useFirebaseOptional();
+  const firestore = firebase?.firestore;
+  const duesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'dues');
+  }, [firestore]);
+  const { data: duesMeta } = useCollection<Due>(duesQuery);
+  const dueById = useMemo(() => {
+    const m = new Map<string, Due>();
+    (duesMeta || []).forEach(d => m.set(d.id, d));
+    return m;
+  }, [duesMeta]);
+
   // Use Firebase data or empty arrays while loading
   const fines = finesData || [];
   const payments = paymentsData || [];
@@ -91,7 +108,7 @@ export default function DashboardPage() {
 
 
   const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Unknown';
-  const getDueName = (id: string) => dues.find(d => d.id === id)?.name || 'Unknown';
+  const getDueName = (id: string) => dueById.get(id)?.name || dues.find(d => d.id === id)?.name || 'Unknown';
 
   // Convert all data sources into unified transactions
   const unifiedTransactions = useMemo<UnifiedTransaction[]>(() => {
@@ -143,7 +160,7 @@ export default function DashboardPage() {
     });
 
     return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [fines, payments, duePayments, players, dues]);
+  }, [fines, payments, duePayments, players, dues, dueById]);
 
   // Get top 3 debtors
   const topDebtors = useMemo(() => {

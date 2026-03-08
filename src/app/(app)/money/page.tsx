@@ -136,7 +136,7 @@ const duesQuery = useMemoFirebase(() => {
   const { toast } = useToast();
 
   const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Unknown';
-  const getDueName = (id: string) => dues.find(d => d.id === id)?.name || 'Unknown';
+  const getDueName = (id: string) => dueById.get(id)?.name || dues.find(d => d.id === id)?.name || 'Unknown';
 
   // Note: Loading and error UI are handled via conditional rendering in the JSX below to keep hook order stable.
 
@@ -199,7 +199,7 @@ const duesQuery = useMemoFirebase(() => {
 
     // Sort by date descending (newest first)
     return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [fines, payments, duePayments, players, dues]);
+  }, [fines, payments, duePayments, players, dues, dueById]);
 
   // Apply filters
   const filteredTransactions = useMemo(() => {
