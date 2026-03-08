@@ -6,7 +6,7 @@
 'use client';
 
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   collectionGroup,
   getDocs,
@@ -38,10 +38,14 @@ function useQueryOnce<T>(
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [refetchToken, setRefetchToken] = useState(0);
+  const prevQueryRef = useRef<typeof memoizedQuery>(undefined);
 
   const refetch = useCallback(() => setRefetchToken(t => t + 1), []);
 
   useEffect(() => {
+    const queryChanged = prevQueryRef.current !== memoizedQuery;
+    prevQueryRef.current = memoizedQuery;
+
     if (!memoizedQuery) {
       setData(null);
       setIsLoading(false);
@@ -50,7 +54,10 @@ function useQueryOnce<T>(
     }
 
     let cancelled = false;
-    setIsLoading(true);
+    // Only show loading spinner on initial load or query change, not on explicit refetch().
+    if (queryChanged) {
+      setIsLoading(true);
+    }
     setError(null);
 
     (async () => {

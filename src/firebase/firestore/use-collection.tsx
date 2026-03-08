@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Query,
   onSnapshot,
@@ -85,10 +85,14 @@ export function useCollection<T = any>(
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
   const [refetchToken, setRefetchToken] = useState(0);
+  const prevQueryRef = useRef<typeof memoizedTargetRefOrQuery>(undefined);
 
   const refetch = useCallback(() => setRefetchToken(t => t + 1), []);
 
   useEffect(() => {
+    const queryChanged = prevQueryRef.current !== memoizedTargetRefOrQuery;
+    prevQueryRef.current = memoizedTargetRefOrQuery;
+
     if (!memoizedTargetRefOrQuery) {
       setData(null);
       setIsLoading(false);
@@ -96,7 +100,11 @@ export function useCollection<T = any>(
       return;
     }
 
-    setIsLoading(true);
+    // Only show loading spinner when the query itself changes (initial load or new query),
+    // not on explicit refetch() calls — avoids a full-page skeleton flash on mutations.
+    if (queryChanged) {
+      setIsLoading(true);
+    }
     setError(null);
 
     const computePath = (): string => {
