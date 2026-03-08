@@ -16,6 +16,8 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { usePlayers } from '@/services/players.service';
 import { useTeam } from '@/team';
 import { useAllFines, useAllPayments, useAllDuePayments } from '@/hooks/use-all-transactions';
+import { FinesService } from '@/services/fines.service';
+import { useToast } from '@/hooks/use-toast';
 import { useMemoFirebase, useCollection } from '@/firebase';
 import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 import {
@@ -54,10 +56,11 @@ interface UnifiedTransaction {
 
 export default function DashboardPage() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const { teamId } = useTeam();
   // Fetch all players and their transactions from Firebase
   const { data: playersData, isLoading: playersLoading, error: playersError } = usePlayers(teamId);
-  const { data: finesData, isLoading: finesLoading } = useAllFines({ teamId });
+  const { data: finesData, isLoading: finesLoading, refetch: refetchFines } = useAllFines({ teamId });
   const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments({ teamId });
   const { data: predefinedFines, isLoading: predefinedFinesLoading } = useTeamPredefinedFines(teamId);
@@ -107,6 +110,25 @@ export default function DashboardPage() {
   const [isRecordDueOpen, setRecordDueOpen] = useState(false);
   const [isRecordBeverageOpen, setRecordBeverageOpen] = useState(false);
 
+
+  const handleRecordBeverage = async ({ playerIds, beverageId }: { playerIds: string[]; beverageId: string }) => {
+    if (!firestore || !teamId) return;
+    const beverage = beverages.find(b => b.id === beverageId);
+    if (!beverage) return;
+    const date = new Date().toISOString();
+    const results = await Promise.all(
+      playerIds.map(playerId =>
+        new FinesService(firestore, teamId, playerId).createBeverageFine(beverage, date)
+      )
+    );
+    const failed = results.filter(r => !r.success).length;
+    if (failed > 0) {
+      toast({ variant: 'destructive', title: t('error') });
+    } else {
+      toast({ title: t('dialogs.recordConsumptionTitle') });
+      refetchFines();
+    }
+  };
 
   const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || 'Unknown';
   const getDueName = (id: string) => dueById.get(id)?.name || dues.find(d => d.id === id)?.name || 'Unknown';
@@ -563,7 +585,7 @@ export default function DashboardPage() {
         setOpen={setRecordBeverageOpen}
         players={players}
         beverages={beverages}
-        onRecord={() => { }} // Kept for backwards compatibility
+        onRecord={handleRecordBeverage}
       />
     </>
   );
