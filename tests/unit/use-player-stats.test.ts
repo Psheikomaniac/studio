@@ -95,3 +95,45 @@ describe('usePlayerStats – lastActivityByUser', () => {
     expect(result.current.lastActivityByUser.get('u1')).toBe('2025-03-01T00:00:00.000Z');
   });
 });
+
+describe('usePlayerStats – paymentSparklineByUser', () => {
+  it('returns empty map when payments array is empty', () => {
+    const { result } = renderHook(() => usePlayerStats([], [], []));
+    expect(result.current.paymentSparklineByUser.size).toBe(0);
+  });
+
+  it('accumulates payment amounts per user for the current month', () => {
+    const now = new Date();
+    const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-15T10:00:00.000Z`;
+    const payments = [
+      makePayment({ id: 'p1', userId: 'u1', amount: 30, date: thisMonth }),
+      makePayment({ id: 'p2', userId: 'u1', amount: 20, date: thisMonth }),
+    ];
+    const { result } = renderHook(() => usePlayerStats(payments, [], []));
+    const sparkline = result.current.paymentSparklineByUser.get('u1');
+    expect(sparkline).toBeDefined();
+    // Last slot (index 5) is current month
+    expect(sparkline![5]).toBe(50);
+  });
+
+  it('shows historical payments when all data is older than 6 months', () => {
+    // Payments from ~2 years ago — outside any rolling 6-month window from today
+    const payments = [
+      makePayment({ id: 'p1', userId: 'u1', amount: 100, date: '2020-03-15T10:00:00.000Z' }),
+      makePayment({ id: 'p2', userId: 'u1', amount: 50, date: '2020-02-10T10:00:00.000Z' }),
+    ];
+    const { result } = renderHook(() => usePlayerStats(payments, [], []));
+    const sparkline = result.current.paymentSparklineByUser.get('u1');
+    // Window anchors to 2020-03, so u1 should have non-zero data
+    expect(sparkline).toBeDefined();
+    expect(sparkline!.some(v => v > 0)).toBe(true);
+  });
+
+  it('ignores payments without a userId', () => {
+    const now = new Date();
+    const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-15T10:00:00.000Z`;
+    const payments = [makePayment({ userId: '', date: thisMonth })];
+    const { result } = renderHook(() => usePlayerStats(payments, [], []));
+    expect(result.current.paymentSparklineByUser.size).toBe(0);
+  });
+});

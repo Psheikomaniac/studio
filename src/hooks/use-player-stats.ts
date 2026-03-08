@@ -30,19 +30,44 @@ export function usePlayerStats(
     return m;
   }, [fines]);
 
-  // Build last 6 months keys and labels
+  // Build last 6 months keys and labels, anchored to the most recent payment month.
+  // When all payment data is older than 6 months (e.g. historical CSV imports), the
+  // window shifts to cover the 6 months up to the latest payment so the sparkline
+  // is never empty just because data predates today's rolling window.
   const last6Months = useMemo(() => {
+    const now = new Date();
+    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Find the most recent payment month key (YYYY-MM)
+    let latestPaymentMonth: string | null = null;
+    for (const p of payments) {
+      if (!p.date) continue;
+      const d = new Date(p.date);
+      if (isNaN(d.getTime())) continue;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!latestPaymentMonth || key > latestPaymentMonth) latestPaymentMonth = key;
+    }
+
+    // Compute the earliest month of the current 6-month window
+    const earliest = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const earliestKey = `${earliest.getFullYear()}-${String(earliest.getMonth() + 1).padStart(2, '0')}`;
+
+    // If all payments predate the current window, anchor to the latest payment month
+    let anchor = currentMonth;
+    if (latestPaymentMonth && latestPaymentMonth < earliestKey) {
+      const [year, month] = latestPaymentMonth.split('-').map(Number);
+      anchor = new Date(year, month - 1, 1);
+    }
+
     const arr: { key: string; label: string }[] = [];
-    const d = new Date();
-    d.setDate(1); // normalize to first of month
     for (let i = 5; i >= 0; i--) {
-      const dt = new Date(d.getFullYear(), d.getMonth() - i, 1);
+      const dt = new Date(anchor.getFullYear(), anchor.getMonth() - i, 1);
       const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
       const label = dt.toLocaleString(undefined, { month: 'short' });
       arr.push({ key, label });
     }
     return arr;
-  }, []);
+  }, [payments]);
 
   // Payments per user per month (last 6 months)
   const paymentSparklineByUser = useMemo(() => {
