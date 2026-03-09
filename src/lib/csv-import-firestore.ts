@@ -38,6 +38,7 @@ export interface ImportResult {
   errors: string[];
   warnings: string[];
   skippedItems: SkippedItem[];
+  duplicatesSkipped: number;
 }
 
 // Helper function to strip BOM (Byte Order Mark) if present
@@ -51,6 +52,19 @@ function stripBOM(text: string): string {
 // Helper function to generate unique ID
 function generateId(prefix: string): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+// Deterministic document ID from content parts (djb2 hash).
+// Same inputs always produce the same 8-char hex ID, enabling idempotent imports:
+// re-importing an existing row calls batch.set on the same document → no duplicate created.
+function deterministicId(parts: string[]): string {
+  const key = parts.map(p => (p ?? '').toString().toLowerCase().trim()).join('|');
+  let hash = 5381;
+  for (let i = 0; i < key.length; i++) {
+    hash = ((hash << 5) + hash) ^ key.charCodeAt(i);
+    hash = hash >>> 0; // keep as unsigned 32-bit
+  }
+  return hash.toString(16).padStart(8, '0');
 }
 
 // Helper function to parse date strings to ISO (supports DD-MM-YYYY and YYYY-MM-DD)
@@ -250,7 +264,8 @@ export async function importDuesCSVToFirestore(
     recordsCreated: 0,
     errors: [],
     warnings: [],
-    skippedItems: []
+    skippedItems: [],
+    duplicatesSkipped: 0,
   };
 
   try {
@@ -270,6 +285,7 @@ export async function importDuesCSVToFirestore(
     const rows = parsed.data as any[];
     const duesMap = new Map<string, Due>();
     const existingPlayers = new Map<string, Player>();
+    const seenFingerprints = new Set<string>();
     const playersToCreate: Player[] = [];
     const duePaymentsToCreate: DuePayment[] = [];
 
@@ -317,7 +333,7 @@ export async function importDuesCSVToFirestore(
 
         if (!due) {
           due = {
-            id: generateId('due'),
+            id: deterministicId(['due', dueName]),
             name: dueName,
             amount: amountEUR,
             createdAt: dueCreated,
@@ -351,6 +367,15 @@ export async function importDuesCSVToFirestore(
           result.playersCreated++;
         }
 
+        // Intra-CSV deduplication: same player+due+date → skip
+        const dpFingerprint = deterministicId([teamId, player.id, due.id, dueCreated.substring(0, 10)]);
+        if (seenFingerprints.has(dpFingerprint)) {
+          result.duplicatesSkipped++;
+          result.warnings.push(`Row ${i + 1}: Intra-CSV duplicate skipped: ${row.username} / ${dueName}`);
+          continue;
+        }
+        seenFingerprints.add(dpFingerprint);
+
         // Determine payment status
         // Use the helper to parse status properly (handles "Paid", "yes", dates, etc.)
         const { paid: isPaid, paidAt: parsedPaidAt } = parsePaidStatus(row.user_paid);
@@ -360,9 +385,9 @@ export async function importDuesCSVToFirestore(
         // The isArchivedDue flag is informational only — do not auto-exempt based on age.
         const isArchivedDue = !!due.archived;
 
-        // Create DuePayment record
+        // Create DuePayment record with deterministic ID (idempotent across re-imports)
         const duePayment: DuePayment = {
-          id: generateId('dp'),
+          id: dpFingerprint,
           dueId: due.id,
           userId: player.id,
           teamId,
@@ -453,13 +478,15 @@ export async function importPunishmentsCSVToFirestore(
     recordsCreated: 0,
     errors: [],
     warnings: [],
-    skippedItems: []
+    skippedItems: [],
+    duplicatesSkipped: 0,
   };
 
   try {
     // Use shared parser for CSV parsing and classification
     const parsed = parsePunishmentCSV(text);
     result.rowsProcessed = parsed.totalRowsProcessed;
+    result.duplicatesSkipped = parsed.duplicatesSkipped;
     result.errors.push(...parsed.errors);
     result.warnings.push(...parsed.warnings);
 
@@ -488,7 +515,7 @@ export async function importPunishmentsCSVToFirestore(
 
       if (row.type === 'PAYMENT') {
         const payment: Payment = {
-          id: generateId('payment'),
+          id: deterministicId([teamId, player.id, row.date.substring(0, 10), row.reason, String(row.amount)]),
           userId: player.id,
           teamId,
           category: PaymentCategory.PAYMENT,
@@ -512,9 +539,9 @@ export async function importPunishmentsCSVToFirestore(
           beveragesToCreate.push(beverage);
         }
 
-        // Create beverage fine
+        // Create beverage fine with deterministic ID (idempotent across re-imports)
         const fine: Fine = {
-          id: generateId('fine'),
+          id: deterministicId([teamId, player.id, row.date.substring(0, 10), row.reason, String(row.amount)]),
           userId: player.id,
           teamId,
           reason: beverage.name,
@@ -532,7 +559,7 @@ export async function importPunishmentsCSVToFirestore(
 
       } else {
         const fine: Fine = {
-          id: generateId('fine'),
+          id: deterministicId([teamId, player.id, row.date.substring(0, 10), row.reason, String(row.amount)]),
           userId: player.id,
           teamId,
           reason: row.reason,
@@ -629,7 +656,8 @@ export async function importTransactionsCSVToFirestore(
     recordsCreated: 0,
     errors: [],
     warnings: [],
-    skippedItems: []
+    skippedItems: [],
+    duplicatesSkipped: 0,
   };
 
   try {
@@ -648,6 +676,7 @@ export async function importTransactionsCSVToFirestore(
 
     const rows = parsed.data as any[];
     const existingPlayers = new Map<string, Player>();
+    const seenFingerprints = new Set<string>();
     const playersToCreate: Player[] = [];
     const paymentsToCreate: { userId: string; payment: Payment }[] = [];
 
@@ -728,19 +757,23 @@ export async function importTransactionsCSVToFirestore(
           continue;
         }
 
-        // Skip Strafen settlement transactions — fine paid-status is set via the punishments CSV.
-        // Only Guthaben top-ups within a Strafen subject are kept as payments.
-        const categoryLower = (category || '').trim().toLowerCase();
-        const isGuthabenCategory = categoryLower === 'guthaben' || categoryLower === 'guthaben rest';
-        if (subjectPrefix.includes('straf') && !isGuthabenCategory) {
-          result.warnings.push(`Row ${i + 1}: Skipped Strafen settlement transaction (handled via punishments CSV): ${subject}`);
+        // Skip ALL Strafen transactions — both fine settlements and Guthaben credits.
+        // Guthaben is the authoritative source in the Punishments CSV (as a PAYMENT row).
+        // The Transactions CSV records it again with a different date → would double-count.
+        if (subjectPrefix.includes('straf')) {
+          const categoryLower = (category || '').trim().toLowerCase();
+          const isGuthabenCategory = categoryLower === 'guthaben' || categoryLower === 'guthaben rest';
+          const skipReason = isGuthabenCategory
+            ? 'Guthaben aus Punishments-CSV importiert'
+            : 'Strafen settlement handled via punishments CSV';
+          result.warnings.push(`Row ${i + 1}: Skipped Strafen transaction (${skipReason}): ${subject}`);
           result.skippedItems.push({
             date: transactionDate,
             user: playerName,
             reason: subject,
             amount: amountEUR,
             paid: true,
-            skipReason: 'Strafen settlement handled via punishments CSV',
+            skipReason,
             type: 'transaction'
           });
           continue;
@@ -775,12 +808,22 @@ export async function importTransactionsCSVToFirestore(
           result.warnings.push(`Row ${i + 1}: Storno transaction detected (negative amount)`);
         }
 
-        // Create payment record
+        // Intra-CSV deduplication: same player+date+reason+amount → skip
+        const paymentReason = category || subject;
+        const txFingerprint = deterministicId([teamId, player.id, transactionDate.substring(0, 10), paymentReason, String(Math.abs(amountEUR))]);
+        if (seenFingerprints.has(txFingerprint)) {
+          result.duplicatesSkipped++;
+          result.warnings.push(`Row ${i + 1}: Intra-CSV duplicate skipped: ${playerName} / ${paymentReason}`);
+          continue;
+        }
+        seenFingerprints.add(txFingerprint);
+
+        // Create payment record with deterministic ID (idempotent across re-imports)
         const payment: Payment = {
-          id: generateId('payment'),
+          id: txFingerprint,
           userId: player.id,
           teamId,
-          reason: category || subject,
+          reason: paymentReason,
           amount: Math.abs(amountEUR),
           date: transactionDate,
           paid: !isStorno,
@@ -859,7 +902,8 @@ export async function importCSVToFirestore(
         recordsCreated: 0,
         errors: [`Unknown CSV type: ${type}`],
         warnings: [],
-        skippedItems: []
+        skippedItems: [],
+        duplicatesSkipped: 0,
       };
   }
 }

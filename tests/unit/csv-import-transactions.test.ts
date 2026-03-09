@@ -63,14 +63,16 @@ describe('importTransactionsCSVToFirestore Logic', () => {
         expect(result.recordsCreated).toBe(0);
     });
 
-    it('does NOT skip Strafen transaction when category is Guthaben', async () => {
+    it('skips Strafen transaction even when category is Guthaben — Guthaben comes from punishments CSV only', async () => {
         const csvContent = `transaction_date; transaction_amount; transaction_subject
 01.01.2024; 500; Strafen: Max Mustermann (Guthaben)`;
 
         const result = await importTransactionsCSVToFirestore(mockFirestore, 'test-team', csvContent);
 
-        // Guthaben top-up within a Strafen subject is a real credit — should NOT be skipped
-        expect(result.skippedItems).toHaveLength(0);
-        expect(result.recordsCreated).toBe(1);
+        // Guthaben in Strafen subject is skipped: the authoritative source is the Punishments CSV.
+        // Importing from both CSVs would double-count the credit.
+        expect(result.skippedItems).toHaveLength(1);
+        expect(result.skippedItems[0].skipReason).toContain('Guthaben aus Punishments-CSV');
+        expect(result.recordsCreated).toBe(0);
     });
 });
