@@ -90,6 +90,7 @@ export default function SettingsPage() {
   const [skippedItems, setSkippedItems] = useState<SkippedItem[]>([]);
   const [selectedSkippedItems, setSelectedSkippedItems] = useState<Set<number>>(new Set());
   const [isForceImporting, setIsForceImporting] = useState(false);
+  const [importDuplicatesSkipped, setImportDuplicatesSkipped] = useState(0);
 
   // Dialog states
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -139,6 +140,7 @@ export default function SettingsPage() {
     setImportTotal(0);
     setSkippedItems([]);
     setSelectedSkippedItems(new Set());
+    setImportDuplicatesSkipped(0);
 
     try {
       // Detect CSV type by filename (robust: singular/plural)
@@ -184,6 +186,7 @@ export default function SettingsPage() {
       });
       setUploadResult(successMessage);
       setSkippedItems(result.skippedItems || []);
+      setImportDuplicatesSkipped(result.duplicatesSkipped || 0);
 
       if (result.warnings.length > 0) {
         toast({
@@ -623,6 +626,14 @@ export default function SettingsPage() {
               <p className={`text-sm ${uploadResult.startsWith('Error') ? 'text-destructive' : 'text-green-600'}`}>
                 {uploadResult}
               </p>
+            )}
+            {importDuplicatesSkipped > 0 && (
+              <div className="flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50/50 px-3 py-2 text-sm text-blue-700">
+                <Badge variant="outline" className="border-blue-300 text-blue-700 bg-blue-50">
+                  {importDuplicatesSkipped} duplicate{importDuplicatesSkipped !== 1 ? 's' : ''} skipped
+                </Badge>
+                <span>Idempotent import: existing entries were not duplicated</span>
+              </div>
             )}
 
             {skippedItems.length > 0 && (

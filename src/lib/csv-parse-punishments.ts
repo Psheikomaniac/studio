@@ -29,6 +29,7 @@ export interface PunishmentParseResult {
   warnings: string[];
   errors: string[];
   totalRowsProcessed: number;
+  duplicatesSkipped: number;
 }
 
 // --- internal helpers (no exports, no side effects) ---
@@ -127,6 +128,7 @@ export function parsePunishmentCSV(text: string): PunishmentParseResult {
     warnings: [],
     errors: [],
     totalRowsProcessed: 0,
+    duplicatesSkipped: 0,
   };
 
   try {
@@ -143,6 +145,7 @@ export function parsePunishmentCSV(text: string): PunishmentParseResult {
     }
 
     const rows = parsed.data as any[];
+    const seenFingerprints = new Set<string>();
 
     for (let i = 0; i < rows.length; i++) {
       try {
@@ -180,6 +183,15 @@ export function parsePunishmentCSV(text: string): PunishmentParseResult {
 
         const playerName = row.penatly_user.trim();
         const reason = row.penatly_reason.trim();
+
+        // Deduplicate intra-CSV: identical rows (same player+date+reason+amount) are skipped
+        const fp = [playerName, createdDate.substring(0, 10), reason, String(amountEUR)].join('|');
+        if (seenFingerprints.has(fp)) {
+          result.duplicatesSkipped++;
+          result.warnings.push(`Row ${i + 1}: Intra-CSV duplicate skipped: ${playerName} / ${reason}`);
+          continue;
+        }
+        seenFingerprints.add(fp);
 
         // Classify: Guthaben → PAYMENT, Drink → DRINK, else → FINE
         if (isGuthabenReason(reason)) {

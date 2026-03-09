@@ -233,6 +233,52 @@ describe('parsePunishmentCSV', () => {
     });
   });
 
+  describe('intra-CSV deduplication', () => {
+    it('deduplicates 10 identical rows to 1 output row', () => {
+      const identicalRow = buildRow({
+        penatly_user: 'Sebastian Bott',
+        penatly_reason: 'Guthaben',
+        penatly_amount: '10000',
+        penatly_created: '20-11-2025',
+      });
+      const csv = buildCSV(Array(10).fill(identicalRow));
+      const result = parsePunishmentCSV(csv);
+
+      expect(result.rows).toHaveLength(1);
+      expect(result.duplicatesSkipped).toBe(9);
+      expect(result.totalRowsProcessed).toBe(10);
+    });
+
+    it('keeps rows that differ only by reason as separate entries', () => {
+      const csv = buildCSV([
+        buildRow({ penatly_user: 'Max', penatly_reason: 'Zu spät', penatly_amount: '500' }),
+        buildRow({ penatly_user: 'Max', penatly_reason: 'Gelbe Karte', penatly_amount: '500' }),
+      ]);
+      const result = parsePunishmentCSV(csv);
+
+      expect(result.rows).toHaveLength(2);
+      expect(result.duplicatesSkipped).toBe(0);
+    });
+
+    it('keeps rows that differ only by amount as separate entries', () => {
+      const csv = buildCSV([
+        buildRow({ penatly_user: 'Max', penatly_reason: 'Zu spät', penatly_amount: '500' }),
+        buildRow({ penatly_user: 'Max', penatly_reason: 'Zu spät', penatly_amount: '1000' }),
+      ]);
+      const result = parsePunishmentCSV(csv);
+
+      expect(result.rows).toHaveLength(2);
+      expect(result.duplicatesSkipped).toBe(0);
+    });
+
+    it('initializes duplicatesSkipped to 0 when no duplicates exist', () => {
+      const csv = buildCSV([buildRow()]);
+      const result = parsePunishmentCSV(csv);
+
+      expect(result.duplicatesSkipped).toBe(0);
+    });
+  });
+
   describe('beverage category mapping', () => {
     it('maps Bier to Beer/Lemonade', () => {
       const csv = buildCSV([buildRow({ penatly_reason: 'Bier' })]);
