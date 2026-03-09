@@ -5,12 +5,13 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useMemo } from 'react';
+import { collection } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, AlertCircle, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Player } from '@/lib/types';
+import { Player, Due } from '@/lib/types';
 import { usePlayers, usePlayersService } from '@/services/players.service';
 import { useTeam } from '@/team';
 import { AddEditPlayerDialog } from '@/components/players/add-edit-player-dialog';
@@ -24,13 +25,17 @@ import {
 import { useAllFines, useAllPayments, useAllDuePayments } from '@/hooks/use-all-transactions';
 import { usePlayerBalances } from '@/hooks/use-player-balances';
 import { usePlayerStats } from '@/hooks/use-player-stats';
-import { dues as staticDues } from '@/lib/static-data';
+import { useMemoFirebase, useCollection } from '@/firebase';
+import { useFirebaseOptional } from '@/firebase/use-firebase-optional';
 import { useTranslation } from 'react-i18next';
 import { formatEuro } from '@/lib/csv-utils';
 
 export default function PlayersPage() {
   const { t } = useTranslation();
   const { teamId } = useTeam();
+
+  const firebase = useFirebaseOptional();
+  const firestore = firebase?.firestore;
 
   // Firebase hooks for real-time data
   const { data: playersData, isLoading: playersLoading, error, refetch: refetchPlayers } = usePlayers(teamId);
@@ -41,11 +46,18 @@ export default function PlayersPage() {
   const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ teamId });
   const { data: duePaymentsData, isLoading: duePaymentsLoading } = useAllDuePayments({ teamId });
 
+  // Load dues from Firestore so archived/inactive dues are correctly filtered out of balance
+  const duesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'dues');
+  }, [firestore]);
+  const { data: duesMeta } = useCollection<Due>(duesQuery);
+
   // Use Firebase data or empty arrays while loading
   const fines = finesData || [];
   const payments = paymentsData || [];
   const duePayments = duePaymentsData || [];
-  const dues = staticDues;
+  const dues = duesMeta || [];
 
   // Calculate player statistics and balances
   const { lastActivityByUser, beverageCountByUser, paymentSparklineByUser } = usePlayerStats(
