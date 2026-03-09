@@ -823,6 +823,7 @@ export async function importTransactionsCSVToFirestore(
           id: txFingerprint,
           userId: player.id,
           teamId,
+          category: PaymentCategory.PAYMENT,
           reason: paymentReason,
           amount: Math.abs(amountEUR),
           date: transactionDate,
