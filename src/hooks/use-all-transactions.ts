@@ -83,7 +83,6 @@ function useQueryOnce<T>(
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memoizedQuery, refetchToken]);
 
   return { data, isLoading, error, refetch };

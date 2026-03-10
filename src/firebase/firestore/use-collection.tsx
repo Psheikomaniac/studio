@@ -228,7 +228,6 @@ export function useCollection<T = any>(
     );
 
     return () => unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memoizedTargetRefOrQuery, refetchToken]); // Re-run if the target query/reference changes or refetch is called.
   if(memoizedTargetRefOrQuery && !memoizedTargetRefOrQuery.__memo) {
     throw new Error('useCollection was not properly memoized using useMemoFirebase. The query was: ' + memoizedTargetRefOrQuery);

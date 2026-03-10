@@ -66,7 +66,7 @@ export function SafeSVG({
         } else {
           setError('Ungültiges SVG');
         }
-      } catch (err) {
+      } catch {
         setError('Fehler beim Bereinigen des SVG');
       }
       return;

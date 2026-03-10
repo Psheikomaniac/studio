@@ -34,7 +34,6 @@ import {
   QueryDocumentSnapshot,
   DocumentData,
   where,
-  Query,
   Firestore,
 } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';

@@ -42,7 +42,7 @@ interface SVGUploadProps {
 
 export function SVGUpload({
   onUpload,
-  maxSize = 1024 * 1024, // 1 MB
+  maxSize: _maxSize = 1024 * 1024, // 1 MB
   showPreview = true,
   buttonText = 'SVG hochladen',
   disabled = false,
