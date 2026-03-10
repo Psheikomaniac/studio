@@ -42,7 +42,7 @@ interface SVGUploadProps {
 
 export function SVGUpload({
   onUpload,
-  maxSize: _maxSize = 1024 * 1024, // 1 MB
+  maxSize = 1024 * 1024, // 1 MB
   showPreview = true,
   buttonText = 'SVG hochladen',
   disabled = false,
@@ -69,7 +69,7 @@ export function SVGUpload({
 
     try {
       // Validate and sanitize
-      const result = await validateAndSanitizeSVG(file);
+      const result = await validateAndSanitizeSVG(file, maxSize);
 
       if (!result.valid) {
         setError(result.error || 'Ungültiges SVG');
