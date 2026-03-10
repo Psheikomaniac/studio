@@ -156,7 +156,7 @@ export async function validateSVGFile(file: File): Promise<{
   let content: string;
   try {
     content = await file.text();
-  } catch (error) {
+  } catch {
     return {
       valid: false,
       error: 'Fehler beim Lesen der Datei',

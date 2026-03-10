@@ -16,8 +16,6 @@ import {
   where,
   documentId,
   getDocs,
-  Query,
-  DocumentData,
   Firestore,
 } from 'firebase/firestore';
 

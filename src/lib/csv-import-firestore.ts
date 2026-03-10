@@ -383,7 +383,7 @@ export async function importDuesCSVToFirestore(
 
         // Historical dues are imported as-is with their original paid/exempt status.
         // The isArchivedDue flag is informational only — do not auto-exempt based on age.
-        const isArchivedDue = !!due.archived;
+        const _isArchivedDue = !!due.archived;
 
         // Create DuePayment record with deterministic ID (idempotent across re-imports)
         const duePayment: DuePayment = {
