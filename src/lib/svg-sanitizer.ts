@@ -131,7 +131,7 @@ export function sanitizeSVG(svgString: string): string {
  * }
  * ```
  */
-export async function validateSVGFile(file: File): Promise<{
+export async function validateSVGFile(file: File, maxSize = MAX_SVG_SIZE): Promise<{
   valid: boolean;
   error?: string;
   content?: string;
@@ -145,10 +145,10 @@ export async function validateSVGFile(file: File): Promise<{
   }
 
   // Check file size
-  if (file.size > MAX_SVG_SIZE) {
+  if (file.size > maxSize) {
     return {
       valid: false,
-      error: `SVG-Datei zu groß (max. ${MAX_SVG_SIZE / 1024 / 1024} MB)`,
+      error: `SVG-Datei zu groß (max. ${maxSize / 1024 / 1024} MB)`,
     };
   }
 
@@ -164,7 +164,7 @@ export async function validateSVGFile(file: File): Promise<{
   }
 
   // Check if content is too large (double-check after reading)
-  if (content.length > MAX_SVG_SIZE) {
+  if (content.length > maxSize) {
     return {
       valid: false,
       error: 'SVG-Datei zu groß',
@@ -202,13 +202,13 @@ export async function validateSVGFile(file: File): Promise<{
  * }
  * ```
  */
-export async function validateAndSanitizeSVG(file: File): Promise<{
+export async function validateAndSanitizeSVG(file: File, maxSize = MAX_SVG_SIZE): Promise<{
   valid: boolean;
   error?: string;
   content?: string;
 }> {
   // Step 1: Validate file
-  const validation = await validateSVGFile(file);
+  const validation = await validateSVGFile(file, maxSize);
   if (!validation.valid) {
     return validation;
   }
